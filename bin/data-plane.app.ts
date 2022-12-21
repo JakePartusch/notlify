@@ -7,7 +7,7 @@ const app = new cdk.App();
 
 const customerId = app.node.tryGetContext("customerId");
 
-new DataPlaneStack(app, `DataPlaneStack${customerId}`, {
+new DataPlaneStack(app, `DataPlaneStack-${customerId}`, {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */
