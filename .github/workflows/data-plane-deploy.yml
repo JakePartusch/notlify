@@ -8,7 +8,7 @@ on:
         description: "Region to deploy"
         required: true
 jobs:
-  deploy-docs:
+  deploy-data-plane:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,5 +24,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.region }}
       - run: npm ci
-      - run: npm run cdk synth -- --context customerId=${{ inputs.customerId }}
-      - run: npm run cdk deploy
+      - run: npm run cdk deploy -- --require-approval=false --context customerId=${{ inputs.customerId }}
