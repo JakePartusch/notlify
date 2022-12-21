@@ -8,7 +8,7 @@ on:
         description: "Region to deploy"
         required: true
       sourceFilesZipName:
-        description: Source files Zip Name:
+        description: "Source files Zip Name"
         required: false
 jobs:
   deploy-data-plane:
