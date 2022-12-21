@@ -3,7 +3,6 @@ import { Construct } from "constructs";
 import { DataPlaneConstruct } from "./data-pane.construct";
 
 interface DataPlaneStackProps extends cdk.StackProps {
-  customerId: string;
   sourceFilesZipName: string;
 }
 
@@ -11,7 +10,7 @@ export class DataPlaneStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: DataPlaneStackProps) {
     super(scope, id, props);
 
-    new DataPlaneConstruct(this, `DataPlane${props?.customerId}`, {
+    new DataPlaneConstruct(this, `DataPlane`, {
       sourceFilesZipName: props?.sourceFilesZipName, //TODO
       apiEntries: [], //TODO
       apiEnvironment: undefined, //TODO
