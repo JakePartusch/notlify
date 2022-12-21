@@ -1,10 +1,10 @@
 import { HttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import * as cdk from "aws-cdk-lib";
+import { CfnOutput, Stack } from "aws-cdk-lib";
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { BlockPublicAccess, Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import * as path from "path";
 
@@ -41,6 +41,12 @@ export class ControlPlaneStack extends cdk.Stack {
     httpApi.addRoutes({
       path: `/api`,
       integration: lambdaProxyIntegration,
+    });
+
+    new CfnOutput(this, `API Gateway`, {
+      value: `https://${httpApi.apiId}.execute-api.${
+        Stack.of(this).region
+      }.amazonaws.com/api`,
     });
   }
 }

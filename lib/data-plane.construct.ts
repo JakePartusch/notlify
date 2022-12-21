@@ -64,7 +64,7 @@ interface DataPlaneConstructProps {
   apiEntries: {
     name: string;
     runtime: Runtime;
-    code: Code;
+    sourceCodeZipName: string;
   }[];
   /**
    * The sources from which to deploy the contents of the bucket.
@@ -183,7 +183,10 @@ export class DataPlaneConstruct extends Construct {
     const lambdas = props.apiEntries.map((functionFile) => {
       return new Lambda(this, `Function-${functionFile.name}`, {
         handler: "handler",
-        code: functionFile.code,
+        code: Code.fromBucket(
+          sourceFilesBucket,
+          functionFile.sourceCodeZipName
+        ),
         runtime: functionFile.runtime,
         environment: {
           ...props.apiEnvironment,
@@ -268,6 +271,7 @@ export class DataPlaneConstruct extends Construct {
     if (props.sourceFilesZipName) {
       new BucketDeployment(this, "BucketDeployment", {
         sources: [Source.bucket(sourceFilesBucket, props.sourceFilesZipName)],
+        destinationKeyPrefix: "/",
         destinationBucket: websiteBucket!,
         distribution: distribution,
         retainOnDelete: false,

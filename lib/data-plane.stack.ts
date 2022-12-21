@@ -1,6 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { DataPlaneConstruct } from "./data-pane.construct";
+import { DataPlaneConstruct } from "./data-plane.construct";
 
 interface DataPlaneStackProps extends cdk.StackProps {
   sourceFilesZipName: string;
