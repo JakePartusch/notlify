@@ -24,4 +24,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.region }}
       - run: npm ci
-      - run: npm run cdk deploy -- --require-approval=false --context customerId=${{ inputs.customerId }}
+      - run: npm run cdk deploy -- --require-approval=never --context customerId=${{ inputs.customerId }}
