@@ -3,7 +3,7 @@ on:
     branches:
       - "main"
 jobs:
-  deploy-data-plane:
+  deploy-control-plane:
     runs-on: ubuntu-latest
 
     steps:
