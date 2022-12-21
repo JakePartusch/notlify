@@ -6,6 +6,7 @@ import { DataPlaneStack } from "../lib/data-plane.stack";
 const app = new cdk.App();
 
 const customerId = app.node.tryGetContext("customerId");
+const sourceFilesZipName = app.node.tryGetContext("sourceFilesZipName");
 
 new DataPlaneStack(app, `DataPlaneStack-${customerId}`, {
   /* If you don't specify 'env', this stack will be environment-agnostic.
@@ -17,7 +18,7 @@ new DataPlaneStack(app, `DataPlaneStack-${customerId}`, {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
   },
-  sourceFilesZipName: "",
+  sourceFilesZipName,
 
   /* Uncomment the next line if you know exactly what Account and Region you
    * want to deploy the stack to. */
