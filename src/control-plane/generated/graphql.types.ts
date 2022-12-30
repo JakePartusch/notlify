@@ -29,15 +29,29 @@ export enum AvailableRegions {
   UsWest_2 = 'US_WEST_2'
 }
 
+export type Deployment = {
+  __typename?: 'Deployment';
+  deploymentUploadLocation?: Maybe<Scalars['String']>;
+  id: Scalars['ID'];
+  status: Status;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   createApplication: Application;
+  initiateDeployment: Deployment;
 };
 
 
 export type MutationCreateApplicationArgs = {
   name: Scalars['String'];
   region: AvailableRegions;
+};
+
+
+export type MutationInitiateDeploymentArgs = {
+  applicationName: Scalars['String'];
+  commitHash?: InputMaybe<Scalars['String']>;
 };
 
 export type Query = {
@@ -50,6 +64,12 @@ export type Query = {
 export type QueryApplicationArgs = {
   id: Scalars['ID'];
 };
+
+export enum Status {
+  Complete = 'COMPLETE',
+  Initiated = 'INITIATED',
+  PendingUpload = 'PENDING_UPLOAD'
+}
 
 
 
@@ -123,9 +143,11 @@ export type ResolversTypes = {
   Application: ResolverTypeWrapper<Application>;
   AvailableRegions: AvailableRegions;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  Deployment: ResolverTypeWrapper<Deployment>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
+  Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
 };
 
@@ -133,6 +155,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Application: Application;
   Boolean: Scalars['Boolean'];
+  Deployment: Deployment;
   ID: Scalars['ID'];
   Mutation: {};
   Query: {};
@@ -147,8 +170,16 @@ export type ApplicationResolvers<ContextType = any, ParentType extends Resolvers
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type DeploymentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Deployment'] = ResolversParentTypes['Deployment']> = {
+  deploymentUploadLocation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createApplication?: Resolver<ResolversTypes['Application'], ParentType, ContextType, RequireFields<MutationCreateApplicationArgs, 'name' | 'region'>>;
+  initiateDeployment?: Resolver<ResolversTypes['Deployment'], ParentType, ContextType, RequireFields<MutationInitiateDeploymentArgs, 'applicationName'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
@@ -158,6 +189,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type Resolvers<ContextType = any> = {
   Application?: ApplicationResolvers<ContextType>;
+  Deployment?: DeploymentResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
 };

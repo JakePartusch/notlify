@@ -5,11 +5,23 @@ enum AvailableRegions {
   US_WEST_2
 }
 
+enum Status {
+  PENDING_UPLOAD
+  INITIATED
+  COMPLETE
+}
+
 type Application {
   id: ID!
   name: String!
   region: AvailableRegions!
   customerId: String!
+}
+
+type Deployment {
+  id: ID!
+  status: Status!
+  deploymentUploadLocation: String
 }
 
 type Query {
@@ -18,4 +30,5 @@ type Query {
 }
 type Mutation {
   createApplication(name: String!, region: AvailableRegions!): Application!
+  initiateDeployment(applicationName: String!, commitHash: String): Deployment!
 }
