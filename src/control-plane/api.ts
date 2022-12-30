@@ -1,15 +1,21 @@
 import { ApolloServer } from "@apollo/server";
 import { startServerAndCreateLambdaHandler } from "@as-integrations/aws-lambda"; //highlight-line
+import { AvailableRegions, Resolvers } from "./generated/graphql.types";
+import { typeDefs } from "./schema";
 
-const typeDefs = `#graphql
-  type Query {
-    hello: String
-  }
-`;
-
-const resolvers = {
+const resolvers: Resolvers = {
   Query: {
     hello: () => "world",
+  },
+  Mutation: {
+    createApplication: async (parent, args, contextValue, info) => {
+      return Promise.resolve({
+        customerId: "blah",
+        id: "123",
+        name: "test-app",
+        region: AvailableRegions.UsEast_1,
+      });
+    },
   },
 };
 

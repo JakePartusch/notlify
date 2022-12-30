@@ -4,6 +4,9 @@ on:
       customerId:
         description: "Customer ID"
         required: true
+      applicationId:
+        description: "Application ID"
+        required: true
       region:
         description: "Region to deploy"
         required: true
@@ -28,4 +31,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.region }}
       - run: npm ci
-      - run: npm run cdk deploy -- --require-approval=never --app "npx ts-node --prefer-ts-exts bin/data-plane.app.ts" --context customerId=${{ inputs.customerId }} --context sourceFilesZipName=${{ inputs.sourceFilesZipName }}
+      - run: npm run cdk deploy -- --require-approval=never --app "npx ts-node --prefer-ts-exts bin/data-plane.app.ts" --context customerId=${{ inputs.customerId }} --context applicationId=${{ inputs.applicationId }} --context sourceFilesZipName=${{ inputs.sourceFilesZipName }}
