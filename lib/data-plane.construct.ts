@@ -26,7 +26,13 @@ import {
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { BlockPublicAccess, Bucket, IBucket } from "aws-cdk-lib/aws-s3";
-import { PolicyStatement, Effect, AnyPrincipal } from "aws-cdk-lib/aws-iam";
+import {
+  PolicyStatement,
+  Effect,
+  AnyPrincipal,
+  Role,
+  ArnPrincipal,
+} from "aws-cdk-lib/aws-iam";
 import { HttpOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import { HttpApi, IHttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
@@ -49,6 +55,8 @@ interface Domain {
 }
 
 interface DataPlaneConstructProps {
+  customerId: string;
+  applicationId: string;
   /**
    * The unique id to use in generating the infrastructure and domain. Only used with custom domains
    * Ex. https://{buildId}.my-domain.com
@@ -117,6 +125,23 @@ export class DataPlaneConstruct extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+    });
+
+    const sourceFilesCrossAccountRole = new Role(
+      this,
+      "SourceFilesCrossAccountRole",
+      {
+        assumedBy: new ArnPrincipal(
+          "arn:aws:iam::857786057494:role/ControlPlane-ControlPlaneApiHandlerServiceRoleBC9E-13OFX0TVZ01Z4"
+        ),
+        roleName: `CrossAccountRole-${props.customerId}-${props.applicationId}`,
+      }
+    );
+
+    sourceFilesBucket.grantWrite(sourceFilesCrossAccountRole);
+
+    new CfnOutput(this, "SourceFilesCrossAccountRoleArnOutput", {
+      value: sourceFilesCrossAccountRole.roleArn,
     });
 
     new CfnOutput(this, "SourceFilesBuckeArnOutput", {

@@ -31,6 +31,7 @@ export class ControlPlaneStack extends cdk.Stack {
       timeout: Duration.seconds(30),
       environment: {
         TABLE_NAME: table.tableName,
+        GITHUB_TOKEN: "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",
       },
     });
 
