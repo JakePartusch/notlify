@@ -13,11 +13,13 @@ import {
   QueryCommand,
   QueryCommandOutput,
 } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers"; // ES6 import
 import { nanoid } from "nanoid";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
+const ddbDocClient = DynamoDBDocument.from(ddbClient);
 
 interface InternalApplication extends Application {
   awsAccountId: string;
@@ -30,54 +32,48 @@ const findApplicationByName = async (
   customerId: string,
   applicationName: string
 ): Promise<InternalApplication | undefined> => {
-  const queryCommand = new QueryCommand({
+  const response = await ddbDocClient.query({
     TableName: process.env.TABLE_NAME,
     IndexName: "GSI1",
     KeyConditionExpression: "GSI1PK = :gsi1pk",
     ExpressionAttributeValues: {
-      gsi1pk: { S: `CUSTOMER#${customerId}` },
+      ":gsi1pk": `CUSTOMER#${customerId}`,
     },
   });
-  const response = await ddbClient.send(queryCommand);
   const items: InternalApplication[] | undefined = response.Items as
     | InternalApplication[]
     | undefined;
+  console.log(JSON.stringify(items, null, 2));
   return items?.find((item) => item.name === applicationName);
 };
 
 const createApplicationRecord = async (application: InternalApplication) => {
-  const command = new PutItemCommand({
+  await ddbDocClient.put({
     TableName: process.env.TABLE_NAME,
     Item: {
-      PK: { S: `APPLICATION#${application.id}` },
-      SK: { S: `APPLICATION#${application.id}` },
-      GSI1PK: { S: `CUSTOMER#${application.customerId}` },
-      GSI1SK: { S: `APPLICATION#${application.id}` },
-      type: { S: "APPLICATION" },
-      customerId: { S: application.customerId },
-      name: { S: application.name },
-      region: { S: application.region },
-      awsAccountId: { S: application.awsAccountId },
+      PK: `APPLICATION#${application.id}`,
+      SK: `APPLICATION#${application.id}`,
+      GSI1PK: `CUSTOMER#${application.customerId}`,
+      GSI1SK: `APPLICATION#${application.id}`,
+      type: "APPLICATION",
+      ...application,
     },
   });
-  await ddbClient.send(command);
 };
 
 const createDeploymentRecord = async (
   deployment: Deployment,
   applicationId: string
 ) => {
-  const putItemCommand = new PutItemCommand({
+  ddbDocClient.put({
     TableName: process.env.TABLE_NAME,
     Item: {
-      PK: { S: `APPLICATION#${applicationId}` },
-      SK: { S: `DEPLOYMENT#${deployment.id}` },
-      type: { S: "APPLICATION" },
-      deploymentId: { S: deployment.id },
-      commitHash: { S: deployment.commitHash },
+      PK: `APPLICATION#${applicationId}`,
+      SK: `DEPLOYMENT#${deployment.id}`,
+      type: "DEPLOYMENT",
+      ...deployment,
     },
   });
-  ddbClient.send(putItemCommand);
 };
 
 const triggerDataPlaneDeployment = async (application: InternalApplication) => {
