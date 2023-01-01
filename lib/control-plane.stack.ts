@@ -2,7 +2,12 @@ import { HttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import * as cdk from "aws-cdk-lib";
 import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
-import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
+import {
+  AttributeType,
+  BillingMode,
+  ProjectionType,
+  Table,
+} from "aws-cdk-lib/aws-dynamodb";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
@@ -21,7 +26,20 @@ export class ControlPlaneStack extends cdk.Stack {
         name: "SK",
         type: AttributeType.STRING,
       },
+      pointInTimeRecovery: true,
       billingMode: BillingMode.PAY_PER_REQUEST,
+    });
+    table.addGlobalSecondaryIndex({
+      indexName: "GSI1",
+      partitionKey: {
+        name: "GSI1PK",
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: "GSI1SK",
+        type: AttributeType.STRING,
+      },
+      projectionType: ProjectionType.ALL,
     });
 
     const lambda = new NodejsFunction(this, "ControlPlaneApiHandler", {

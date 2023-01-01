@@ -122,6 +122,8 @@ export class DataPlaneConstruct extends Construct {
     super(scope, id);
 
     const sourceFilesBucket = new Bucket(this, "SourceFilesBucket", {
+      bucketName:
+        `sourcefilesbucket-${props.customerId}-${props.applicationId}`.toLowerCase(),
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,

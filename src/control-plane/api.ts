@@ -1,14 +1,128 @@
 import { ApolloServer } from "@apollo/server";
 import { startServerAndCreateLambdaHandler } from "@as-integrations/aws-lambda"; //highlight-line
-import { Resolvers } from "./generated/graphql.types";
+import {
+  Application,
+  Deployment,
+  Resolvers,
+  Status,
+} from "./generated/graphql.types";
 import { typeDefs } from "./schema";
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { STSClient, AssumeRoleCommand } from "@aws-sdk/client-sts";
+import {
+  DynamoDBClient,
+  PutItemCommand,
+  QueryCommand,
+  QueryCommandOutput,
+} from "@aws-sdk/client-dynamodb";
+import { fromTemporaryCredentials } from "@aws-sdk/credential-providers"; // ES6 import
 import { nanoid } from "nanoid";
-const stsClient = new STSClient({ region: "REGION" });
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 
-const DATA_PLANE_ACCOUNTS = ["857786057494", "837992707202"];
+interface InternalApplication extends Application {
+  awsAccountId: string;
+}
+
+// const DATA_PLANE_ACCOUNTS = ["857786057494", "837992707202"];
+const DATA_PLANE_ACCOUNTS = ["837992707202"];
+
+const findApplicationByName = async (
+  customerId: string,
+  applicationName: string
+): Promise<InternalApplication | undefined> => {
+  const queryCommand = new QueryCommand({
+    TableName: process.env.TABLE_NAME,
+    IndexName: "GSI1",
+    KeyConditionExpression: "GSI1PK = :gsi1pk",
+    ExpressionAttributeValues: {
+      gsi1pk: { S: `CUSTOMER#${customerId}` },
+    },
+  });
+  const response = await ddbClient.send(queryCommand);
+  const items: InternalApplication[] | undefined = response.Items as
+    | InternalApplication[]
+    | undefined;
+  return items?.find((item) => item.name === applicationName);
+};
+
+const createApplicationRecord = async (application: InternalApplication) => {
+  const command = new PutItemCommand({
+    TableName: process.env.TABLE_NAME,
+    Item: {
+      PK: { S: `APPLICATION#${application.id}` },
+      SK: { S: `APPLICATION#${application.id}` },
+      GSI1PK: { S: `CUSTOMER#${application.customerId}` },
+      GSI1SK: { S: `APPLICATION#${application.id}` },
+      type: { S: "APPLICATION" },
+      customerId: { S: application.customerId },
+      name: { S: application.name },
+      region: { S: application.region },
+      awsAccountId: { S: application.awsAccountId },
+    },
+  });
+  await ddbClient.send(command);
+};
+
+const createDeploymentRecord = async (
+  deployment: Deployment,
+  applicationId: string
+) => {
+  const putItemCommand = new PutItemCommand({
+    TableName: process.env.TABLE_NAME,
+    Item: {
+      PK: { S: `APPLICATION#${applicationId}` },
+      SK: { S: `DEPLOYMENT#${deployment.id}` },
+      type: { S: "APPLICATION" },
+      deploymentId: { S: deployment.id },
+      commitHash: { S: deployment.commitHash },
+    },
+  });
+  ddbClient.send(putItemCommand);
+};
+
+const triggerDataPlaneDeployment = async (application: InternalApplication) => {
+  //@ts-ignore
+  await fetch(
+    `https://api.github.com/repos/JakePartusch/paas-app/actions/workflows/data-plane-deploy.yml/dispatches`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        ref: "main",
+        inputs: {
+          customerId: application.customerId,
+          applicationId: application.id,
+          region: application.region.replaceAll("_", "-").toLowerCase(),
+        },
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      },
+    }
+  );
+};
+
+const getPresignedDeploymentUrl = async (
+  application: InternalApplication,
+  deploymentId: string
+) => {
+  const credentials = fromTemporaryCredentials({
+    params: {
+      RoleArn: `arn:aws:iam::${application.awsAccountId}:role/CrossAccountRole-${application.customerId}-${application.id}`,
+    },
+  });
+  const s3Client = new S3Client({
+    credentials,
+  });
+
+  const putObjectCommand = new PutObjectCommand({
+    Bucket: `sourcefilesbucket-${application.customerId}-${application.id}`,
+    Key: `${deploymentId}.zip`,
+  });
+  return await getSignedUrl(s3Client, putObjectCommand, {
+    expiresIn: 3600,
+  });
+};
 
 const resolvers: Resolvers = {
   Query: {
@@ -17,68 +131,51 @@ const resolvers: Resolvers = {
   Mutation: {
     createApplication: async (parent, args, contextValue, info) => {
       const id = nanoid();
-      const customerId = "JakePartusch";
+      const customerId = "JakePartusch"; //TOOD: get from auth context
       const randomAwsAccount =
         DATA_PLANE_ACCOUNTS[
           Math.floor(Math.random() * DATA_PLANE_ACCOUNTS.length)
         ];
-      const command = new PutItemCommand({
-        TableName: process.env.TABLE_NAME,
-        Item: {
-          PK: { S: `APPLICATION#${id}` },
-          SK: { S: `CUSTOMER#${customerId}` },
-          customerId: { S: customerId },
-          name: { S: args.name },
-          region: { S: args.region },
-          awsAccountId: { S: randomAwsAccount },
-        },
-      });
-      try {
-        await ddbClient.send(command);
-        //TODO: trigger deployment to data plane account
-        await fetch(
-          `https://api.github.com/repos/JakePartusch/paas-app/actions/workflows/data-plane-deploy.yml/dispatches`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              ref: "main",
-              inputs: {
-                customerId,
-                applicationId: id,
-                region: args.region.replaceAll("_", "-").toLowerCase(),
-              },
-            }),
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-            },
-          }
-        );
-        return {
-          customerId,
-          id,
-          name: args.name,
-          region: args.region,
-        };
-      } catch (e) {
-        console.error("Unable to create application", e);
-        throw e;
-      }
+      const application = {
+        id,
+        customerId,
+        name: args.name,
+        region: args.region,
+        awsAccountId: randomAwsAccount,
+      };
+      await createApplicationRecord(application);
+      await triggerDataPlaneDeployment(application);
+      return {
+        customerId,
+        id,
+        name: args.name,
+        region: args.region,
+      };
     },
     initiateDeployment: async (parent, args, contextValue, info) => {
       const deploymentId = nanoid();
-      //TODO: fetch application record from db
-      //TODO: fetch Cloudformation template from Account
-      await stsClient.send(
-        new AssumeRoleCommand({
-          RoleArn: `arn:aws:iam::837992707202:role/OrganizationAccountAccessRole`,
-          RoleSessionName: "",
-        })
+      const customerId = "JakePartusch"; //TODO: get from auth context
+      const application = await findApplicationByName(
+        customerId,
+        args.applicationName
       );
-      //TODO: Assume a role in the data plane account
-      //TODO: Return a temporary url for the s3 upload
-      //TODO: Store the deployment record
-      return;
+      if (!application) {
+        throw new Error("blah");
+      }
+      const url = await getPresignedDeploymentUrl(application, deploymentId);
+      const deployment: Deployment = {
+        id: deploymentId,
+        commitHash: args.commitHash,
+        status: Status.PendingUpload,
+        deploymentUploadLocation: url,
+      };
+      await createDeploymentRecord(deployment, application.id);
+      return {
+        id: deploymentId,
+        status: Status.PendingUpload,
+        commitHash: args.commitHash,
+        deploymentUploadLocation: url,
+      };
     },
   },
 };

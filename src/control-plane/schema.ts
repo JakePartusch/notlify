@@ -22,6 +22,7 @@ type Application {
 type Deployment {
   id: ID!
   status: Status!
+  commitHash: String!
   deploymentUploadLocation: String
 }
 
@@ -31,6 +32,6 @@ type Query {
 }
 type Mutation {
   createApplication(name: String!, region: AvailableRegions!): Application!
-  initiateDeployment(applicationName: String!, commitHash: String): Deployment!
+  initiateDeployment(applicationName: String!, commitHash: String!): Deployment!
 }
 `;
