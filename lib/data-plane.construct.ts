@@ -24,7 +24,7 @@ import {
   Function as Lambda,
 } from "aws-cdk-lib/aws-lambda";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
-import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { BlockPublicAccess, Bucket, IBucket } from "aws-cdk-lib/aws-s3";
 import {
   PolicyStatement,
@@ -38,6 +38,8 @@ import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-al
 import { HttpApi, IHttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { overrideProps } from "./utils";
 import { Construct } from "constructs";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import path from "path";
 
 interface Domain {
   /**
@@ -121,6 +123,20 @@ export class DataPlaneConstruct extends Construct {
   constructor(scope: Construct, id: string, props: DataPlaneConstructProps) {
     super(scope, id);
 
+    const s3NotifyLambda = new NodejsFunction(
+      this,
+      "SourceFilesUpdatedHandlerr",
+      {
+        entry: path.join(__dirname, "../src/data-plane/deployment-trigger.ts"),
+        runtime: Runtime.NODEJS_18_X,
+        memorySize: 512,
+        timeout: Duration.seconds(30),
+        environment: {
+          GITHUB_TOKEN: "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",
+        },
+      }
+    );
+
     const sourceFilesBucket = new Bucket(this, "SourceFilesBucket", {
       bucketName:
         `sourcefilesbucket-${props.customerId}-${props.applicationId}`.toLowerCase(),
@@ -128,6 +144,8 @@ export class DataPlaneConstruct extends Construct {
       autoDeleteObjects: true,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
+
+    sourceFilesBucket.addEventNotification(s3NotifyLambda);
 
     const sourceFilesCrossAccountRole = new Role(
       this,

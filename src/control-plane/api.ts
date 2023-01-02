@@ -113,7 +113,7 @@ const getPresignedDeploymentUrl = async (
 
   const putObjectCommand = new PutObjectCommand({
     Bucket: `sourcefilesbucket-${application.customerId}-${application.id}`,
-    Key: `${deploymentId}.zip`,
+    Key: `${application.customerId}-${application.id}-${deploymentId}.zip`,
   });
   return await getSignedUrl(s3Client, putObjectCommand, {
     expiresIn: 3600,
