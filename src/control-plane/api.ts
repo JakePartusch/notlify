@@ -7,15 +7,10 @@ import {
   Status,
 } from "./generated/graphql.types";
 import { typeDefs } from "./schema";
-import {
-  DynamoDBClient,
-  PutItemCommand,
-  QueryCommand,
-  QueryCommandOutput,
-} from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers"; // ES6 import
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
@@ -126,6 +121,7 @@ const resolvers: Resolvers = {
   },
   Mutation: {
     createApplication: async (parent, args, contextValue, info) => {
+      const nanoid = customAlphabet("1234567890abcdef");
       const id = nanoid();
       const customerId = "JakePartusch"; //TOOD: get from auth context
       const randomAwsAccount =
@@ -149,6 +145,7 @@ const resolvers: Resolvers = {
       };
     },
     initiateDeployment: async (parent, args, contextValue, info) => {
+      const nanoid = customAlphabet("1234567890abcdef");
       const deploymentId = nanoid();
       const customerId = "JakePartusch"; //TODO: get from auth context
       const application = await findApplicationByName(

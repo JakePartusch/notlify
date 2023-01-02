@@ -1,3 +1,4 @@
+name: "Data Plane Deploy"
 on:
   workflow_dispatch:
     inputs:

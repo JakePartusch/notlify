@@ -1,3 +1,4 @@
+name: "Control Plane Deploy"
 on:
   push:
     branches:
