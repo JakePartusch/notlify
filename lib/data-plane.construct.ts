@@ -25,7 +25,12 @@ import {
 } from "aws-cdk-lib/aws-lambda";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
-import { BlockPublicAccess, Bucket, IBucket } from "aws-cdk-lib/aws-s3";
+import {
+  BlockPublicAccess,
+  Bucket,
+  EventType,
+  IBucket,
+} from "aws-cdk-lib/aws-s3";
 import {
   PolicyStatement,
   Effect,
@@ -40,6 +45,7 @@ import { overrideProps } from "./utils";
 import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import path from "path";
+import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
 
 interface Domain {
   /**
@@ -145,7 +151,10 @@ export class DataPlaneConstruct extends Construct {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
-    sourceFilesBucket.addEventNotification(s3NotifyLambda);
+    sourceFilesBucket.addEventNotification(
+      EventType.OBJECT_CREATED,
+      new LambdaDestination(s3NotifyLambda)
+    );
 
     const sourceFilesCrossAccountRole = new Role(
       this,
