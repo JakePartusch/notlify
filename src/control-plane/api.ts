@@ -38,7 +38,6 @@ const findApplicationByName = async (
   const items: InternalApplication[] | undefined = response.Items as
     | InternalApplication[]
     | undefined;
-  console.log(JSON.stringify(items, null, 2));
   return items?.find((item) => item.name === applicationName);
 };
 
@@ -156,7 +155,7 @@ const resolvers: Resolvers = {
         args.applicationName
       );
       if (!application) {
-        throw new Error("blah");
+        throw new Error("Application not found");
       }
       const url = await getPresignedDeploymentUrl(application, deploymentId);
       const deployment: Deployment = {
