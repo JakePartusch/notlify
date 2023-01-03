@@ -1,7 +1,10 @@
 import { S3Event } from "aws-lambda";
+import { STSClient, GetCallerIdentityCommand } from "@aws-sdk/client-sts";
+
 const triggerDataPlaneDeployment = async (
   customerId: string,
   applicationId: string,
+  awsAccountId: string,
   region: string,
   sourceFilesZipName: string
 ) => {
@@ -15,6 +18,7 @@ const triggerDataPlaneDeployment = async (
         inputs: {
           customerId,
           applicationId,
+          awsAccountId,
           region,
           sourceFilesZipName,
         },
@@ -35,9 +39,15 @@ export const handler = async (event: S3Event) => {
     if (!customerId || !applicationId || !process.env.AWS_REGION) {
       throw new Error("blah");
     }
+    const client = new STSClient({ region: process.env.AWS_REGION });
+    const command = new GetCallerIdentityCommand({});
+    const response = await client.send(command);
+
+    const accountId = response.Account ?? "";
     await triggerDataPlaneDeployment(
       customerId,
       applicationId,
+      accountId,
       process.env.AWS_REGION,
       objectKey
     );

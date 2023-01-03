@@ -81,6 +81,7 @@ const triggerDataPlaneDeployment = async (application: InternalApplication) => {
         inputs: {
           customerId: application.customerId,
           applicationId: application.id,
+          awsAccountId: application.awsAccountId,
           region: application.region.replaceAll("_", "-").toLowerCase(),
         },
       }),
