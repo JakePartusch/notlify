@@ -104,14 +104,17 @@ const getPresignedDeploymentUrl = async (
   });
   const s3Client = new S3Client({
     credentials,
+    region: application.region.toLowerCase().split("_").join("-"),
   });
 
   const putObjectCommand = new PutObjectCommand({
-    Bucket: `sourcefilesbucket-${application.customerId}-${application.id}`,
+    Bucket:
+      `sourcefilesbucket-${application.customerId}-${application.id}`.toLowerCase(),
     Key: `${application.customerId}-${application.id}-${deploymentId}.zip`,
   });
   return await getSignedUrl(s3Client, putObjectCommand, {
     expiresIn: 3600,
+    signingRegion: application.region.toLowerCase().split("_").join("-"),
   });
 };
 
