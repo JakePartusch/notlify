@@ -1,5 +1,6 @@
 import { S3Event } from "aws-lambda";
 import { STSClient, GetCallerIdentityCommand } from "@aws-sdk/client-sts";
+import fetch from "node-fetch";
 
 const triggerDataPlaneDeployment = async (
   customerId: string,
@@ -8,30 +9,36 @@ const triggerDataPlaneDeployment = async (
   region: string,
   sourceFilesZipName: string
 ) => {
-  //@ts-ignore
-  await fetch(
-    `https://api.github.com/repos/JakePartusch/paas-app/actions/workflows/data-plane-deploy.yml/dispatches`,
-    {
-      method: "POST",
-      body: JSON.stringify({
-        ref: "main",
-        inputs: {
-          customerId,
-          applicationId,
-          awsAccountId,
-          region,
-          sourceFilesZipName,
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/JakePartusch/paas-app/actions/workflows/data-plane-deploy.yml/dispatches`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          ref: "main",
+          inputs: {
+            customerId,
+            applicationId,
+            awsAccountId,
+            region,
+            sourceFilesZipName,
+          },
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
         },
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-      },
-    }
-  );
+      }
+    );
+    const responseText = await response.json();
+    console.log(JSON.stringify(responseText, null, 2));
+  } catch (e) {
+    console.error("Unable to trigger");
+  }
 };
 
 export const handler = async (event: S3Event) => {
+  console.log(JSON.stringify(event, null, 2));
   for (const record of event.Records) {
     const objectKey = record.s3.object.key;
     const customerId = objectKey.split("-").at(0);
