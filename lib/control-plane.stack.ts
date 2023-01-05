@@ -109,6 +109,7 @@ export class ControlPlaneStack extends cdk.Stack {
     );
 
     sourceFilesBucket.grantWrite(lambda);
+    sourceFilesBucket.grantReadWrite(s3NotifyLambda);
     table.grantReadWriteData(lambda);
     table.grantReadWriteData(s3NotifyLambda);
   }
