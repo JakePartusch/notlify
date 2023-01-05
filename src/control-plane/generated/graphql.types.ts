@@ -68,7 +68,7 @@ export type QueryApplicationArgs = {
 
 export enum Status {
   Complete = 'COMPLETE',
-  Initiated = 'INITIATED',
+  DeploymentInitiated = 'DEPLOYMENT_INITIATED',
   PendingUpload = 'PENDING_UPLOAD'
 }
 

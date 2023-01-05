@@ -8,7 +8,7 @@ enum AvailableRegions {
 
 enum Status {
   PENDING_UPLOAD
-  INITIATED
+  DEPLOYMENT_INITIATED
   COMPLETE
 }
 
