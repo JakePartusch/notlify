@@ -58,7 +58,7 @@ export const handler = async (event: S3Event) => {
     const objectKey = record.s3.object.key;
     const customerId = objectKey.split("-").at(0);
     const applicationId = objectKey.split("-").at(1);
-    const deploymentId = objectKey.split("-").at(2);
+    const deploymentId = objectKey.split("-")?.at(2)?.split(".")?.at(0);
     if (!customerId || !applicationId || !deploymentId || !AWS_REGION) {
       throw new Error(
         `Invalid file configuration, customerId=${customerId}, applicationId=${applicationId}, deploymentId=${deploymentId}, region=${AWS_REGION}`
