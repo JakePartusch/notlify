@@ -13,7 +13,8 @@ import {
   getPresignedDeploymentUrl,
 } from "./deployment/deployment.service";
 
-const DATA_PLANE_ACCOUNTS = ["857786057494", "837992707202"];
+// const DATA_PLANE_ACCOUNTS = ["857786057494", "837992707202"];
+const DATA_PLANE_ACCOUNTS = ["857786057494"];
 
 const resolvers: Resolvers = {
   Query: {
