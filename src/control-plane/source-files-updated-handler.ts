@@ -75,6 +75,7 @@ export const handler = async (event: S3Event) => {
       });
       const s3Client = new S3Client({ region: AWS_REGION });
       const s3response = await s3Client.send(getObjectCommand);
+      const s3ResponseByteArray = s3response.Body?.transformToByteArray();
       const credentials = fromTemporaryCredentials({
         params: {
           RoleArn: getDataPlaneCrossAccountRoleArn(
@@ -93,7 +94,7 @@ export const handler = async (event: S3Event) => {
       const putObjectCommand = new PutObjectCommand({
         Bucket: getDataPlaneSourceFilesBucketName(customerId, application.id),
         Key: objectKey,
-        Body: s3response.Body,
+        Body: s3ResponseByteArray,
       });
       await crossAccountS3Client.send(putObjectCommand);
       await updateDeploymentStatus(
