@@ -142,7 +142,7 @@ export class DataPlaneConstruct extends Construct {
       "SourceFilesCrossAccountRole",
       {
         assumedBy: new ArnPrincipal(
-          "arn:aws:iam::857786057494:role/ControlPlane-SourceFilesUpdatedHandlerServiceRoleF-YWTKA1D6PSZV"
+          "arn:aws:iam::857786057494:role/ControlPlane-SourceFilesUpdateHandlerRole2F57E0F5-1IYZF5YGKREUG"
         ),
         roleName: `CrossAccountRole-${props.customerId}-${props.applicationId}`,
       }
