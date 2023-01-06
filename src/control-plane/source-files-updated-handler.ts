@@ -45,8 +45,8 @@ const triggerDataPlaneDeployment = async (
         Authorization: `Bearer ${GITHUB_TOKEN}`,
       },
     });
-    const responseText = await response.json();
-    console.log(JSON.stringify(responseText, null, 2));
+    const responseText = await response.text();
+    console.log(responseText);
   } catch (e) {
     console.error("Unable to trigger workflow", e);
   }

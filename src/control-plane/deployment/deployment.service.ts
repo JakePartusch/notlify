@@ -33,7 +33,10 @@ export const updateDeploymentStatus = async (
       PK: `APPLICATION#${applicationId}`,
       SK: `DEPLOYMENT#${deploymentId}`,
     },
-    UpdateExpression: "SET status = :status",
+    UpdateExpression: "SET #status = :status",
+    ExpressionAttributeNames: {
+      "#status": "status",
+    },
     ExpressionAttributeValues: {
       ":status": status,
     },
