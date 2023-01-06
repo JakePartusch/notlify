@@ -75,7 +75,7 @@ export const handler = async (event: S3Event) => {
       });
       const s3Client = new S3Client({ region: AWS_REGION });
       const s3response = await s3Client.send(getObjectCommand);
-      const s3ResponseByteArray = s3response.Body?.transformToByteArray();
+      const s3ResponseByteArray = await s3response.Body?.transformToByteArray();
       const credentials = fromTemporaryCredentials({
         params: {
           RoleArn: getDataPlaneCrossAccountRoleArn(
