@@ -8,6 +8,7 @@ import {
   ProjectionType,
   Table,
 } from "aws-cdk-lib/aws-dynamodb";
+import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { BlockPublicAccess, Bucket, EventType } from "aws-cdk-lib/aws-s3";
@@ -82,6 +83,16 @@ export class ControlPlaneStack extends cdk.Stack {
       }.amazonaws.com/api`,
     });
 
+    const s3NotifyLambdaRole = new Role(this, "SourceFilesUpdateHandlerRole", {
+      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
+      managedPolicies: [
+        ManagedPolicy.fromAwsManagedPolicyName(
+          "service-role/AWSLambdaBasicExecutionRole"
+        ),
+      ],
+    });
+    sourceFilesBucket.grantReadWrite(s3NotifyLambdaRole);
+
     const s3NotifyLambda = new NodejsFunction(
       this,
       "SourceFilesUpdatedHandler",
@@ -93,6 +104,7 @@ export class ControlPlaneStack extends cdk.Stack {
         runtime: Runtime.NODEJS_18_X,
         memorySize: 512,
         timeout: Duration.seconds(30),
+        role: s3NotifyLambdaRole,
         environment: {
           TABLE_NAME: table.tableName,
           SOURCE_FILES_BUCKET_NAME: sourceFilesBucket.bucketName,
@@ -103,13 +115,14 @@ export class ControlPlaneStack extends cdk.Stack {
       }
     );
 
+    sourceFilesBucket.enableEventBridgeNotification();
+
     sourceFilesBucket.addEventNotification(
       EventType.OBJECT_CREATED,
       new LambdaDestination(s3NotifyLambda)
     );
 
     sourceFilesBucket.grantWrite(lambda);
-    sourceFilesBucket.grantReadWrite(s3NotifyLambda);
     table.grantReadWriteData(lambda);
     table.grantReadWriteData(s3NotifyLambda);
   }
