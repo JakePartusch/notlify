@@ -22,14 +22,33 @@ type Deployment {
   id: ID!
   status: Status!
   commitHash: String!
+}
+
+type InitiateDeploymentResponse {
+  id: ID!
+  status: Status!
+  commitHash: String!
   deploymentUploadLocation: String
 }
 
+input ApplicationQueryInput {
+  id: ID
+  name: String
+}
+
 type Query {
-  hello: String
-  application(id: ID!): Application!
+  application(input: ApplicationQueryInput!): Application!
+  deployment(applicationId: ID!, deploymentId: ID!): Deployment!
 }
 type Mutation {
   createApplication(name: String!, region: AvailableRegions!): Application!
-  initiateDeployment(applicationName: String!, commitHash: String!): Deployment!
+  initiateDeployment(
+    applicationName: String!
+    commitHash: String!
+  ): InitiateDeploymentResponse!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
 }

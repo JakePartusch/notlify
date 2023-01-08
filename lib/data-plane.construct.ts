@@ -46,6 +46,8 @@ import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import path from "path";
 import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
+import { Match, Rule } from "aws-cdk-lib/aws-events";
+import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 
 interface Domain {
   /**
@@ -149,6 +151,27 @@ export class DataPlaneConstruct extends Construct {
     );
 
     sourceFilesBucket.grantWrite(sourceFilesCrossAccountRole);
+
+    const cloudFormationEventHandler = new NodejsFunction(
+      this,
+      "CloudformationEventHandler",
+      {
+        entry: path.join(
+          __dirname,
+          "../src/data-plane/cloud-formation-event-handler.ts"
+        ),
+        runtime: Runtime.NODEJS_18_X,
+        memorySize: 512,
+        timeout: Duration.seconds(30),
+      }
+    );
+
+    new Rule(this, "rule", {
+      eventPattern: {
+        source: ["aws.cloudformation"],
+      },
+      targets: [new LambdaFunction(cloudFormationEventHandler)],
+    });
 
     new CfnOutput(this, "SourceFilesCrossAccountRoleArnOutput", {
       value: sourceFilesCrossAccountRole.roleArn,

@@ -6,10 +6,12 @@ import { customAlphabet } from "nanoid";
 import {
   createApplicationRecord,
   findApplicationByName,
+  getApplicationById,
   triggerDataPlaneUpdate,
 } from "./application/application.service";
 import {
   createDeploymentRecord,
+  getDeploymentById,
   getPresignedDeploymentUrl,
 } from "./deployment/deployment.service";
 
@@ -17,7 +19,33 @@ const DATA_PLANE_ACCOUNTS = ["857786057494", "837992707202"];
 
 const resolvers: Resolvers = {
   Query: {
-    hello: () => "world",
+    application: async (parent, args, contextValue, info) => {
+      const { input } = args;
+      const { id, name } = input;
+      const customerId = "JakePartusch";
+      if (id) {
+        const application = await getApplicationById(id);
+        if (!application) {
+          throw new Error("Not found");
+        }
+        return application;
+      } else if (name) {
+        const application = await findApplicationByName(customerId, name);
+        if (!application) {
+          throw new Error("Not found");
+        }
+        return application;
+      }
+      throw new Error("Invalid input");
+    },
+    deployment: async (parent, args, contextValue, info) => {
+      const { applicationId, deploymentId } = args;
+      const deployment = await getDeploymentById(applicationId, deploymentId);
+      if (!deployment) {
+        throw new Error("Not found");
+      }
+      return deployment;
+    },
   },
   Mutation: {
     createApplication: async (parent, args, contextValue, info) => {
@@ -60,7 +88,6 @@ const resolvers: Resolvers = {
         id: deploymentId,
         commitHash: args.commitHash,
         status: Status.PendingUpload,
-        deploymentUploadLocation: url,
       };
       await createDeploymentRecord(deployment, application.id);
       return {
