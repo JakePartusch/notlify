@@ -8,7 +8,13 @@ import {
   ProjectionType,
   Table,
 } from "aws-cdk-lib/aws-dynamodb";
-import { EventBus, EventBusPolicy, Rule } from "aws-cdk-lib/aws-events";
+import {
+  CfnEventBus,
+  CfnEventBusPolicy,
+  EventBus,
+  EventBusPolicy,
+  Rule,
+} from "aws-cdk-lib/aws-events";
 import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 import {
   ManagedPolicy,
@@ -134,27 +140,22 @@ export class ControlPlaneStack extends cdk.Stack {
     table.grantReadWriteData(lambda);
     table.grantReadWriteData(s3NotifyLambda);
 
-    const eventbus = EventBus.fromEventBusName(
-      this,
-      "DefaultEventBus",
-      "default"
-    );
-    const eventBusPolicyStatement = new PolicyStatement({
-      actions: ["events:PutEvents"],
-      principals: [new StarPrincipal()],
-      conditions: [
-        {
-          key: "aws:PrincipalOrgID",
-          type: "StringEquals",
-          value: "o-jti1h5xztf",
-        },
-      ],
+    const eventbus = new CfnEventBus(this, "CloudformationEventBus", {
+      name: "CloudformationEventBus",
     });
-    new EventBusPolicy(this, "EventBusPolicy", {
-      eventBus: eventbus,
-      statement: eventBusPolicyStatement,
+
+    const eventBusPolicy = new CfnEventBusPolicy(this, "EventBusPolicy", {
+      eventBusName: "CloudformationEventBus",
       statementId: "AllowPutEventsWithinOrganizationAccounts",
+      action: "events:PutEvents",
+      principal: "*",
+      condition: {
+        key: "aws:PrincipalOrgID",
+        type: "StringEquals",
+        value: "o-jti1h5xztf",
+      },
     });
+    eventBusPolicy.addDependsOn(eventbus);
     const cloudFormationEventHandler = new NodejsFunction(
       this,
       "CloudformationEventHandler",
@@ -168,7 +169,13 @@ export class ControlPlaneStack extends cdk.Stack {
         timeout: Duration.seconds(30),
       }
     );
-    new Rule(this, "rule", {
+    const cloudformationEventBus = EventBus.fromEventBusName(
+      this,
+      "CloudformationEventBusRef",
+      "CloudformationEventBus"
+    );
+    new Rule(this, "CloudformationAggregatorRule", {
+      eventBus: cloudformationEventBus,
       eventPattern: {
         source: ["aws.cloudformation"],
       },

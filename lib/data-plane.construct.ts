@@ -171,7 +171,7 @@ export class DataPlaneConstruct extends Construct {
     const controlPlaneEventBus = EventBus.fromEventBusArn(
       this,
       "ControlPlaneEventBus",
-      "arn:aws:events:us-east-1:857786057494:event-bus/default"
+      "arn:aws:events:us-east-1:857786057494:event-bus/CloudformationEventBus"
     );
 
     new Rule(this, "rule", {
