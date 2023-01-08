@@ -46,8 +46,11 @@ import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import path from "path";
 import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
-import { Match, Rule } from "aws-cdk-lib/aws-events";
-import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
+import { EventBus, Match, Rule } from "aws-cdk-lib/aws-events";
+import {
+  LambdaFunction,
+  EventBus as EventBusTarget,
+} from "aws-cdk-lib/aws-events-targets";
 
 interface Domain {
   /**
@@ -165,13 +168,23 @@ export class DataPlaneConstruct extends Construct {
         timeout: Duration.seconds(30),
       }
     );
+    const controlPlaneEventBus = EventBus.fromEventBusArn(
+      this,
+      "ControlPlaneEventBus",
+      "arn:aws:events:us-east-1:857786057494:event-bus/default"
+    );
 
     new Rule(this, "rule", {
       eventPattern: {
         source: ["aws.cloudformation"],
       },
-      targets: [new LambdaFunction(cloudFormationEventHandler)],
+      targets: [
+        new LambdaFunction(cloudFormationEventHandler),
+        new EventBusTarget(controlPlaneEventBus),
+      ],
     });
+
+    controlPlaneEventBus.grantPutEventsTo;
 
     new CfnOutput(this, "SourceFilesCrossAccountRoleArnOutput", {
       value: sourceFilesCrossAccountRole.roleArn,

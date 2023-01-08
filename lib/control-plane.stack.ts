@@ -8,7 +8,15 @@ import {
   ProjectionType,
   Table,
 } from "aws-cdk-lib/aws-dynamodb";
-import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { EventBus, EventBusPolicy, Rule } from "aws-cdk-lib/aws-events";
+import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
+import {
+  ManagedPolicy,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+  StarPrincipal,
+} from "aws-cdk-lib/aws-iam";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { BlockPublicAccess, Bucket, EventType } from "aws-cdk-lib/aws-s3";
@@ -125,5 +133,46 @@ export class ControlPlaneStack extends cdk.Stack {
     sourceFilesBucket.grantWrite(lambda);
     table.grantReadWriteData(lambda);
     table.grantReadWriteData(s3NotifyLambda);
+
+    const eventbus = EventBus.fromEventBusName(
+      this,
+      "DefaultEventBus",
+      "default"
+    );
+    const eventBusPolicyStatement = new PolicyStatement({
+      actions: ["events:PutEvents"],
+      principals: [new StarPrincipal()],
+      conditions: [
+        {
+          key: "aws:PrincipalOrgID",
+          type: "StringEquals",
+          value: "o-jti1h5xztf",
+        },
+      ],
+    });
+    new EventBusPolicy(this, "EventBusPolicy", {
+      eventBus: eventbus,
+      statement: eventBusPolicyStatement,
+      statementId: "AllowPutEventsWithinOrganizationAccounts",
+    });
+    const cloudFormationEventHandler = new NodejsFunction(
+      this,
+      "CloudformationEventHandler",
+      {
+        entry: path.join(
+          __dirname,
+          "../src/data-plane/cloudformation-event-handler.ts"
+        ),
+        runtime: Runtime.NODEJS_18_X,
+        memorySize: 512,
+        timeout: Duration.seconds(30),
+      }
+    );
+    new Rule(this, "rule", {
+      eventPattern: {
+        source: ["aws.cloudformation"],
+      },
+      targets: [new LambdaFunction(cloudFormationEventHandler)],
+    });
   }
 }
