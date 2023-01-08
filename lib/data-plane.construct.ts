@@ -158,7 +158,7 @@ export class DataPlaneConstruct extends Construct {
       {
         entry: path.join(
           __dirname,
-          "../src/data-plane/cloud-formation-event-handler.ts"
+          "../src/data-plane/cloudformation-event-handler.ts"
         ),
         runtime: Runtime.NODEJS_18_X,
         memorySize: 512,
