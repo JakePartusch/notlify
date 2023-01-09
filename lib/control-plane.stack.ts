@@ -12,16 +12,15 @@ import {
   CfnEventBus,
   CfnEventBusPolicy,
   EventBus,
-  EventBusPolicy,
   Rule,
 } from "aws-cdk-lib/aws-events";
 import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 import {
+  Effect,
   ManagedPolicy,
   PolicyStatement,
   Role,
   ServicePrincipal,
-  StarPrincipal,
 } from "aws-cdk-lib/aws-iam";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
@@ -105,7 +104,14 @@ export class ControlPlaneStack extends cdk.Stack {
         ),
       ],
     });
-    sourceFilesBucket.grantReadWrite(s3NotifyLambdaRole);
+    s3NotifyLambdaRole.addToPolicy(
+      new PolicyStatement({
+        actions: ["sts:AssumeRole"],
+        effect: Effect.ALLOW,
+        resources: ["arn:aws:iam::837992707202::role/*"],
+      })
+    );
+    sourceFilesBucket.grantRead(s3NotifyLambdaRole);
 
     const s3NotifyLambda = new NodejsFunction(
       this,
