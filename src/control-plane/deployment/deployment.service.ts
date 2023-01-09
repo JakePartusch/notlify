@@ -57,6 +57,27 @@ export const getDeploymentById = async (
   return response.Item as Deployment;
 };
 
+export const findInitiatedDeploymentsByApplicationId = async (
+  applicationId: string
+): Promise<Deployment[]> => {
+  const response = await dynamoDbDocumentClient.query({
+    TableName: TABLE_NAME,
+    KeyConditionExpression: "PK = :pk",
+    FilterExpression: "#status = :status",
+    ExpressionAttributeNames: {
+      "#status": "status",
+    },
+    ExpressionAttributeValues: {
+      ":pk": `APPLICATION#${applicationId}`,
+      ":status": Status.DeploymentInitiated,
+    },
+  });
+  if (response.Items) {
+    return response.Items as Deployment[];
+  }
+  return [];
+};
+
 export const getPresignedDeploymentUrl = async (
   application: InternalApplication,
   deploymentId: string

@@ -108,7 +108,7 @@ export class ControlPlaneStack extends cdk.Stack {
       new PolicyStatement({
         actions: ["sts:AssumeRole"],
         effect: Effect.ALLOW,
-        resources: ["arn:aws:iam::837992707202::role/*"],
+        resources: ["arn:aws:iam::837992707202:role/*"],
       })
     );
     sourceFilesBucket.grantRead(s3NotifyLambdaRole);
@@ -168,13 +168,17 @@ export class ControlPlaneStack extends cdk.Stack {
       {
         entry: path.join(
           __dirname,
-          "../src/data-plane/cloudformation-event-handler.ts"
+          "../src/control-plane/cloudformation-event-handler.ts"
         ),
         runtime: Runtime.NODEJS_18_X,
         memorySize: 512,
         timeout: Duration.seconds(30),
+        environment: {
+          TABLE_NAME: table.tableName,
+        },
       }
     );
+    table.grantReadWriteData(cloudFormationEventHandler);
     const cloudformationEventBus = EventBus.fromEventBusName(
       this,
       "CloudformationEventBusRef",

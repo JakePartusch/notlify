@@ -152,19 +152,6 @@ export class DataPlaneConstruct extends Construct {
 
     sourceFilesBucket.grantWrite(sourceFilesCrossAccountRole);
 
-    const cloudFormationEventHandler = new NodejsFunction(
-      this,
-      "CloudformationEventHandler",
-      {
-        entry: path.join(
-          __dirname,
-          "../src/data-plane/cloudformation-event-handler.ts"
-        ),
-        runtime: Runtime.NODEJS_18_X,
-        memorySize: 512,
-        timeout: Duration.seconds(30),
-      }
-    );
     const controlPlaneEventBus = EventBus.fromEventBusArn(
       this,
       "ControlPlaneEventBus",
@@ -175,10 +162,7 @@ export class DataPlaneConstruct extends Construct {
       eventPattern: {
         source: ["aws.cloudformation"],
       },
-      targets: [
-        new LambdaFunction(cloudFormationEventHandler),
-        new EventBusTarget(controlPlaneEventBus),
-      ],
+      targets: [new EventBusTarget(controlPlaneEventBus)],
     });
 
     controlPlaneEventBus.grantPutEventsTo;
