@@ -36,7 +36,7 @@ import {
   Effect,
   AnyPrincipal,
   Role,
-  ArnPrincipal,
+  AccountPrincipal,
 } from "aws-cdk-lib/aws-iam";
 import { HttpOrigin, S3Origin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
@@ -45,8 +45,7 @@ import { overrideProps } from "./utils";
 import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import path from "path";
-import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
-import { EventBus, Match, Rule } from "aws-cdk-lib/aws-events";
+import { EventBus, Rule } from "aws-cdk-lib/aws-events";
 import {
   LambdaFunction,
   EventBus as EventBusTarget,
@@ -146,9 +145,10 @@ export class DataPlaneConstruct extends Construct {
       this,
       "SourceFilesCrossAccountRole",
       {
-        assumedBy: new ArnPrincipal(
-          "arn:aws:iam::857786057494:role/ControlPlane-SourceFilesUpdateHandlerRole2F57E0F5-1IYZF5YGKREUG"
-        ),
+        assumedBy: new AccountPrincipal("857786057494"),
+        // assumedBy: new ArnPrincipal(
+        //   "arn:aws:iam::857786057494:role/ControlPlane-SourceFilesUpdateHandlerRole2F57E0F5-1IYZF5YGKREUG"
+        // ),
         roleName: `CrossAccountRole-${props.customerId}-${props.applicationId}`,
       }
     );
