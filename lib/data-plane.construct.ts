@@ -112,6 +112,10 @@ interface DataPlaneConstructProps {
   isPrivateS3?: boolean;
 }
 
+const CONTROL_PLANE_ACCOUNT_ID = "857786057494";
+const CONTROL_PLANE_EVENT_BUS_ARN =
+  "arn:aws:events:us-east-1:857786057494:event-bus/CloudformationEventBus";
+
 export class DataPlaneConstruct extends Construct {
   /**
    * The s3 bucket the website is deployed to
@@ -145,7 +149,7 @@ export class DataPlaneConstruct extends Construct {
       this,
       "SourceFilesCrossAccountRole",
       {
-        assumedBy: new AccountPrincipal("857786057494"),
+        assumedBy: new AccountPrincipal(`${CONTROL_PLANE_ACCOUNT_ID}`),
         roleName: `CrossAccountRole-${props.customerId}-${props.applicationId}`,
       }
     );
@@ -155,7 +159,7 @@ export class DataPlaneConstruct extends Construct {
     const controlPlaneEventBus = EventBus.fromEventBusArn(
       this,
       "ControlPlaneEventBus",
-      "arn:aws:events:us-east-1:857786057494:event-bus/CloudformationEventBus"
+      CONTROL_PLANE_EVENT_BUS_ARN
     );
 
     new Rule(this, "rule", {

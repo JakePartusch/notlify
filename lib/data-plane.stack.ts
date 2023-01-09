@@ -15,7 +15,7 @@ export class DataPlaneStack extends cdk.Stack {
     new DataPlaneConstruct(this, `DataPlane`, {
       customerId: props.customerId,
       applicationId: props.applicationId,
-      sourceFilesZipName: props?.sourceFilesZipName, //TODO
+      sourceFilesZipName: props?.sourceFilesZipName,
       apiEntries: [], //TODO
       apiEnvironment: undefined, //TODO
       buildId: undefined, //TODO

@@ -114,7 +114,5 @@ export const handler = async (event: S3Event) => {
         `No pending deployment for app ${applicationId} with deploymentId ${deploymentId}`
       );
     }
-    // TOOD: Add mutation to end of GitHub action script to update deployment record
-    // TODO: mutation should update the deployment record, then delete the control plane file
   }
 };

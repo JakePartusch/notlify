@@ -29,6 +29,12 @@ import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
 import { Construct } from "constructs";
 import * as path from "path";
 
+const GITHUB_TOKEN = "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";
+const GITHUB_WORKFLOW_URL =
+  "https://api.github.com/repos/JakePartusch/paas-app/actions/workflows/data-plane-deploy.yml/dispatches";
+const DATA_PLANE_ACCOUNTS = ["837992707202"];
+const ORG_ID = "o-jti1h5xztf";
+
 export class ControlPlaneStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -73,9 +79,8 @@ export class ControlPlaneStack extends cdk.Stack {
       environment: {
         TABLE_NAME: table.tableName,
         SOURCE_FILES_BUCKET_NAME: sourceFilesBucket.bucketName,
-        GITHUB_TOKEN: "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",
-        GITHUB_WORKFLOW_URL:
-          "https://api.github.com/repos/JakePartusch/paas-app/actions/workflows/data-plane-deploy.yml/dispatches",
+        GITHUB_TOKEN,
+        GITHUB_WORKFLOW_URL,
       },
     });
 
@@ -104,13 +109,15 @@ export class ControlPlaneStack extends cdk.Stack {
         ),
       ],
     });
-    s3NotifyLambdaRole.addToPolicy(
-      new PolicyStatement({
-        actions: ["sts:AssumeRole"],
-        effect: Effect.ALLOW,
-        resources: ["arn:aws:iam::837992707202:role/*"],
-      })
-    );
+    for (const account of DATA_PLANE_ACCOUNTS) {
+      s3NotifyLambdaRole.addToPolicy(
+        new PolicyStatement({
+          actions: ["sts:AssumeRole"],
+          effect: Effect.ALLOW,
+          resources: [`arn:aws:iam::${account}:role/*`],
+        })
+      );
+    }
     sourceFilesBucket.grantRead(s3NotifyLambdaRole);
 
     const s3NotifyLambda = new NodejsFunction(
@@ -128,9 +135,8 @@ export class ControlPlaneStack extends cdk.Stack {
         environment: {
           TABLE_NAME: table.tableName,
           SOURCE_FILES_BUCKET_NAME: sourceFilesBucket.bucketName,
-          GITHUB_TOKEN: "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",
-          GITHUB_WORKFLOW_URL:
-            "https://api.github.com/repos/JakePartusch/paas-app/actions/workflows/data-plane-deploy.yml/dispatches",
+          GITHUB_TOKEN,
+          GITHUB_WORKFLOW_URL,
         },
       }
     );
@@ -158,7 +164,7 @@ export class ControlPlaneStack extends cdk.Stack {
       condition: {
         key: "aws:PrincipalOrgID",
         type: "StringEquals",
-        value: "o-jti1h5xztf",
+        value: ORG_ID,
       },
     });
     eventBusPolicy.addDependsOn(eventbus);
