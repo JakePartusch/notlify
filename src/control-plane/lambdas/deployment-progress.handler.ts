@@ -2,9 +2,8 @@ import { EventBridgeEvent } from "aws-lambda";
 import { parse } from "@aws-sdk/util-arn-parser";
 import {
   findInitiatedDeploymentsByApplicationId,
-  updateDeploymentStatus,
-} from "./deployment/deployment.service";
-import { Status } from "./generated/graphql.types";
+  updateDeploymentToComplete,
+} from "../deployment/deployment.service";
 
 interface CloudformationDetail {
   "stack-id": string;
@@ -35,10 +34,9 @@ export const handler = async (
       const initiatedDeployments =
         await findInitiatedDeploymentsByApplicationId(appId);
       if (initiatedDeployments.length) {
-        await updateDeploymentStatus(
+        await updateDeploymentToComplete(
           appId,
-          initiatedDeployments[0].id, //TODO: how to handle more than one?
-          Status.Complete
+          initiatedDeployments[0].id //TODO: how to handle more than one?
         );
       }
     }

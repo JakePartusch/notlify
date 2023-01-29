@@ -1,11 +1,11 @@
 import { S3Event } from "aws-lambda";
 import fetch from "node-fetch";
-import { getApplicationById } from "./application/application.service";
+import { getApplicationById } from "../application/application.service";
 import {
   getDeploymentById,
-  updateDeploymentStatus,
-} from "./deployment/deployment.service";
-import { Status } from "./generated/graphql.types";
+  updateDeploymentToInitiated,
+} from "../deployment/deployment.service";
+import { Status } from "../generated/graphql.types";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import {
   GetObjectCommand,
@@ -16,7 +16,7 @@ import {
   getDataPlaneCrossAccountRoleArn,
   getDataPlaneSourceFilesBucketName,
   getRegionStringFromGraphqlRegion,
-} from "./common/aws/utils";
+} from "../common/aws/utils";
 
 const { AWS_REGION, GITHUB_TOKEN, GITHUB_WORKFLOW_URL } = process.env;
 
@@ -97,11 +97,7 @@ export const handler = async (event: S3Event) => {
         Body: s3ResponseByteArray,
       });
       await crossAccountS3Client.send(putObjectCommand);
-      await updateDeploymentStatus(
-        application.id,
-        deploymentId,
-        Status.DeploymentInitiated
-      );
+      await updateDeploymentToInitiated(application.id, deploymentId);
       await triggerDataPlaneDeployment(
         customerId,
         applicationId,

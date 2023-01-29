@@ -17,19 +17,29 @@ type Application {
   name: String!
   region: AvailableRegions!
   customerId: String!
+  repository: String!
 }
 
 type Deployment {
   id: ID!
   status: Status!
   commitHash: String!
+  startTime: String
+  completionTime: String
 }
 
 type InitiateDeploymentResponse {
   id: ID!
   status: Status!
   commitHash: String!
+  startTime: String
   deploymentUploadLocation: String
+}
+
+input CreateApplicationInput {
+  name: String!
+  repository: String!
+  region: AvailableRegions!
 }
 
 input ApplicationQueryInput {
@@ -42,7 +52,7 @@ type Query {
   deployment(applicationId: ID!, deploymentId: ID!): Deployment!
 }
 type Mutation {
-  createApplication(name: String!, region: AvailableRegions!): Application!
+  createApplication(input: CreateApplicationInput!): Application!
   initiateDeployment(
     applicationName: String!
     commitHash: String!
@@ -53,4 +63,5 @@ schema {
   query: Query
   mutation: Mutation
 }
+
 `;

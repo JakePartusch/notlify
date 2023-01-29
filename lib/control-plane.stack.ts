@@ -126,11 +126,11 @@ export class ControlPlaneStack extends cdk.Stack {
       {
         entry: path.join(
           __dirname,
-          "../src/control-plane/source-files-updated-handler.ts"
+          "../src/control-plane/lambdas/deployment-initiated.handler.ts"
         ),
         runtime: Runtime.NODEJS_18_X,
         memorySize: 512,
-        timeout: Duration.seconds(30),
+        timeout: Duration.seconds(60),
         role: s3NotifyLambdaRole,
         environment: {
           TABLE_NAME: table.tableName,
@@ -174,11 +174,11 @@ export class ControlPlaneStack extends cdk.Stack {
       {
         entry: path.join(
           __dirname,
-          "../src/control-plane/cloudformation-event-handler.ts"
+          "../src/control-plane/lambdas/deployment-progress.handler.ts"
         ),
         runtime: Runtime.NODEJS_18_X,
         memorySize: 512,
-        timeout: Duration.seconds(30),
+        timeout: Duration.seconds(60),
         environment: {
           TABLE_NAME: table.tableName,
         },

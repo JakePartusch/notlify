@@ -11,7 +11,7 @@ export const createDeploymentRecord = async (
   deployment: Deployment,
   applicationId: string
 ) => {
-  await dynamoDbDocumentClient.put({
+  return dynamoDbDocumentClient.put({
     TableName: TABLE_NAME,
     Item: {
       PK: `APPLICATION#${applicationId}`,
@@ -22,23 +22,46 @@ export const createDeploymentRecord = async (
   });
 };
 
-export const updateDeploymentStatus = async (
+export const updateDeploymentToInitiated = async (
   applicationId: string,
-  deploymentId: string,
-  status: Status
+  deploymentId: string
 ) => {
-  await dynamoDbDocumentClient.update({
+  return dynamoDbDocumentClient.update({
     TableName: TABLE_NAME,
     Key: {
       PK: `APPLICATION#${applicationId}`,
       SK: `DEPLOYMENT#${deploymentId}`,
     },
-    UpdateExpression: "SET #status = :status",
+    UpdateExpression: "SET #status = :status, #startTime = :startTime",
     ExpressionAttributeNames: {
       "#status": "status",
+      "#startTime": "startTime",
     },
     ExpressionAttributeValues: {
-      ":status": status,
+      ":status": Status.DeploymentInitiated,
+      ":startTime": new Date().toISOString(),
+    },
+  });
+};
+
+export const updateDeploymentToComplete = async (
+  applicationId: string,
+  deploymentId: string
+) => {
+  return dynamoDbDocumentClient.update({
+    TableName: TABLE_NAME,
+    Key: {
+      PK: `APPLICATION#${applicationId}`,
+      SK: `DEPLOYMENT#${deploymentId}`,
+    },
+    UpdateExpression: "SET #status = :status, #startTime = :startTime",
+    ExpressionAttributeNames: {
+      "#status": "status",
+      "#startTime": "startTime",
+    },
+    ExpressionAttributeValues: {
+      ":status": Status.Complete,
+      ":completionTime": new Date().toISOString(),
     },
   });
 };
