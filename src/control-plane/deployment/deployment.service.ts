@@ -54,10 +54,11 @@ export const updateDeploymentToComplete = async (
       PK: `APPLICATION#${applicationId}`,
       SK: `DEPLOYMENT#${deploymentId}`,
     },
-    UpdateExpression: "SET #status = :status, #startTime = :startTime",
+    UpdateExpression:
+      "SET #status = :status, #completionTime = :completionTime",
     ExpressionAttributeNames: {
       "#status": "status",
-      "#startTime": "startTime",
+      "#completionTime": "completionTime",
     },
     ExpressionAttributeValues: {
       ":status": Status.Complete,
