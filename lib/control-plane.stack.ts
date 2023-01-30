@@ -1,7 +1,13 @@
 import { HttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import * as cdk from "aws-cdk-lib";
-import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
+import {
+  CfnOutput,
+  Duration,
+  RemovalPolicy,
+  Stack,
+  StackProps,
+} from "aws-cdk-lib";
 import {
   AttributeType,
   BillingMode,
@@ -29,14 +35,15 @@ import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
 import { Construct } from "constructs";
 import * as path from "path";
 
-const GITHUB_TOKEN = "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";
-const GITHUB_WORKFLOW_URL =
-  "https://api.github.com/repos/JakePartusch/paas-app/actions/workflows/data-plane-deploy.yml/dispatches";
-const DATA_PLANE_ACCOUNTS = ["837992707202"];
-const ORG_ID = "o-jti1h5xztf";
+interface ControlPlaneStackProps extends StackProps {
+  gitHubToken: string;
+  gitHubWorkflowUrl: string;
+  dataPlaneAccounts: string[];
+  orgId: string;
+}
 
 export class ControlPlaneStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: ControlPlaneStackProps) {
     super(scope, id, props);
 
     const table = new Table(this, "ControlPlaneTable", {
@@ -79,8 +86,8 @@ export class ControlPlaneStack extends cdk.Stack {
       environment: {
         TABLE_NAME: table.tableName,
         SOURCE_FILES_BUCKET_NAME: sourceFilesBucket.bucketName,
-        GITHUB_TOKEN,
-        GITHUB_WORKFLOW_URL,
+        GITHUB_TOKEN: props.gitHubToken,
+        GITHUB_WORKFLOW_URL: props.gitHubWorkflowUrl,
       },
     });
 
@@ -101,15 +108,19 @@ export class ControlPlaneStack extends cdk.Stack {
       }.amazonaws.com/api`,
     });
 
-    const s3NotifyLambdaRole = new Role(this, "SourceFilesUpdateHandlerRole", {
-      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
-      managedPolicies: [
-        ManagedPolicy.fromAwsManagedPolicyName(
-          "service-role/AWSLambdaBasicExecutionRole"
-        ),
-      ],
-    });
-    for (const account of DATA_PLANE_ACCOUNTS) {
+    const s3NotifyLambdaRole = new Role(
+      this,
+      "DeploymentInitiatedHandlerHandlerRole",
+      {
+        assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
+        managedPolicies: [
+          ManagedPolicy.fromAwsManagedPolicyName(
+            "service-role/AWSLambdaBasicExecutionRole"
+          ),
+        ],
+      }
+    );
+    for (const account of props.dataPlaneAccounts) {
       s3NotifyLambdaRole.addToPolicy(
         new PolicyStatement({
           actions: ["sts:AssumeRole"],
@@ -122,7 +133,7 @@ export class ControlPlaneStack extends cdk.Stack {
 
     const s3NotifyLambda = new NodejsFunction(
       this,
-      "SourceFilesUpdatedHandler",
+      "DeploymentInitiatedHandler",
       {
         entry: path.join(
           __dirname,
@@ -135,8 +146,8 @@ export class ControlPlaneStack extends cdk.Stack {
         environment: {
           TABLE_NAME: table.tableName,
           SOURCE_FILES_BUCKET_NAME: sourceFilesBucket.bucketName,
-          GITHUB_TOKEN,
-          GITHUB_WORKFLOW_URL,
+          GITHUB_TOKEN: props.gitHubToken,
+          GITHUB_WORKFLOW_URL: props.gitHubWorkflowUrl,
         },
       }
     );
@@ -164,13 +175,13 @@ export class ControlPlaneStack extends cdk.Stack {
       condition: {
         key: "aws:PrincipalOrgID",
         type: "StringEquals",
-        value: ORG_ID,
+        value: props.orgId,
       },
     });
     eventBusPolicy.addDependsOn(eventbus);
     const cloudFormationEventHandler = new NodejsFunction(
       this,
-      "CloudformationEventHandler",
+      "DeploymentProgressHandler",
       {
         entry: path.join(
           __dirname,

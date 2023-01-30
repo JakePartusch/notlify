@@ -21,3 +21,8 @@ jobs:
           aws-region: us-east-1
       - run: npm ci
       - run: npm run cdk deploy -- --require-approval=never --app "npx ts-node --prefer-ts-exts bin/control-plane.app.ts"
+        with:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_WORKFLOW_URL: ${{ secrets.GH_WORKFLOW_URL }}
+          DATA_PLANE_ACCOUNTS: ${{ secrets.DATA_PLANE_ACCOUNTS }}
+          ORG_ID: ${{ secrets.ORG_ID }}
