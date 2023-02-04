@@ -45,6 +45,7 @@ interface ControlPlaneStackProps extends StackProps {
 export class ControlPlaneStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ControlPlaneStackProps) {
     super(scope, id, props);
+    console.log(props);
 
     const table = new Table(this, "ControlPlaneTable", {
       partitionKey: {

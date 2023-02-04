@@ -2,10 +2,11 @@ import { customAlphabet } from "nanoid";
 import {
   Application,
   MutationCreateApplicationArgs,
-  QueryApplicationArgs,
+  QueryGetApplicationArgs,
 } from "../generated/graphql.types";
 import {
   createApplicationRecord,
+  findAllApplicationsByCustomerId,
   findApplicationByName,
   getApplicationById,
   triggerDataPlaneUpdate,
@@ -15,8 +16,8 @@ import { InternalApplication } from "./application.types";
 const CUSTOMER_ID = "JakePartusch";
 const DATA_PLANE_ACCOUNTS = ["837992707202"];
 
-export const queryApplicationResolver = async (
-  args: QueryApplicationArgs
+export const getApplicationResolver = async (
+  args: QueryGetApplicationArgs
 ): Promise<Application> => {
   const { input } = args;
   const { id, name } = input;
@@ -35,6 +36,11 @@ export const queryApplicationResolver = async (
     return application;
   }
   throw new Error("Invalid input");
+};
+
+export const listApplicationsResolver = async (): Promise<Application[]> => {
+  const customerId = CUSTOMER_ID;
+  return findAllApplicationsByCustomerId(customerId);
 };
 
 export const createApplicationResolver = async (

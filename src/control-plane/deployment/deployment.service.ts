@@ -81,6 +81,22 @@ export const getDeploymentById = async (
   return response.Item as Deployment;
 };
 
+export const findAllDeploymentsByApplicationId = async (
+  applicationId: string
+): Promise<Deployment[]> => {
+  const response = await dynamoDbDocumentClient.query({
+    TableName: TABLE_NAME,
+    KeyConditionExpression: "PK = :pk",
+    ExpressionAttributeValues: {
+      ":pk": `APPLICATION#${applicationId}`,
+    },
+  });
+  if (response.Items) {
+    return response.Items as Deployment[];
+  }
+  return [];
+};
+
 export const findInitiatedDeploymentsByApplicationId = async (
   applicationId: string
 ): Promise<Deployment[]> => {

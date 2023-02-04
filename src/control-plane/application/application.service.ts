@@ -8,6 +8,13 @@ export const findApplicationByName = async (
   customerId: string,
   applicationName: string
 ): Promise<InternalApplication | undefined> => {
+  const items = await findAllApplicationsByCustomerId(customerId);
+  return items?.find((item) => item.name === applicationName);
+};
+
+export const findAllApplicationsByCustomerId = async (
+  customerId: string
+): Promise<InternalApplication[]> => {
   const response = await dynamoDbDocumentClient.query({
     TableName: TABLE_NAME,
     IndexName: "GSI1",
@@ -16,10 +23,10 @@ export const findApplicationByName = async (
       ":gsi1pk": `CUSTOMER#${customerId}`,
     },
   });
-  const items: InternalApplication[] | undefined = response.Items as
-    | InternalApplication[]
-    | undefined;
-  return items?.find((item) => item.name === applicationName);
+  if (!response.Items) {
+    return [];
+  }
+  return response.Items as InternalApplication[];
 };
 
 export const getApplicationById = async (

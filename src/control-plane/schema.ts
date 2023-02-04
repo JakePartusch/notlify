@@ -47,15 +47,30 @@ input ApplicationQueryInput {
   name: String
 }
 
+input ListDeploymentsInput {
+  applicationId: ID!
+}
+
+input GetDeploymentInput {
+  applicationId: ID!
+  deploymentId: ID!
+}
+
+input InitiateDeploymentInput {
+  applicationName: String!
+  commitHash: String!
+}
+
 type Query {
-  application(input: ApplicationQueryInput!): Application!
-  deployment(applicationId: ID!, deploymentId: ID!): Deployment!
+  listApplications: [Application]!
+  getApplication(input: ApplicationQueryInput!): Application!
+  listDeployments(input: ListDeploymentsInput!): [Deployment]!
+  getDeployment(input: GetDeploymentInput!): Deployment!
 }
 type Mutation {
   createApplication(input: CreateApplicationInput!): Application!
   initiateDeployment(
-    applicationName: String!
-    commitHash: String!
+    input: InitiateDeploymentInput!
   ): InitiateDeploymentResponse!
 }
 
@@ -63,5 +78,4 @@ schema {
   query: Query
   mutation: Mutation
 }
-
 `;

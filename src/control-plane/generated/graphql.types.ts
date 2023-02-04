@@ -1,4 +1,4 @@
-import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
+import { GraphQLResolveInfo } from 'graphql';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -12,7 +12,6 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  DateTime: string;
 };
 
 export type Application = {
@@ -45,10 +44,20 @@ export type CreateApplicationInput = {
 export type Deployment = {
   __typename?: 'Deployment';
   commitHash: Scalars['String'];
-  completionTime?: Maybe<Scalars['DateTime']>;
+  completionTime?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
-  startTime?: Maybe<Scalars['DateTime']>;
+  startTime?: Maybe<Scalars['String']>;
   status: Status;
+};
+
+export type GetDeploymentInput = {
+  applicationId: Scalars['ID'];
+  deploymentId: Scalars['ID'];
+};
+
+export type InitiateDeploymentInput = {
+  applicationName: Scalars['String'];
+  commitHash: Scalars['String'];
 };
 
 export type InitiateDeploymentResponse = {
@@ -56,8 +65,12 @@ export type InitiateDeploymentResponse = {
   commitHash: Scalars['String'];
   deploymentUploadLocation?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
-  startTime?: Maybe<Scalars['DateTime']>;
+  startTime?: Maybe<Scalars['String']>;
   status: Status;
+};
+
+export type ListDeploymentsInput = {
+  applicationId: Scalars['ID'];
 };
 
 export type Mutation = {
@@ -73,25 +86,30 @@ export type MutationCreateApplicationArgs = {
 
 
 export type MutationInitiateDeploymentArgs = {
-  applicationName: Scalars['String'];
-  commitHash: Scalars['String'];
+  input: InitiateDeploymentInput;
 };
 
 export type Query = {
   __typename?: 'Query';
-  application: Application;
-  deployment: Deployment;
+  getApplication: Application;
+  getDeployment: Deployment;
+  listApplications: Array<Maybe<Application>>;
+  listDeployments: Array<Maybe<Deployment>>;
 };
 
 
-export type QueryApplicationArgs = {
+export type QueryGetApplicationArgs = {
   input: ApplicationQueryInput;
 };
 
 
-export type QueryDeploymentArgs = {
-  applicationId: Scalars['ID'];
-  deploymentId: Scalars['ID'];
+export type QueryGetDeploymentArgs = {
+  input: GetDeploymentInput;
+};
+
+
+export type QueryListDeploymentsArgs = {
+  input: ListDeploymentsInput;
 };
 
 export enum Status {
@@ -174,10 +192,12 @@ export type ResolversTypes = {
   AvailableRegions: AvailableRegions;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CreateApplicationInput: CreateApplicationInput;
-  DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   Deployment: ResolverTypeWrapper<Deployment>;
+  GetDeploymentInput: GetDeploymentInput;
   ID: ResolverTypeWrapper<Scalars['ID']>;
+  InitiateDeploymentInput: InitiateDeploymentInput;
   InitiateDeploymentResponse: ResolverTypeWrapper<InitiateDeploymentResponse>;
+  ListDeploymentsInput: ListDeploymentsInput;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   Status: Status;
@@ -190,10 +210,12 @@ export type ResolversParentTypes = {
   ApplicationQueryInput: ApplicationQueryInput;
   Boolean: Scalars['Boolean'];
   CreateApplicationInput: CreateApplicationInput;
-  DateTime: Scalars['DateTime'];
   Deployment: Deployment;
+  GetDeploymentInput: GetDeploymentInput;
   ID: Scalars['ID'];
+  InitiateDeploymentInput: InitiateDeploymentInput;
   InitiateDeploymentResponse: InitiateDeploymentResponse;
+  ListDeploymentsInput: ListDeploymentsInput;
   Mutation: {};
   Query: {};
   String: Scalars['String'];
@@ -208,15 +230,11 @@ export type ApplicationResolvers<ContextType = any, ParentType extends Resolvers
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
-  name: 'DateTime';
-}
-
 export type DeploymentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Deployment'] = ResolversParentTypes['Deployment']> = {
   commitHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  completionTime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  completionTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  startTime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -225,24 +243,25 @@ export type InitiateDeploymentResponseResolvers<ContextType = any, ParentType ex
   commitHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   deploymentUploadLocation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  startTime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createApplication?: Resolver<ResolversTypes['Application'], ParentType, ContextType, RequireFields<MutationCreateApplicationArgs, 'input'>>;
-  initiateDeployment?: Resolver<ResolversTypes['InitiateDeploymentResponse'], ParentType, ContextType, RequireFields<MutationInitiateDeploymentArgs, 'applicationName' | 'commitHash'>>;
+  initiateDeployment?: Resolver<ResolversTypes['InitiateDeploymentResponse'], ParentType, ContextType, RequireFields<MutationInitiateDeploymentArgs, 'input'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  application?: Resolver<ResolversTypes['Application'], ParentType, ContextType, RequireFields<QueryApplicationArgs, 'input'>>;
-  deployment?: Resolver<ResolversTypes['Deployment'], ParentType, ContextType, RequireFields<QueryDeploymentArgs, 'applicationId' | 'deploymentId'>>;
+  getApplication?: Resolver<ResolversTypes['Application'], ParentType, ContextType, RequireFields<QueryGetApplicationArgs, 'input'>>;
+  getDeployment?: Resolver<ResolversTypes['Deployment'], ParentType, ContextType, RequireFields<QueryGetDeploymentArgs, 'input'>>;
+  listApplications?: Resolver<Array<Maybe<ResolversTypes['Application']>>, ParentType, ContextType>;
+  listDeployments?: Resolver<Array<Maybe<ResolversTypes['Deployment']>>, ParentType, ContextType, RequireFields<QueryListDeploymentsArgs, 'input'>>;
 };
 
 export type Resolvers<ContextType = any> = {
   Application?: ApplicationResolvers<ContextType>;
-  DateTime?: GraphQLScalarType;
   Deployment?: DeploymentResolvers<ContextType>;
   InitiateDeploymentResponse?: InitiateDeploymentResponseResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
