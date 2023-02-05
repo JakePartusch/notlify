@@ -26,12 +26,15 @@ jobs:
           GH_WORKFLOW_URL: ${{ secrets.GH_WORKFLOW_URL }}
           DATA_PLANE_ACCOUNTS: ${{ secrets.DATA_PLANE_ACCOUNTS }}
           ORG_ID: ${{ secrets.ORG_ID }}
-      - run: npm ci
-        working-directory: src/control-plane/ui/app
-      - run: npm run build && npm run export
-        working-directory: src/control-plane/ui/app
-      - uses: ./.github/actions/deploy-paas
-        worrking-directory: src/control-plane/ui/app
+      - name: Install UI
+        working-directory: ./src/control-plane/ui/app
+        run: npm ci
+      - name: Build UI
+        working-directory: ./src/control-plane/ui/app
+        run: npm run build && npm run export
+      - name: Deploy UI
+        uses: ./.github/actions/deploy-paas
+        worrking-directory: ./src/control-plane/ui/app
         with:
           applicationName: test-app
           distributionDirectory: out
