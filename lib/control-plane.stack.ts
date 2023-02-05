@@ -98,14 +98,10 @@ export class ControlPlaneStack extends cdk.Stack {
 
     const httpApi = new HttpApi(this, "HttpApi", {
       corsPreflight: {
-        allowHeaders: ["Authorization"],
-        allowMethods: [
-          CorsHttpMethod.HEAD,
-          CorsHttpMethod.OPTIONS,
-          CorsHttpMethod.POST,
-        ],
+        allowHeaders: ["*"],
+        allowMethods: [CorsHttpMethod.ANY],
         allowOrigins: ["*"],
-        maxAge: Duration.days(10),
+        maxAge: Duration.seconds(600),
       },
     });
     const lambdaProxyIntegration = new HttpLambdaIntegration(
