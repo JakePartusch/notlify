@@ -1,19 +1,7 @@
-/*
-  This example requires some changes to your config:
-  
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-  }
-  ```
-*/
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
+import request from "graphql-request";
+import { useQuery } from "@tanstack/react-query";
 import {
   BarsArrowUpIcon,
   CheckBadgeIcon,
@@ -24,6 +12,19 @@ import {
   StarIcon,
 } from "@heroicons/react/20/solid";
 import { Bars3CenterLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { graphql } from "../../gql";
+
+const allApps = graphql(/* GraphQL */ `
+  query ListAllApplications {
+    listApplications {
+      customerId
+      id
+      name
+      region
+      repository
+    }
+  }
+`);
 
 const navigation = [
   { name: "Dashboard", href: "#", current: true },
@@ -64,6 +65,13 @@ function classNames(...classes: any[]) {
 }
 
 export default function Example() {
+  const { data } = useQuery(["films"], async () =>
+    request(
+      "https://600376vtqg.execute-api.us-east-1.amazonaws.com/api",
+      allApps
+    )
+  );
+  console.log(data);
   return (
     <>
       {/*

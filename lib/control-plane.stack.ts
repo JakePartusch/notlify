@@ -1,4 +1,8 @@
-import { HttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
+import {
+  HttpApi,
+  CorsPreflightOptions,
+  CorsHttpMethod,
+} from "@aws-cdk/aws-apigatewayv2-alpha";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import * as cdk from "aws-cdk-lib";
 import {
@@ -92,7 +96,18 @@ export class ControlPlaneStack extends cdk.Stack {
       },
     });
 
-    const httpApi = new HttpApi(this, "HttpApi");
+    const httpApi = new HttpApi(this, "HttpApi", {
+      corsPreflight: {
+        allowHeaders: ["Authorization"],
+        allowMethods: [
+          CorsHttpMethod.HEAD,
+          CorsHttpMethod.OPTIONS,
+          CorsHttpMethod.POST,
+        ],
+        allowOrigins: ["*"],
+        maxAge: Duration.days(10),
+      },
+    });
     const lambdaProxyIntegration = new HttpLambdaIntegration(
       `LambdaIntegration`,
       lambda
