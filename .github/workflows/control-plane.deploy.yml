@@ -34,7 +34,6 @@ jobs:
         run: npm run build && npm run export
       - name: Deploy UI
         uses: ./.github/actions/deploy-paas
-        working-directory: ./src/control-plane/ui/app
         with:
           applicationName: test-app
-          distributionDirectory: out
+          distributionDirectory: src/control-plane/ui/app/out
