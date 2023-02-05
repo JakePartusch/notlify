@@ -1,0 +1,13 @@
+name: "Deploy PaaS Action"
+description: "Deploy the website"
+inputs:
+  applicationName:
+    description: "The name of the application"
+    required: true
+  distributionDirectory:
+    description: "The location of the built assets"
+    required: true
+
+runs:
+  using: "node16"
+  main: "dist/index.js"

@@ -46,17 +46,23 @@ export const listApplicationsResolver = async (): Promise<Application[]> => {
 export const createApplicationResolver = async (
   args: MutationCreateApplicationArgs
 ): Promise<Application> => {
+  const { input } = args;
+  const { name, region, repository } = input;
   const nanoid = customAlphabet("1234567890abcdef");
   const id = nanoid();
   const customerId = CUSTOMER_ID; //TOOD: get from auth context
+  const existingApplication = await findApplicationByName(customerId, name);
+  if (existingApplication) {
+    throw new Error("An application with this name already exists");
+  }
   const randomAwsAccount =
     DATA_PLANE_ACCOUNTS[Math.floor(Math.random() * DATA_PLANE_ACCOUNTS.length)];
   const application: InternalApplication = {
     id,
     customerId,
-    name: args.input.name,
-    region: args.input.region,
-    repository: args.input.repository,
+    name,
+    region,
+    repository,
     awsAccountId: randomAwsAccount,
   };
   await createApplicationRecord(application);
@@ -64,6 +70,8 @@ export const createApplicationResolver = async (
   return {
     customerId,
     id,
-    ...args.input,
+    name,
+    region,
+    repository,
   };
 };

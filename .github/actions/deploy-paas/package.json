@@ -1,0 +1,20 @@
+{
+  "name": "deploy-paas",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Jake Partusch",
+  "scripts": {
+    "build": "ncc build index.ts --license licenses.txt",
+    "zx": "zx"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^5.1.1",
+    "zx": "^7.1.1"
+  },
+  "devDependencies": {
+    "@tsconfig/node16": "^1.0.3",
+    "@vercel/ncc": "^0.36.0",
+    "typescript": "^4.9.4"
+  }
+}

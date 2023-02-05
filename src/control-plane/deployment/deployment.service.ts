@@ -87,8 +87,13 @@ export const findAllDeploymentsByApplicationId = async (
   const response = await dynamoDbDocumentClient.query({
     TableName: TABLE_NAME,
     KeyConditionExpression: "PK = :pk",
+    FilterExpression: "#type = :type",
+    ExpressionAttributeNames: {
+      "#type": "type",
+    },
     ExpressionAttributeValues: {
       ":pk": `APPLICATION#${applicationId}`,
+      ":type": "DEPLOYMENT",
     },
   });
   if (response.Items) {
