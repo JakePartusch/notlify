@@ -8,7 +8,15 @@ import {
   findInitiatedDeploymentsByApplicationId,
   updateDeploymentToComplete,
 } from "../deployment/deployment.service";
-import { updateApplicationDeploymentUrl } from "../application/application.service";
+import {
+  getApplicationById,
+  updateApplicationDeploymentUrl,
+} from "../application/application.service";
+import {
+  getDataPlaneCrossAccountRoleArn,
+  getRegionStringFromGraphqlRegion,
+} from "../common/aws/utils";
+import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 
 interface CloudformationDetail {
   "stack-id": string;
@@ -36,7 +44,22 @@ export const handler = async (
     const stackName = resource.split("/").at(1);
     if (stackName) {
       const [_, customerId, appId] = stackName.split("-");
-      const client = new CloudFormationClient({});
+      const application = await getApplicationById(appId);
+      const credentials = fromTemporaryCredentials({
+        params: {
+          RoleArn: getDataPlaneCrossAccountRoleArn(
+            application.awsAccountId,
+            application.customerId,
+            application.id
+          ),
+        },
+      });
+      const region = getRegionStringFromGraphqlRegion(application.region);
+
+      const client = new CloudFormationClient({
+        region,
+        credentials,
+      });
       const command = new DescribeStacksCommand({
         StackName: stackName,
       });

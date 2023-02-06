@@ -145,16 +145,22 @@ export class DataPlaneConstruct extends Construct {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
-    const sourceFilesCrossAccountRole = new Role(
-      this,
-      "SourceFilesCrossAccountRole",
-      {
-        assumedBy: new AccountPrincipal(`${CONTROL_PLANE_ACCOUNT_ID}`),
-        roleName: `CrossAccountRole-${props.customerId}-${props.applicationId}`,
-      }
-    );
+    const crossAccountRole = new Role(this, "CrossAccountRole", {
+      assumedBy: new AccountPrincipal(`${CONTROL_PLANE_ACCOUNT_ID}`),
+      roleName: `CrossAccountRole-${props.customerId}-${props.applicationId}`,
+    });
 
-    sourceFilesBucket.grantWrite(sourceFilesCrossAccountRole);
+    sourceFilesBucket.grantWrite(crossAccountRole);
+    crossAccountRole.addToPolicy(
+      new PolicyStatement({
+        actions: ["cloudformation:DescribeStacks"],
+        resources: [
+          `arn:aws:cloudformation:${Stack.of(this).region}:${
+            Stack.of(this).account
+          }:stack/DataPlaneStack-${props.customerId}-${props.applicationId}/*`,
+        ],
+      })
+    );
 
     const controlPlaneEventBus = EventBus.fromEventBusArn(
       this,
@@ -171,8 +177,8 @@ export class DataPlaneConstruct extends Construct {
 
     controlPlaneEventBus.grantPutEventsTo;
 
-    new CfnOutput(this, "SourceFilesCrossAccountRoleArnOutput", {
-      value: sourceFilesCrossAccountRole.roleArn,
+    new CfnOutput(this, "CrossAccountRoleArnOutput", {
+      value: crossAccountRole.roleArn,
     });
 
     new CfnOutput(this, "SourceFilesBuckeArnOutput", {
