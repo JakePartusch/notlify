@@ -35,5 +35,5 @@ jobs:
       - name: Deploy UI
         uses: ./.github/actions/deploy-paas
         with:
-          applicationName: test-app
+          applicationName: test-app-2
           distributionDirectory: src/control-plane/ui/app/out

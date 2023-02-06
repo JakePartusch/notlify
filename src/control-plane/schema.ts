@@ -18,6 +18,7 @@ type Application {
   region: AvailableRegions!
   customerId: String!
   repository: String!
+  deploymentUrl: String
 }
 
 type Deployment {
@@ -26,6 +27,7 @@ type Deployment {
   commitHash: String!
   startTime: String
   completionTime: String
+  deploymentUrl: String
 }
 
 type InitiateDeploymentResponse {
@@ -62,9 +64,9 @@ input InitiateDeploymentInput {
 }
 
 type Query {
-  listApplications: [Application]!
+  listApplications: [Application!]!
   getApplication(input: ApplicationQueryInput!): Application!
-  listDeployments(input: ListDeploymentsInput!): [Deployment]!
+  listDeployments(input: ListDeploymentsInput!): [Deployment!]!
   getDeployment(input: GetDeploymentInput!): Deployment!
 }
 type Mutation {
@@ -78,4 +80,5 @@ schema {
   query: Query
   mutation: Mutation
 }
+
 `;
