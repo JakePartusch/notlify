@@ -17,6 +17,7 @@ export type Scalars = {
 export type Application = {
   __typename?: 'Application';
   customerId: Scalars['String'];
+  deploymentUrl?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   name: Scalars['String'];
   region: AvailableRegions;
@@ -45,6 +46,7 @@ export type Deployment = {
   __typename?: 'Deployment';
   commitHash: Scalars['String'];
   completionTime?: Maybe<Scalars['String']>;
+  deploymentUrl?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   startTime?: Maybe<Scalars['String']>;
   status: Status;
@@ -93,8 +95,8 @@ export type Query = {
   __typename?: 'Query';
   getApplication: Application;
   getDeployment: Deployment;
-  listApplications: Array<Maybe<Application>>;
-  listDeployments: Array<Maybe<Deployment>>;
+  listApplications: Array<Application>;
+  listDeployments: Array<Deployment>;
 };
 
 
@@ -223,6 +225,7 @@ export type ResolversParentTypes = {
 
 export type ApplicationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Application'] = ResolversParentTypes['Application']> = {
   customerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  deploymentUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   region?: Resolver<ResolversTypes['AvailableRegions'], ParentType, ContextType>;
@@ -233,6 +236,7 @@ export type ApplicationResolvers<ContextType = any, ParentType extends Resolvers
 export type DeploymentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Deployment'] = ResolversParentTypes['Deployment']> = {
   commitHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   completionTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  deploymentUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
@@ -256,8 +260,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   getApplication?: Resolver<ResolversTypes['Application'], ParentType, ContextType, RequireFields<QueryGetApplicationArgs, 'input'>>;
   getDeployment?: Resolver<ResolversTypes['Deployment'], ParentType, ContextType, RequireFields<QueryGetDeploymentArgs, 'input'>>;
-  listApplications?: Resolver<Array<Maybe<ResolversTypes['Application']>>, ParentType, ContextType>;
-  listDeployments?: Resolver<Array<Maybe<ResolversTypes['Deployment']>>, ParentType, ContextType, RequireFields<QueryListDeploymentsArgs, 'input'>>;
+  listApplications?: Resolver<Array<ResolversTypes['Application']>, ParentType, ContextType>;
+  listDeployments?: Resolver<Array<ResolversTypes['Deployment']>, ParentType, ContextType, RequireFields<QueryListDeploymentsArgs, 'input'>>;
 };
 
 export type Resolvers<ContextType = any> = {

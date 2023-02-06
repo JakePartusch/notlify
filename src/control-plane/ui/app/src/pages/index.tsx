@@ -22,6 +22,7 @@ const allApps = graphql(/* GraphQL */ `
       name
       region
       repository
+      deploymentUrl
     }
   }
 `);
@@ -35,21 +36,21 @@ const userNavigation = [
   { name: "Settings", href: "#" },
   { name: "Sign out", href: "#" },
 ];
-const projects = [
-  {
-    name: "Workcation",
-    href: "#",
-    siteHref: "#",
-    repoHref: "#",
-    repo: "debbielewis/workcation",
-    tech: "Laravel",
-    lastDeploy: "3h ago",
-    location: "United states",
-    starred: true,
-    active: true,
-  },
-  // More projects...
-];
+// const projects = [
+//   {
+//     name: "Workcation",
+//     href: "#",
+//     siteHref: "#",
+//     repoHref: "#",
+//     repo: "debbielewis/workcation",
+//     tech: "Laravel",
+//     lastDeploy: "3h ago",
+//     location: "United states",
+//     starred: true,
+//     active: true,
+//   },
+//   // More projects...
+// ];
 const activityItems = [
   {
     project: "Workcation",
@@ -72,6 +73,7 @@ export default function Example() {
     )
   );
   console.log(data);
+  const projects = data?.listApplications ?? [];
   return (
     <>
       {/*
@@ -409,7 +411,7 @@ export default function Example() {
               >
                 {projects.map((project) => (
                   <li
-                    key={project.repo}
+                    key={project?.repository}
                     className="relative py-5 pl-4 pr-6 hover:bg-gray-50 sm:py-6 sm:pl-6 lg:pl-8 xl:pl-6"
                   >
                     <div className="flex items-center justify-between space-x-4">
@@ -417,18 +419,10 @@ export default function Example() {
                       <div className="min-w-0 space-y-3">
                         <div className="flex items-center space-x-3">
                           <span
-                            className={classNames(
-                              project.active ? "bg-green-100" : "bg-gray-100",
-                              "h-4 w-4 rounded-full flex items-center justify-center"
-                            )}
+                            className="bg-green-100 h-4 w-4 rounded-full flex items-center justify-center"
                             aria-hidden="true"
                           >
-                            <span
-                              className={classNames(
-                                project.active ? "bg-green-400" : "bg-gray-400",
-                                "h-2 w-2 rounded-full"
-                              )}
-                            />
+                            <span className="bg-green-400 h-2 w-2 rounded-full" />
                           </span>
 
                           <h2 className="text-sm font-medium">
@@ -438,14 +432,12 @@ export default function Example() {
                                 aria-hidden="true"
                               />
                               {project.name}{" "}
-                              <span className="sr-only">
-                                {project.active ? "Running" : "Not running"}
-                              </span>
+                              <span className="sr-only">Running</span>
                             </a>
                           </h2>
                         </div>
                         <a
-                          href={project.repoHref}
+                          href={`https://github.com/${project.repository}`}
                           className="group relative flex items-center space-x-2.5"
                         >
                           <svg
@@ -463,7 +455,7 @@ export default function Example() {
                             />
                           </svg>
                           <span className="truncate text-sm font-medium text-gray-500 group-hover:text-gray-900">
-                            {project.repo}
+                            {project.repository}
                           </span>
                         </a>
                       </div>
@@ -476,38 +468,21 @@ export default function Example() {
                       {/* Repo meta info */}
                       <div className="hidden flex-shrink-0 flex-col items-end space-y-3 sm:flex">
                         <p className="flex items-center space-x-4">
-                          <a
-                            href={project.siteHref}
-                            className="relative text-sm font-medium text-gray-500 hover:text-gray-900"
-                          >
-                            Visit site
-                          </a>
-                          <button
-                            type="button"
-                            className="relative rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                          >
-                            <span className="sr-only">
-                              {project.starred
-                                ? "Add to favorites"
-                                : "Remove from favorites"}
-                            </span>
-                            <StarIcon
-                              className={classNames(
-                                project.starred
-                                  ? "text-yellow-300 hover:text-yellow-400"
-                                  : "text-gray-300 hover:text-gray-400",
-                                "h-5 w-5"
-                              )}
-                              aria-hidden="true"
-                            />
-                          </button>
+                          {project.deploymentUrl && (
+                            <a
+                              href={project.deploymentUrl}
+                              className="relative text-sm font-medium text-gray-500 hover:text-gray-900"
+                            >
+                              Visit site
+                            </a>
+                          )}
                         </p>
                         <p className="flex space-x-2 text-sm text-gray-500">
-                          <span>{project.tech}</span>
+                          <span>Next.js</span>
                           <span aria-hidden="true">&middot;</span>
                           <span>Last deploy {project.lastDeploy}</span>
                           <span aria-hidden="true">&middot;</span>
-                          <span>{project.location}</span>
+                          <span>All Edge Locations</span>
                         </p>
                       </div>
                     </div>

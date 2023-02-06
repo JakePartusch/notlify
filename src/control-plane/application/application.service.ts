@@ -58,6 +58,26 @@ export const createApplicationRecord = async (
   });
 };
 
+export const updateApplicationDeploymentUrl = async (
+  applicationId: string,
+  deploymentUrl: string
+) => {
+  return dynamoDbDocumentClient.update({
+    TableName: TABLE_NAME,
+    Key: {
+      PK: `APPLICATION#${applicationId}`,
+      SK: `APPLICATION#${applicationId}`,
+    },
+    UpdateExpression: "SET #deploymentUrl = :deploymentUrl",
+    ExpressionAttributeNames: {
+      "#deploymentUrl": "deploymentUrl",
+    },
+    ExpressionAttributeValues: {
+      ":deploymentUrl": deploymentUrl,
+    },
+  });
+};
+
 export const triggerDataPlaneUpdate = async (
   application: InternalApplication
 ) => {

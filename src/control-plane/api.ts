@@ -1,5 +1,8 @@
 import { ApolloServer } from "@apollo/server";
-import { startServerAndCreateLambdaHandler } from "@as-integrations/aws-lambda";
+import {
+  GatewayEvent,
+  startServerAndCreateLambdaHandler,
+} from "@as-integrations/aws-lambda";
 import { Resolvers } from "./generated/graphql.types";
 import { typeDefs } from "./schema";
 import {
@@ -47,4 +50,23 @@ const server = new ApolloServer({
 });
 
 //@ts-ignore
-export const handler = startServerAndCreateLambdaHandler(server);
+export const handler = async (event, context, callback) => {
+  console.log(event);
+  if (event.requestContext.http.method === "OPTIONS") {
+    return {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+    };
+  }
+  //@ts-ignore
+  const apolloHandler = startServerAndCreateLambdaHandler(server);
+  const resp = await apolloHandler(event, context, callback);
+  return {
+    ...resp,
+    headers: {
+      ...resp?.headers,
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
+};

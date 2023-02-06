@@ -46,7 +46,8 @@ export const updateDeploymentToInitiated = async (
 
 export const updateDeploymentToComplete = async (
   applicationId: string,
-  deploymentId: string
+  deploymentId: string,
+  deploymentUrl: string
 ) => {
   return dynamoDbDocumentClient.update({
     TableName: TABLE_NAME,
@@ -55,14 +56,16 @@ export const updateDeploymentToComplete = async (
       SK: `DEPLOYMENT#${deploymentId}`,
     },
     UpdateExpression:
-      "SET #status = :status, #completionTime = :completionTime",
+      "SET #status = :status, #completionTime = :completionTime, #deploymentUrl = :deploymentUrl",
     ExpressionAttributeNames: {
       "#status": "status",
       "#completionTime": "completionTime",
+      "#deploymentUrl": "deploymentUrl",
     },
     ExpressionAttributeValues: {
       ":status": Status.Complete,
       ":completionTime": new Date().toISOString(),
+      ":deploymentUrl": deploymentUrl,
     },
   });
 };

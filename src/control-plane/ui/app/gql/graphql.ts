@@ -17,6 +17,7 @@ export type Scalars = {
 export type Application = {
   __typename?: 'Application';
   customerId: Scalars['String'];
+  deploymentUrl?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   name: Scalars['String'];
   region: AvailableRegions;
@@ -45,6 +46,7 @@ export type Deployment = {
   __typename?: 'Deployment';
   commitHash: Scalars['String'];
   completionTime?: Maybe<Scalars['String']>;
+  deploymentUrl?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   startTime?: Maybe<Scalars['String']>;
   status: Status;
@@ -93,8 +95,8 @@ export type Query = {
   __typename?: 'Query';
   getApplication: Application;
   getDeployment: Deployment;
-  listApplications: Array<Maybe<Application>>;
-  listDeployments: Array<Maybe<Deployment>>;
+  listApplications: Array<Application>;
+  listDeployments: Array<Deployment>;
 };
 
 
@@ -121,7 +123,7 @@ export enum Status {
 export type ListAllApplicationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListAllApplicationsQuery = { __typename?: 'Query', listApplications: Array<{ __typename?: 'Application', customerId: string, id: string, name: string, region: AvailableRegions, repository: string } | null> };
+export type ListAllApplicationsQuery = { __typename?: 'Query', listApplications: Array<{ __typename?: 'Application', customerId: string, id: string, name: string, region: AvailableRegions, repository: string, deploymentUrl?: string | null }> };
 
 
-export const ListAllApplicationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListAllApplications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listApplications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerId"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"repository"}}]}}]}}]} as unknown as DocumentNode<ListAllApplicationsQuery, ListAllApplicationsQueryVariables>;
+export const ListAllApplicationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListAllApplications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listApplications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerId"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"repository"}},{"kind":"Field","name":{"kind":"Name","value":"deploymentUrl"}}]}}]}}]} as unknown as DocumentNode<ListAllApplicationsQuery, ListAllApplicationsQueryVariables>;
