@@ -43,6 +43,7 @@ const server = new ApolloServer({
   resolvers,
   introspection: true,
   includeStacktraceInErrorResponses: true,
+  csrfPrevention: false,
 });
 
 //@ts-ignore
