@@ -426,6 +426,7 @@ export default function Example() {
                           </span>
 
                           <h2 className="text-sm font-medium">
+                            {/*@ts-ignore */}
                             <a href={project.href}>
                               <span
                                 className="absolute inset-0"
@@ -480,6 +481,7 @@ export default function Example() {
                         <p className="flex space-x-2 text-sm text-gray-500">
                           <span>Next.js</span>
                           <span aria-hidden="true">&middot;</span>
+                          {/*@ts-ignore */}
                           <span>Last deploy {project.lastDeploy}</span>
                           <span aria-hidden="true">&middot;</span>
                           <span>All Edge Locations</span>
