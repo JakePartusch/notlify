@@ -191,7 +191,30 @@ export class ControlPlaneStack extends cdk.Stack {
       },
     });
     eventBusPolicy.addDependsOn(eventbus);
-    const cloudFormationEventHandler = new NodejsFunction(
+
+    const deploymentProgressHandlerRole = new Role(
+      this,
+      "DeploymentProgressHandlerRole",
+      {
+        assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
+        managedPolicies: [
+          ManagedPolicy.fromAwsManagedPolicyName(
+            "service-role/AWSLambdaBasicExecutionRole"
+          ),
+        ],
+      }
+    );
+    for (const account of props.dataPlaneAccounts) {
+      deploymentProgressHandlerRole.addToPolicy(
+        new PolicyStatement({
+          actions: ["sts:AssumeRole"],
+          effect: Effect.ALLOW,
+          resources: [`arn:aws:iam::${account}:role/*`],
+        })
+      );
+    }
+    table.grantReadWriteData(deploymentProgressHandlerRole);
+    const deploymentProgressHandler = new NodejsFunction(
       this,
       "DeploymentProgressHandler",
       {
@@ -202,12 +225,12 @@ export class ControlPlaneStack extends cdk.Stack {
         runtime: Runtime.NODEJS_18_X,
         memorySize: 512,
         timeout: Duration.seconds(60),
+        role: deploymentProgressHandlerRole,
         environment: {
           TABLE_NAME: table.tableName,
         },
       }
     );
-    table.grantReadWriteData(cloudFormationEventHandler);
     const cloudformationEventBus = EventBus.fromEventBusName(
       this,
       "CloudformationEventBusRef",
@@ -218,7 +241,7 @@ export class ControlPlaneStack extends cdk.Stack {
       eventPattern: {
         source: ["aws.cloudformation"],
       },
-      targets: [new LambdaFunction(cloudFormationEventHandler)],
+      targets: [new LambdaFunction(deploymentProgressHandler)],
     });
   }
 }
