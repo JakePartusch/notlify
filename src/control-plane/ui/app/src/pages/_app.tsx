@@ -11,7 +11,10 @@ export default function App({ Component, pageProps }: AppProps) {
       domain="dev-6pd0gm26.auth0.com"
       clientId="WJ5WXNz5rMIqzHV60ylD1nZPlVgx8trW"
       authorizationParams={{
-        redirect_uri: "http://localhost:3000",
+        redirect_uri:
+          typeof window !== "undefined"
+            ? window.location.href
+            : "http://localhost:3000",
       }}
     >
       <QueryClientProvider client={queryClient}>
