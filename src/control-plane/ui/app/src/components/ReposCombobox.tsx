@@ -6,19 +6,33 @@ function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function ReposCombobox({ repos }: { repos: any[] }) {
+interface Repo {
+  id: number;
+  name: string;
+}
+
+interface ReposComboboxProps {
+  repos: Repo[];
+  selectedRepo: string;
+  onSelect: (repo: string) => void;
+}
+
+export default function ReposCombobox({
+  repos,
+  selectedRepo,
+  onSelect,
+}: ReposComboboxProps) {
   const [query, setQuery] = useState("");
-  const [selectedPerson, setSelectedPerson] = useState(null);
 
   const filteredRepos =
     query === ""
       ? repos
-      : repos.filter((repo: any) => {
+      : repos.filter((repo: Repo) => {
           return repo.name.toLowerCase().includes(query.toLowerCase());
         });
 
   return (
-    <Combobox as="div" value={selectedPerson} onChange={setSelectedPerson}>
+    <Combobox as="div" value={selectedRepo} onChange={onSelect}>
       <Combobox.Label className="block text-sm font-medium text-gray-700">
         Repository
       </Combobox.Label>
@@ -26,7 +40,7 @@ export default function ReposCombobox({ repos }: { repos: any[] }) {
         <Combobox.Input
           className="w-full py-2 pl-3 pr-10 bg-white border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
           onChange={(event) => setQuery(event.target.value)}
-          displayValue={(repo: any) => repo?.name}
+          displayValue={(repo: string) => repo}
         />
         <Combobox.Button className="absolute inset-y-0 right-0 flex items-center px-2 rounded-r-md focus:outline-none">
           <ChevronUpDownIcon
@@ -37,10 +51,10 @@ export default function ReposCombobox({ repos }: { repos: any[] }) {
 
         {filteredRepos.length > 0 && (
           <Combobox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-            {filteredRepos.map((repo: any) => (
+            {filteredRepos.map((repo: Repo) => (
               <Combobox.Option
                 key={repo.id}
-                value={repo}
+                value={repo.name}
                 className={({ active }) =>
                   classNames(
                     "relative cursor-default select-none py-2 pl-3 pr-9",

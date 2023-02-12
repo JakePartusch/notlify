@@ -103,24 +103,43 @@ export default function Dashboard() {
   const [state, setState] = useState(State.Initialized);
   const { isLoading, isAuthenticated, error, user, loginWithRedirect, logout } =
     useAuth0();
-  console.log(user);
-  const { data } = useQuery(["apps"], async () =>
-    request(
-      "https://600376vtqg.execute-api.us-east-1.amazonaws.com/api",
-      allApps
-    )
+  const { data } = useQuery(
+    ["apps"],
+    async () =>
+      request(
+        "https://600376vtqg.execute-api.us-east-1.amazonaws.com/api",
+        allApps
+      ),
+    {
+      refetchInterval: 10000,
+    }
   );
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       loginWithRedirect();
     }
   }, [isLoading, isAuthenticated, loginWithRedirect]);
-  console.log(data);
   if (isLoading) {
     return <>Loading...</>;
   }
   const applications = data?.listApplications ?? [];
   const sortedApplications = applications.sort((a, b) => {
+    if (
+      [
+        ApplicationStatus.CreateRequested,
+        ApplicationStatus.DeploymentInitiated,
+      ].includes(a.status)
+    ) {
+      return -1;
+    }
+    if (
+      [
+        ApplicationStatus.CreateRequested,
+        ApplicationStatus.DeploymentInitiated,
+      ].includes(b.status)
+    ) {
+      return 1;
+    }
     return (
       new Date(b?.lastDeploymentTime ?? 0)?.getTime() -
       new Date(a?.lastDeploymentTime ?? 0)?.getTime()
@@ -538,7 +557,7 @@ export default function Dashboard() {
                           {ApplicationStatus.CreateRequested ===
                             application.status && (
                             <>
-                              <span>Creating..</span>
+                              <span>Creating...</span>
                             </>
                           )}
                           {ApplicationStatus.DeploymentInitiated ===

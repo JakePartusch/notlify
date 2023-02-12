@@ -1,15 +1,27 @@
-import { Fragment, useEffect, useState } from "react";
+import { FormEvent, Fragment, useEffect, useState } from "react";
+import request from "graphql-request";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth0 } from "@auth0/auth0-react";
 import ReposCombobox from "./ReposCombobox";
 import RegionSelect from "./RegionSelect";
 import ApplicationTypeSelect from "./ApplicationTypeSelect";
+import { graphql } from "../../gql";
+import { useMutation } from "@tanstack/react-query";
+import { ApplicationType, AvailableRegions } from "gql/graphql";
 
 interface NewAppSidePanelProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const createApplicationMutation = graphql(/* GraphQL */ `
+  mutation Mutation($input: CreateApplicationInput!) {
+    createApplication(input: $input) {
+      id
+    }
+  }
+`);
 
 export default function NewAppSidePanel({
   isOpen,
@@ -17,6 +29,12 @@ export default function NewAppSidePanel({
 }: NewAppSidePanelProps) {
   const [repos, setRepos] = useState([]);
   const { user } = useAuth0();
+  const [repository, setRepository] = useState("");
+  const [description, setDestription] = useState("");
+  const [applicationType, setApplicationType] = useState(
+    ApplicationType.Static
+  );
+  const [region, setRegion] = useState(AvailableRegions.UsWest_2);
 
   useEffect(() => {
     const listRepos = async () => {
@@ -25,7 +43,6 @@ export default function NewAppSidePanel({
           `https://api.github.com/users/${user.nickname}/repos`
         );
         const repos = await response.json();
-        console.log(repos);
         const sortedRepos = repos
           .sort((a: any, b: any) => {
             return (
@@ -34,12 +51,35 @@ export default function NewAppSidePanel({
             );
           })
           .map((repo: any) => repo.name);
-        console.log(sortedRepos);
         setRepos(repos);
       }
     };
     listRepos();
   }, [user]);
+
+  const createApplication = useMutation(async () =>
+    request(
+      "https://600376vtqg.execute-api.us-east-1.amazonaws.com/api",
+      createApplicationMutation,
+      {
+        input: {
+          repository: `${user?.nickname}/${repository}`,
+          name: repository,
+          applicationType,
+          description,
+          region,
+        },
+      }
+    )
+  );
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    console.log({ repository, applicationType, description, region });
+    await createApplication.mutateAsync();
+    //TODO: loader
+    onClose();
+  };
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -59,7 +99,10 @@ export default function NewAppSidePanel({
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="w-screen max-w-md pointer-events-auto">
-                  <form className="flex flex-col h-full bg-white divide-y divide-gray-200 shadow-xl">
+                  <form
+                    className="flex flex-col h-full bg-white divide-y divide-gray-200 shadow-xl"
+                    onSubmit={onSubmit}
+                  >
                     <div className="flex-1 h-0 overflow-y-auto">
                       <div className="px-4 py-6 bg-cyan-700 sm:px-6">
                         <div className="flex items-center justify-between">
@@ -91,7 +134,11 @@ export default function NewAppSidePanel({
                         <div className="px-4 divide-y divide-gray-200 sm:px-6">
                           <div className="pt-6 pb-5 space-y-6">
                             <div>
-                              <ReposCombobox repos={repos} />
+                              <ReposCombobox
+                                repos={repos}
+                                selectedRepo={repository}
+                                onSelect={(repo) => setRepository(repo)}
+                              />
                             </div>
                             <div>
                               <label
@@ -106,15 +153,26 @@ export default function NewAppSidePanel({
                                   name="description"
                                   rows={4}
                                   className="block w-full border-gray-300 rounded-md shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
-                                  defaultValue={""}
+                                  value={description}
+                                  onChange={(e) =>
+                                    setDestription(e.target.value)
+                                  }
                                 />
                               </div>
                             </div>
                             <div>
-                              <RegionSelect />
+                              <RegionSelect
+                                selectedRegion={region}
+                                onSelect={(region) => setRegion(region)}
+                              />
                             </div>
                             <div>
-                              <ApplicationTypeSelect />
+                              <ApplicationTypeSelect
+                                selectedApplicationType={applicationType}
+                                onSelect={(applicationType) =>
+                                  setApplicationType(applicationType)
+                                }
+                              />
                             </div>
                           </div>
                         </div>
