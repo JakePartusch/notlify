@@ -75,7 +75,11 @@ export const handler = async (
         await findInitiatedDeploymentsByApplicationId(appId);
       if (initiatedDeployments.length) {
         //TODO: wrap in transaction?
-        await updateApplicationDeployment(appId, deploymentUrl.OutputValue!);
+        await updateApplicationDeployment(
+          appId,
+          application.status,
+          deploymentUrl.OutputValue!
+        );
         await updateDeploymentToComplete(
           appId,
           initiatedDeployments[0].id, //TODO: how to handle more than one?

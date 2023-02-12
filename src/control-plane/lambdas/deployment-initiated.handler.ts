@@ -1,6 +1,9 @@
 import { S3Event } from "aws-lambda";
 import fetch from "node-fetch";
-import { getApplicationById } from "../application/application.service";
+import {
+  getApplicationById,
+  updateApplicationToInitiated,
+} from "../application/application.service";
 import {
   getDeploymentById,
   updateDeploymentToInitiated,
@@ -98,6 +101,7 @@ export const handler = async (event: S3Event) => {
       });
       await crossAccountS3Client.send(putObjectCommand);
       await updateDeploymentToInitiated(application.id, deploymentId);
+      await updateApplicationToInitiated(application.id);
       await triggerDataPlaneDeployment(
         customerId,
         applicationId,

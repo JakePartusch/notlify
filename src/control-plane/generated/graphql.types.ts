@@ -25,12 +25,22 @@ export type Application = {
   name: Scalars['String'];
   region: AvailableRegions;
   repository: Scalars['String'];
+  status: ApplicationStatus;
 };
 
 export type ApplicationQueryInput = {
   id?: InputMaybe<Scalars['ID']>;
   name?: InputMaybe<Scalars['String']>;
 };
+
+export enum ApplicationStatus {
+  CreateComplete = 'CREATE_COMPLETE',
+  CreateFailed = 'CREATE_FAILED',
+  CreateRequested = 'CREATE_REQUESTED',
+  DeploymentComplete = 'DEPLOYMENT_COMPLETE',
+  DeploymentFailed = 'DEPLOYMENT_FAILED',
+  DeploymentInitiated = 'DEPLOYMENT_INITIATED'
+}
 
 export enum ApplicationType {
   Astro = 'ASTRO',
@@ -204,6 +214,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Application: ResolverTypeWrapper<Application>;
   ApplicationQueryInput: ApplicationQueryInput;
+  ApplicationStatus: ApplicationStatus;
   ApplicationType: ApplicationType;
   AvailableRegions: AvailableRegions;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
@@ -247,6 +258,7 @@ export type ApplicationResolvers<ContextType = any, ParentType extends Resolvers
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   region?: Resolver<ResolversTypes['AvailableRegions'], ParentType, ContextType>;
   repository?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['ApplicationStatus'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

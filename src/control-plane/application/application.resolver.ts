@@ -1,6 +1,7 @@
 import { customAlphabet } from "nanoid";
 import {
   Application,
+  ApplicationStatus,
   MutationCreateApplicationArgs,
   QueryGetApplicationArgs,
 } from "../generated/graphql.types";
@@ -48,6 +49,7 @@ export const createApplicationResolver = async (
 ): Promise<Application> => {
   const { input } = args;
   const { name, ...rest } = input;
+  const status = ApplicationStatus.CreateRequested;
   const nanoid = customAlphabet("1234567890abcdef");
   const id = nanoid();
   const customerId = CUSTOMER_ID; //TOOD: get from auth context
@@ -61,6 +63,7 @@ export const createApplicationResolver = async (
     id,
     customerId,
     name,
+    status,
     ...rest,
     awsAccountId: randomAwsAccount,
   };
@@ -70,6 +73,7 @@ export const createApplicationResolver = async (
     customerId,
     id,
     name,
+    status,
     ...rest,
   };
 };

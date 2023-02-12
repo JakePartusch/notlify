@@ -1,6 +1,7 @@
 import { dynamoDbDocumentClient } from "../common/aws/dynamodb.client";
 import { InternalApplication } from "./application.types";
 import fetch from "node-fetch";
+import { ApplicationStatus } from "../generated/graphql.types";
 
 const { GITHUB_TOKEN, GITHUB_WORKFLOW_URL, TABLE_NAME } = process.env;
 
@@ -58,8 +59,26 @@ export const createApplicationRecord = async (
   });
 };
 
+export const updateApplicationToInitiated = async (applicationId: string) => {
+  return dynamoDbDocumentClient.update({
+    TableName: TABLE_NAME,
+    Key: {
+      PK: `APPLICATION#${applicationId}`,
+      SK: `APPLICATION#${applicationId}`,
+    },
+    UpdateExpression: "#status = :status",
+    ExpressionAttributeNames: {
+      "#status": ":status",
+    },
+    ExpressionAttributeValues: {
+      ":status": ApplicationStatus.DeploymentInitiated,
+    },
+  });
+};
+
 export const updateApplicationDeployment = async (
   applicationId: string,
+  currentStatus: ApplicationStatus,
   deploymentUrl: string
 ) => {
   return dynamoDbDocumentClient.update({
@@ -69,14 +88,19 @@ export const updateApplicationDeployment = async (
       SK: `APPLICATION#${applicationId}`,
     },
     UpdateExpression:
-      "SET #deploymentUrl = :deploymentUrl, #lastDeploymentTime = :lastDeploymentTime",
+      "SET #deploymentUrl = :deploymentUrl, #lastDeploymentTime = :lastDeploymentTime, #status = :status",
     ExpressionAttributeNames: {
       "#deploymentUrl": "deploymentUrl",
       "#lastDeploymentTime": "lastDeploymentTime",
+      "#status": ":status",
     },
     ExpressionAttributeValues: {
       ":deploymentUrl": deploymentUrl,
       ":lastDeploymentTime": new Date().toISOString(),
+      ":status":
+        currentStatus === ApplicationStatus.CreateRequested
+          ? ApplicationStatus.CreateComplete
+          : ApplicationStatus.DeploymentComplete,
     },
   });
 };

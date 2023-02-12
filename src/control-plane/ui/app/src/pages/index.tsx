@@ -27,6 +27,7 @@ const allApps = graphql(/* GraphQL */ `
       deploymentUrl
       description
       applicationType
+      status
     }
   }
 `);
@@ -513,7 +514,6 @@ export default function Dashboard() {
                                 Deployed{" "}
                                 {timeAgo(application.lastDeploymentTime)}
                               </span>
-                              <span aria-hidden="true">&middot;</span>
                             </>
                           )}
                         </p>
