@@ -10,7 +10,7 @@ import {
 } from "../deployment/deployment.service";
 import {
   getApplicationById,
-  updateApplicationDeploymentUrl,
+  updateApplicationDeployment,
 } from "../application/application.service";
 import {
   getDataPlaneCrossAccountRoleArn,
@@ -75,7 +75,7 @@ export const handler = async (
         await findInitiatedDeploymentsByApplicationId(appId);
       if (initiatedDeployments.length) {
         //TODO: wrap in transaction?
-        await updateApplicationDeploymentUrl(appId, deploymentUrl.OutputValue!);
+        await updateApplicationDeployment(appId, deploymentUrl.OutputValue!);
         await updateDeploymentToComplete(
           appId,
           initiatedDeployments[0].id, //TODO: how to handle more than one?
