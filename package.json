@@ -1,8 +1,8 @@
 {
-  "name": "saas-app",
+  "name": "notlify",
   "version": "0.1.0",
   "bin": {
-    "saas-app": "bin/saas-app.js"
+    "notlify": "bin/notlify.js"
   },
   "scripts": {
     "build": "tsc",

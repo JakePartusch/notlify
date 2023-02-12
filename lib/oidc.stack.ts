@@ -23,7 +23,7 @@ export class OidcStack extends cdk.Stack {
         StringLike: {
           // Only allow specified subjects to assume this role
           [`token.actions.githubusercontent.com:sub`]:
-            "repo:JakePartusch/paas-app:ref:refs/heads/main",
+            "repo:JakePartusch/notlify:ref:refs/heads/main",
         },
         StringEquals: {
           // Audience is always sts.amazonaws.com with AWS official Github Action

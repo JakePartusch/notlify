@@ -1,4 +1,4 @@
-name: "Deploy PaaS Action"
+name: "Deploy Notlify Action"
 description: "Deploy the website"
 inputs:
   applicationName:
