@@ -13,7 +13,7 @@ import { Bars3CenterLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth0 } from "@auth0/auth0-react";
 import { graphql } from "../../gql";
 import NewAppSidePanel from "@/components/NewAppSidePanel";
-import { ApplicationType } from "gql/graphql";
+import { ApplicationStatus, ApplicationType } from "gql/graphql";
 
 const allApps = graphql(/* GraphQL */ `
   query ListAllApplications {
@@ -438,12 +438,39 @@ export default function Dashboard() {
                       {/* Repo name and link */}
                       <div className="min-w-0 space-y-3">
                         <div className="flex items-center space-x-3">
-                          <span
-                            className="flex items-center justify-center w-4 h-4 bg-green-100 rounded-full"
-                            aria-hidden="true"
-                          >
-                            <span className="w-2 h-2 bg-green-400 rounded-full" />
-                          </span>
+                          {[
+                            ApplicationStatus.CreateComplete,
+                            ApplicationStatus.DeploymentComplete,
+                          ].includes(application.status) && (
+                            <span
+                              className="flex items-center justify-center w-4 h-4 bg-green-100 rounded-full"
+                              aria-hidden="true"
+                            >
+                              <span className="w-2 h-2 bg-green-400 rounded-full" />
+                            </span>
+                          )}
+                          {[
+                            ApplicationStatus.CreateRequested,
+                            ApplicationStatus.DeploymentInitiated,
+                          ].includes(application.status) && (
+                            <span
+                              className="flex items-center justify-center w-4 h-4 bg-yellow-100 rounded-full"
+                              aria-hidden="true"
+                            >
+                              <span className="w-2 h-2 bg-yellow-400 rounded-full" />
+                            </span>
+                          )}
+                          {[
+                            ApplicationStatus.CreateFailed,
+                            ApplicationStatus.DeploymentFailed,
+                          ].includes(application.status) && (
+                            <span
+                              className="flex items-center justify-center w-4 h-4 bg-red-100 rounded-full"
+                              aria-hidden="true"
+                            >
+                              <span className="w-2 h-2 bg-red-400 rounded-full" />
+                            </span>
+                          )}
 
                           <h2 className="text-sm font-medium">
                             <a href={`/applications/${application.name}`}>
