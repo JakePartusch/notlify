@@ -18,6 +18,7 @@ export type Application = {
   __typename?: 'Application';
   customerId: Scalars['String'];
   deploymentUrl?: Maybe<Scalars['String']>;
+  description: Scalars['String'];
   id: Scalars['ID'];
   name: Scalars['String'];
   region: AvailableRegions;
@@ -37,6 +38,7 @@ export enum AvailableRegions {
 }
 
 export type CreateApplicationInput = {
+  description: Scalars['String'];
   name: Scalars['String'];
   region: AvailableRegions;
   repository: Scalars['String'];
@@ -123,7 +125,7 @@ export enum Status {
 export type ListAllApplicationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListAllApplicationsQuery = { __typename?: 'Query', listApplications: Array<{ __typename?: 'Application', customerId: string, id: string, name: string, region: AvailableRegions, repository: string, deploymentUrl?: string | null }> };
+export type ListAllApplicationsQuery = { __typename?: 'Query', listApplications: Array<{ __typename?: 'Application', customerId: string, id: string, name: string, region: AvailableRegions, repository: string, deploymentUrl?: string | null, description: string }> };
 
 
-export const ListAllApplicationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListAllApplications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listApplications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerId"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"repository"}},{"kind":"Field","name":{"kind":"Name","value":"deploymentUrl"}}]}}]}}]} as unknown as DocumentNode<ListAllApplicationsQuery, ListAllApplicationsQueryVariables>;
+export const ListAllApplicationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ListAllApplications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"listApplications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerId"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"repository"}},{"kind":"Field","name":{"kind":"Name","value":"deploymentUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]} as unknown as DocumentNode<ListAllApplicationsQuery, ListAllApplicationsQueryVariables>;

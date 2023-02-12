@@ -18,6 +18,7 @@ export type Application = {
   __typename?: 'Application';
   customerId: Scalars['String'];
   deploymentUrl?: Maybe<Scalars['String']>;
+  description: Scalars['String'];
   id: Scalars['ID'];
   name: Scalars['String'];
   region: AvailableRegions;
@@ -37,6 +38,7 @@ export enum AvailableRegions {
 }
 
 export type CreateApplicationInput = {
+  description: Scalars['String'];
   name: Scalars['String'];
   region: AvailableRegions;
   repository: Scalars['String'];
@@ -226,6 +228,7 @@ export type ResolversParentTypes = {
 export type ApplicationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Application'] = ResolversParentTypes['Application']> = {
   customerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   deploymentUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   region?: Resolver<ResolversTypes['AvailableRegions'], ParentType, ContextType>;

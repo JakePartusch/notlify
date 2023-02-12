@@ -24,6 +24,7 @@ const allApps = graphql(/* GraphQL */ `
       region
       repository
       deploymentUrl
+      description
     }
   }
 `);
@@ -88,7 +89,7 @@ export default function Dashboard() {
                       <img
                         className="h-12 w-36"
                         src="/notlify-logo-rectangle.png"
-                        alt="Your Company"
+                        alt="Notlify"
                       />
                     </div>
                   </div>
@@ -393,8 +394,7 @@ export default function Dashboard() {
                           </span>
 
                           <h2 className="text-sm font-medium">
-                            {/*@ts-ignore */}
-                            <a href={application.href}>
+                            <a href={`/applications/${application.name}`}>
                               <span
                                 className="absolute inset-0"
                                 aria-hidden="true"
@@ -403,6 +403,7 @@ export default function Dashboard() {
                               <span className="sr-only">Running</span>
                             </a>
                           </h2>
+                          <p>{application.description}</p>
                         </div>
                         <a
                           href={`https://github.com/${application.repository}`}

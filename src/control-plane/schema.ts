@@ -18,6 +18,7 @@ type Application {
   region: AvailableRegions!
   customerId: String!
   repository: String!
+  description: String!
   deploymentUrl: String
 }
 
@@ -42,6 +43,7 @@ input CreateApplicationInput {
   name: String!
   repository: String!
   region: AvailableRegions!
+  description: String!
 }
 
 input ApplicationQueryInput {

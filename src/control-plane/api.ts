@@ -1,8 +1,5 @@
 import { ApolloServer } from "@apollo/server";
-import {
-  GatewayEvent,
-  startServerAndCreateLambdaHandler,
-} from "@as-integrations/aws-lambda";
+import { startServerAndCreateLambdaHandler } from "@as-integrations/aws-lambda";
 import { Resolvers } from "./generated/graphql.types";
 import { typeDefs } from "./schema";
 import {
@@ -51,7 +48,6 @@ const server = new ApolloServer({
 
 //@ts-ignore
 export const handler = async (event, context, callback) => {
-  console.log(event);
   if (event.requestContext.http.method === "OPTIONS") {
     return {
       headers: {
