@@ -535,11 +535,24 @@ export default function Dashboard() {
                             )}
                           </span>
                           <span aria-hidden="true">&middot;</span>
-                          {application.lastDeploymentTime && (
+                          {ApplicationStatus.CreateRequested ===
+                            application.status && (
+                            <>
+                              <span>Creating..</span>
+                            </>
+                          )}
+                          {ApplicationStatus.DeploymentInitiated ===
+                            application.status && (
+                            <>
+                              <span>Deploying...</span>
+                            </>
+                          )}
+                          {ApplicationStatus.DeploymentComplete ===
+                            application.status && (
                             <>
                               <span>
                                 Deployed{" "}
-                                {timeAgo(application.lastDeploymentTime)}
+                                {timeAgo(application.lastDeploymentTime!)}
                               </span>
                             </>
                           )}
