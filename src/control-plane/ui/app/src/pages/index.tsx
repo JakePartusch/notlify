@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import request from "graphql-request";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +13,7 @@ import {
 import { Bars3CenterLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth0 } from "@auth0/auth0-react";
 import { graphql } from "../../gql";
+import NewAppSidePanel from "@/components/NewAppSidePanel";
 
 const allApps = graphql(/* GraphQL */ `
   query ListAllApplications {
@@ -46,7 +47,13 @@ function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Example() {
+enum State {
+  Initialized,
+  NewApplicationSelected,
+}
+
+export default function Dashboard() {
+  const [state, setState] = useState(State.Initialized);
   const { isLoading, isAuthenticated, error, user, loginWithRedirect, logout } =
     useAuth0();
   console.log(user);
@@ -68,18 +75,18 @@ export default function Example() {
   const applications = data?.listApplications ?? [];
   return (
     <>
-      <div className="relative flex min-h-full flex-col">
+      <div className="relative flex flex-col min-h-full">
         {/* Navbar */}
         <Disclosure as="nav" className="flex-shrink-0 bg-gray-100">
           {({ open }) => (
             <>
-              <div className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
-                <div className="relative flex h-16 items-center justify-between">
+              <div className="px-2 mx-auto max-w-7xl sm:px-4 lg:px-8">
+                <div className="relative flex items-center justify-between h-16">
                   {/* Logo section */}
                   <div className="flex items-center px-2 lg:px-0 xl:w-64">
                     <div className="flex-shrink-0">
                       <img
-                        className="h-12 w-auto"
+                        className="h-12 w-36"
                         src="/notlify-logo-rectangle.png"
                         alt="Your Company"
                       />
@@ -87,22 +94,22 @@ export default function Example() {
                   </div>
 
                   {/* Search section */}
-                  <div className="flex flex-1 justify-center lg:justify-end">
+                  <div className="flex justify-center flex-1 lg:justify-end">
                     <div className="w-full px-2 lg:px-6">
                       <label htmlFor="search" className="sr-only">
                         Search applications
                       </label>
                       <div className="relative text-cyan-600 focus-within:text-gray-400">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                           <MagnifyingGlassIcon
-                            className="h-5 w-5"
+                            className="w-5 h-5"
                             aria-hidden="true"
                           />
                         </div>
                         <input
                           id="search"
                           name="search"
-                          className="block w-full rounded-md border border-transparent bg-cyan-400 bg-opacity-25 py-2 pl-10 pr-3 leading-5 text-cyan-600 placeholder-cyan-600 focus:bg-white focus:text-gray-900 focus:placeholder-gray-400 focus:outline-none focus:ring-0 sm:text-sm"
+                          className="block w-full py-2 pl-10 pr-3 leading-5 text-gray-600 placeholder-gray-600 bg-white border border-transparent rounded-md focus:bg-white focus:text-gray-900 focus:placeholder-gray-400 focus:outline-none focus:ring-0 sm:text-sm"
                           placeholder="Search applications"
                           type="search"
                         />
@@ -111,16 +118,16 @@ export default function Example() {
                   </div>
                   <div className="flex lg:hidden">
                     {/* Mobile menu button */}
-                    <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-cyan-600 p-2 text-cyan-400 hover:bg-cyan-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cyan-600">
+                    <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md bg-cyan-600 text-cyan-400 hover:bg-cyan-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cyan-600">
                       <span className="sr-only">Open main menu</span>
                       {open ? (
                         <XMarkIcon
-                          className="block h-6 w-6"
+                          className="block w-6 h-6"
                           aria-hidden="true"
                         />
                       ) : (
                         <Bars3CenterLeftIcon
-                          className="block h-6 w-6"
+                          className="block w-6 h-6"
                           aria-hidden="true"
                         />
                       )}
@@ -134,7 +141,7 @@ export default function Example() {
                           <a
                             key={item.name}
                             href={item.href}
-                            className="rounded-md px-3 py-2 text-sm font-medium text-cyan-600 hover:text-white"
+                            className="px-3 py-2 text-sm font-medium rounded-md text-cyan-600 hover:text-white"
                             aria-current={item.current ? "page" : undefined}
                           >
                             {item.name}
@@ -142,12 +149,12 @@ export default function Example() {
                         ))}
                       </div>
                       {/* Profile dropdown */}
-                      <Menu as="div" className="relative ml-4 flex-shrink-0">
+                      <Menu as="div" className="relative flex-shrink-0 ml-4">
                         <div>
-                          <Menu.Button className="flex rounded-full bg-cyan-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cyan-700">
+                          <Menu.Button className="flex text-sm text-white rounded-full bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cyan-700">
                             <span className="sr-only">Open user menu</span>
                             <img
-                              className="h-8 w-8 rounded-full"
+                              className="w-8 h-8 rounded-full"
                               src={user?.picture}
                               alt=""
                             />
@@ -162,7 +169,7 @@ export default function Example() {
                           leaveFrom="transform opacity-100 scale-100"
                           leaveTo="transform opacity-0 scale-95"
                         >
-                          <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <Menu.Items className="absolute right-0 z-10 w-48 py-1 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                             {userNavigation.map((item) => (
                               <Menu.Item key={item.name}>
                                 {({ active }) => (
@@ -187,7 +194,7 @@ export default function Example() {
               </div>
 
               <Disclosure.Panel className="lg:hidden">
-                <div className="space-y-1 px-2 pt-2 pb-3">
+                <div className="px-2 pt-2 pb-3 space-y-1">
                   {navigation.map((item) => (
                     <Disclosure.Button
                       key={item.name}
@@ -205,14 +212,14 @@ export default function Example() {
                     </Disclosure.Button>
                   ))}
                 </div>
-                <div className="border-t border-cyan-800 pt-4 pb-3">
-                  <div className="space-y-1 px-2">
+                <div className="pt-4 pb-3 border-t border-cyan-800">
+                  <div className="px-2 space-y-1">
                     {userNavigation.map((item) => (
                       <Disclosure.Button
                         key={item.name}
                         as="a"
                         href={item.href}
-                        className="block rounded-md px-3 py-2 text-base font-medium text-cyan-200 hover:bg-cyan-600 hover:text-cyan-100"
+                        className="block px-3 py-2 text-base font-medium rounded-md text-cyan-200 hover:bg-cyan-600 hover:text-cyan-100"
                       >
                         {item.name}
                       </Disclosure.Button>
@@ -225,9 +232,9 @@ export default function Example() {
         </Disclosure>
 
         {/* 3 column wrapper */}
-        <div className="mx-auto w-full max-w-7xl flex-grow lg:flex xl:px-8">
+        <div className="flex-grow w-full mx-auto max-w-7xl lg:flex xl:px-8">
           {/* Left sidebar & main wrapper */}
-          <div className="min-w-0 flex-1 bg-white xl:flex">
+          <div className="flex-1 min-w-0 bg-white xl:flex">
             {/* Account profile */}
             <div className="bg-white xl:w-64 xl:flex-shrink-0 xl:border-r xl:border-gray-200">
               <div className="py-6 pl-4 pr-6 sm:pl-6 lg:pl-8 xl:pl-0">
@@ -236,9 +243,9 @@ export default function Example() {
                     <div className="space-y-8 sm:flex sm:items-center sm:justify-between sm:space-y-0 xl:block xl:space-y-8">
                       {/* Profile */}
                       <div className="flex items-center space-x-3">
-                        <div className="h-12 w-12 flex-shrink-0">
+                        <div className="flex-shrink-0 w-12 h-12">
                           <img
-                            className="h-12 w-12 rounded-full"
+                            className="w-12 h-12 rounded-full"
                             src={user?.picture}
                             alt=""
                           />
@@ -252,7 +259,7 @@ export default function Example() {
                             className="group flex items-center space-x-2.5"
                           >
                             <svg
-                              className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
+                              className="w-5 h-5 text-gray-400 group-hover:text-gray-500"
                               aria-hidden="true"
                               fill="currentColor"
                               viewBox="0 0 20 20"
@@ -272,8 +279,9 @@ export default function Example() {
                       {/* Action buttons */}
                       <div className="flex flex-col sm:flex-row xl:flex-col">
                         <button
+                          onClick={() => setState(State.NewApplicationSelected)}
                           type="button"
-                          className="inline-flex items-center justify-center rounded-md border border-transparent bg-cyan-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 xl:w-full"
+                          className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md shadow-sm bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 xl:w-full"
                         >
                           New Application
                         </button>
@@ -283,7 +291,7 @@ export default function Example() {
                     <div className="flex flex-col space-y-6 sm:flex-row sm:space-y-0 sm:space-x-8 xl:flex-col xl:space-x-0 xl:space-y-6">
                       <div className="flex items-center space-x-2">
                         <RectangleStackIcon
-                          className="h-5 w-5 text-gray-400"
+                          className="w-5 h-5 text-gray-400"
                           aria-hidden="true"
                         />
                         <span className="text-sm font-medium text-gray-500">
@@ -297,13 +305,13 @@ export default function Example() {
             </div>
 
             <div className="bg-white lg:min-w-0 lg:flex-1">
-              <div className="border-b border-t border-gray-200 pl-4 pr-6 pt-4 pb-4 sm:pl-6 lg:pl-8 xl:border-t-0 xl:pl-6 xl:pt-6">
+              <div className="pt-4 pb-4 pl-4 pr-6 border-t border-b border-gray-200 sm:pl-6 lg:pl-8 xl:border-t-0 xl:pl-6 xl:pt-6">
                 <div className="flex items-center">
                   <h1 className="flex-1 text-lg font-medium">Applications</h1>
                   <Menu as="div" className="relative">
-                    <Menu.Button className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
+                    <Menu.Button className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
                       <BarsArrowUpIcon
-                        className="mr-3 h-5 w-5 text-gray-400"
+                        className="w-5 h-5 mr-3 text-gray-400"
                         aria-hidden="true"
                       />
                       Sort
@@ -312,7 +320,7 @@ export default function Example() {
                         aria-hidden="true"
                       />
                     </Menu.Button>
-                    <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <Menu.Items className="absolute right-0 z-10 w-56 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
                         <Menu.Item>
                           {({ active }) => (
@@ -366,7 +374,7 @@ export default function Example() {
               </div>
               <ul
                 role="list"
-                className="divide-y divide-gray-200 border-b border-gray-200"
+                className="border-b border-gray-200 divide-y divide-gray-200"
               >
                 {applications.map((application) => (
                   <li
@@ -378,10 +386,10 @@ export default function Example() {
                       <div className="min-w-0 space-y-3">
                         <div className="flex items-center space-x-3">
                           <span
-                            className="bg-green-100 h-4 w-4 rounded-full flex items-center justify-center"
+                            className="flex items-center justify-center w-4 h-4 bg-green-100 rounded-full"
                             aria-hidden="true"
                           >
-                            <span className="bg-green-400 h-2 w-2 rounded-full" />
+                            <span className="w-2 h-2 bg-green-400 rounded-full" />
                           </span>
 
                           <h2 className="text-sm font-medium">
@@ -401,7 +409,7 @@ export default function Example() {
                           className="group relative flex items-center space-x-2.5"
                         >
                           <svg
-                            className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+                            className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-gray-500"
                             viewBox="0 0 18 18"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -414,19 +422,19 @@ export default function Example() {
                               fill="currentcolor"
                             />
                           </svg>
-                          <span className="truncate text-sm font-medium text-gray-500 group-hover:text-gray-900">
+                          <span className="text-sm font-medium text-gray-500 truncate group-hover:text-gray-900">
                             {application.repository}
                           </span>
                         </a>
                       </div>
                       <div className="sm:hidden">
                         <ChevronRightIcon
-                          className="h-5 w-5 text-gray-400"
+                          className="w-5 h-5 text-gray-400"
                           aria-hidden="true"
                         />
                       </div>
                       {/* Repo meta info */}
-                      <div className="hidden flex-shrink-0 flex-col items-end space-y-3 sm:flex">
+                      <div className="flex-col items-end flex-shrink-0 hidden space-y-3 sm:flex">
                         <p className="flex items-center space-x-4">
                           {application.deploymentUrl && (
                             <a
@@ -464,7 +472,7 @@ export default function Example() {
                     <li key={item.commit} className="py-4">
                       <div className="flex space-x-3">
                         <img
-                          className="h-6 w-6 rounded-full"
+                          className="w-6 h-6 rounded-full"
                           src={user?.picture}
                           alt=""
                         />
@@ -482,7 +490,7 @@ export default function Example() {
                     </li>
                   ))}
                 </ul>
-                <div className="border-t border-gray-200 py-4 text-sm">
+                <div className="py-4 text-sm border-t border-gray-200">
                   <a
                     href="#"
                     className="font-semibold text-cyan-600 hover:text-cyan-900"
@@ -496,6 +504,10 @@ export default function Example() {
           </div>
         </div>
       </div>
+      <NewAppSidePanel
+        isOpen={state === State.NewApplicationSelected}
+        onClose={() => setState(State.Initialized)}
+      />
     </>
   );
 }
