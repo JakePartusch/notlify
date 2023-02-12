@@ -68,7 +68,7 @@ export const updateApplicationToInitiated = async (applicationId: string) => {
     },
     UpdateExpression: "SET #status = :status",
     ExpressionAttributeNames: {
-      "#status": ":status",
+      "#status": "status",
     },
     ExpressionAttributeValues: {
       ":status": ApplicationStatus.DeploymentInitiated,
@@ -92,7 +92,7 @@ export const updateApplicationDeployment = async (
     ExpressionAttributeNames: {
       "#deploymentUrl": "deploymentUrl",
       "#lastDeploymentTime": "lastDeploymentTime",
-      "#status": ":status",
+      "#status": "status",
     },
     ExpressionAttributeValues: {
       ":deploymentUrl": deploymentUrl,
