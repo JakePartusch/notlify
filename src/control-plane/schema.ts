@@ -12,6 +12,14 @@ enum Status {
   COMPLETE
 }
 
+enum ApplicationType {
+  NEXT_JS
+  REMIX
+  ASTRO
+  SOLID
+  STATIC
+}
+
 type Application {
   id: ID!
   name: String!
@@ -19,6 +27,8 @@ type Application {
   customerId: String!
   repository: String!
   description: String!
+  applicationType: ApplicationType!
+  lastDeploymentTime: String
   deploymentUrl: String
 }
 
@@ -44,6 +54,7 @@ input CreateApplicationInput {
   repository: String!
   region: AvailableRegions!
   description: String!
+  applicationType: ApplicationType!
 }
 
 input ApplicationQueryInput {
@@ -82,5 +93,6 @@ schema {
   query: Query
   mutation: Mutation
 }
+
 
 `;
