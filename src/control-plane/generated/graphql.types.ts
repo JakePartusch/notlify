@@ -16,10 +16,12 @@ export type Scalars = {
 
 export type Application = {
   __typename?: 'Application';
+  applicationType: ApplicationType;
   customerId: Scalars['String'];
   deploymentUrl?: Maybe<Scalars['String']>;
   description: Scalars['String'];
   id: Scalars['ID'];
+  lastDeploymentTime?: Maybe<Scalars['String']>;
   name: Scalars['String'];
   region: AvailableRegions;
   repository: Scalars['String'];
@@ -30,6 +32,14 @@ export type ApplicationQueryInput = {
   name?: InputMaybe<Scalars['String']>;
 };
 
+export enum ApplicationType {
+  Astro = 'ASTRO',
+  NextJs = 'NEXT_JS',
+  Remix = 'REMIX',
+  Solid = 'SOLID',
+  Static = 'STATIC'
+}
+
 export enum AvailableRegions {
   UsEast_1 = 'US_EAST_1',
   UsEast_2 = 'US_EAST_2',
@@ -38,6 +48,7 @@ export enum AvailableRegions {
 }
 
 export type CreateApplicationInput = {
+  applicationType: ApplicationType;
   description: Scalars['String'];
   name: Scalars['String'];
   region: AvailableRegions;
@@ -193,6 +204,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Application: ResolverTypeWrapper<Application>;
   ApplicationQueryInput: ApplicationQueryInput;
+  ApplicationType: ApplicationType;
   AvailableRegions: AvailableRegions;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CreateApplicationInput: CreateApplicationInput;
@@ -226,10 +238,12 @@ export type ResolversParentTypes = {
 };
 
 export type ApplicationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Application'] = ResolversParentTypes['Application']> = {
+  applicationType?: Resolver<ResolversTypes['ApplicationType'], ParentType, ContextType>;
   customerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   deploymentUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  lastDeploymentTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   region?: Resolver<ResolversTypes['AvailableRegions'], ParentType, ContextType>;
   repository?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

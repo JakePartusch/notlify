@@ -13,7 +13,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel-plugin for production.
  */
 const documents = {
-    "\n  query ListAllApplications {\n    listApplications {\n      customerId\n      id\n      name\n      region\n      repository\n      deploymentUrl\n      description\n    }\n  }\n": types.ListAllApplicationsDocument,
+    "\n  query ListAllApplications {\n    listApplications {\n      customerId\n      id\n      name\n      region\n      repository\n      lastDeploymentTime\n      deploymentUrl\n      description\n      applicationType\n    }\n  }\n": types.ListAllApplicationsDocument,
 };
 
 /**
@@ -33,7 +33,7 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query ListAllApplications {\n    listApplications {\n      customerId\n      id\n      name\n      region\n      repository\n      deploymentUrl\n      description\n    }\n  }\n"): (typeof documents)["\n  query ListAllApplications {\n    listApplications {\n      customerId\n      id\n      name\n      region\n      repository\n      deploymentUrl\n      description\n    }\n  }\n"];
+export function graphql(source: "\n  query ListAllApplications {\n    listApplications {\n      customerId\n      id\n      name\n      region\n      repository\n      lastDeploymentTime\n      deploymentUrl\n      description\n      applicationType\n    }\n  }\n"): (typeof documents)["\n  query ListAllApplications {\n    listApplications {\n      customerId\n      id\n      name\n      region\n      repository\n      lastDeploymentTime\n      deploymentUrl\n      description\n      applicationType\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

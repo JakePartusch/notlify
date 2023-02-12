@@ -23,8 +23,10 @@ const allApps = graphql(/* GraphQL */ `
       name
       region
       repository
+      lastDeploymentTime
       deploymentUrl
       description
+      applicationType
     }
   }
 `);
@@ -403,7 +405,9 @@ export default function Dashboard() {
                               <span className="sr-only">Running</span>
                             </a>
                           </h2>
-                          <p>{application.description}</p>
+                          <p className="text-sm font-light">
+                            {application.description}
+                          </p>
                         </div>
                         <a
                           href={`https://github.com/${application.repository}`}

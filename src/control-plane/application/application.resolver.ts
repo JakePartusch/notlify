@@ -47,7 +47,7 @@ export const createApplicationResolver = async (
   args: MutationCreateApplicationArgs
 ): Promise<Application> => {
   const { input } = args;
-  const { name, region, repository, description } = input;
+  const { name, ...rest } = input;
   const nanoid = customAlphabet("1234567890abcdef");
   const id = nanoid();
   const customerId = CUSTOMER_ID; //TOOD: get from auth context
@@ -61,9 +61,7 @@ export const createApplicationResolver = async (
     id,
     customerId,
     name,
-    region,
-    repository,
-    description,
+    ...rest,
     awsAccountId: randomAwsAccount,
   };
   await createApplicationRecord(application);
@@ -72,8 +70,6 @@ export const createApplicationResolver = async (
     customerId,
     id,
     name,
-    region,
-    repository,
-    description,
+    ...rest,
   };
 };

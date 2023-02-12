@@ -58,7 +58,7 @@ export const createApplicationRecord = async (
   });
 };
 
-export const updateApplicationDeploymentUrl = async (
+export const updateApplicationDeployment = async (
   applicationId: string,
   deploymentUrl: string
 ) => {
@@ -68,12 +68,15 @@ export const updateApplicationDeploymentUrl = async (
       PK: `APPLICATION#${applicationId}`,
       SK: `APPLICATION#${applicationId}`,
     },
-    UpdateExpression: "SET #deploymentUrl = :deploymentUrl",
+    UpdateExpression:
+      "SET #deploymentUrl = :deploymentUrl, #lastDeploymentTime = :lastDeploymentTime",
     ExpressionAttributeNames: {
       "#deploymentUrl": "deploymentUrl",
+      "#lastDeploymentTime": "lastDeploymentTime",
     },
     ExpressionAttributeValues: {
       ":deploymentUrl": deploymentUrl,
+      ":lastDeploymentTime": new Date().toISOString(),
     },
   });
 };
