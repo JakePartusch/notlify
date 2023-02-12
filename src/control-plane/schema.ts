@@ -20,6 +20,15 @@ enum ApplicationType {
   STATIC
 }
 
+enum ApplicationStatus {
+  CREATE_REQUESTED
+  CREATE_COMPLETE
+  CREATE_FAILED
+  DEPLOYMENT_INITIATED
+  DEPLOYMENT_COMPLETE
+  DEPLOYMENT_FAILED
+}
+
 type Application {
   id: ID!
   name: String!
@@ -28,6 +37,7 @@ type Application {
   repository: String!
   description: String!
   applicationType: ApplicationType!
+  status: ApplicationStatus!
   lastDeploymentTime: String
   deploymentUrl: String
 }
@@ -93,6 +103,7 @@ schema {
   query: Query
   mutation: Mutation
 }
+
 
 
 `;
