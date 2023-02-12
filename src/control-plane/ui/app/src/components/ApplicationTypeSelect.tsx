@@ -1,39 +1,44 @@
 import { Fragment, useState } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { AvailableRegions } from "gql/graphql";
+import { ApplicationType } from "gql/graphql";
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(" ");
 }
-const regions = [
+
+const applicationTypes = [
   {
-    id: AvailableRegions.UsEast_1,
-    name: "us-east-1",
+    id: ApplicationType.Astro,
+    name: "Astro",
   },
   {
-    id: AvailableRegions.UsEast_2,
-    name: "us-east-2",
+    id: ApplicationType.NextJs,
+    name: "Next.js",
   },
   {
-    id: AvailableRegions.UsWest_1,
-    name: "us-west-1",
+    id: ApplicationType.Remix,
+    name: "Remix",
   },
   {
-    id: AvailableRegions.UsWest_2,
-    name: "us-west-2",
+    id: ApplicationType.Solid,
+    name: "SolidJS",
+  },
+  {
+    id: ApplicationType.Static,
+    name: "Static Website",
   },
 ];
 
-export default function RegionSelect() {
-  const [selected, setSelected] = useState(regions[3]);
+export default function ApplicationTypeSelect() {
+  const [selected, setSelected] = useState(applicationTypes[1]);
 
   return (
     <Listbox value={selected} onChange={setSelected}>
       {({ open }) => (
         <>
           <Listbox.Label className="block text-sm font-medium text-gray-700">
-            Region
+            Application Type
           </Listbox.Label>
           <div className="relative mt-1">
             <Listbox.Button className="relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
@@ -54,16 +59,16 @@ export default function RegionSelect() {
               leaveTo="opacity-0"
             >
               <Listbox.Options className="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                {regions.map((region) => (
+                {applicationTypes.map((applicationType) => (
                   <Listbox.Option
-                    key={region.id}
+                    key={applicationType.id}
                     className={({ active }) =>
                       classNames(
                         active ? "text-white bg-indigo-600" : "text-gray-900",
                         "relative cursor-default select-none py-2 pl-3 pr-9"
                       )
                     }
-                    value={region.id}
+                    value={applicationType.id}
                   >
                     {({ selected, active }) => (
                       <>
@@ -73,7 +78,7 @@ export default function RegionSelect() {
                             "block truncate"
                           )}
                         >
-                          {region.name}
+                          {applicationType.name}
                         </span>
 
                         {selected ? (

@@ -4,7 +4,6 @@ import request from "graphql-request";
 import { useQuery } from "@tanstack/react-query";
 import {
   BarsArrowUpIcon,
-  CheckBadgeIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
@@ -14,6 +13,7 @@ import { Bars3CenterLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth0 } from "@auth0/auth0-react";
 import { graphql } from "../../gql";
 import NewAppSidePanel from "@/components/NewAppSidePanel";
+import { ApplicationType } from "gql/graphql";
 
 const allApps = graphql(/* GraphQL */ `
   query ListAllApplications {
@@ -59,7 +59,7 @@ function timeAgo(value: string) {
   return rtf.format(-Math.floor(interval), "second");
 }
 
-const navigation = [{ name: "Dashboard", href: "#", current: true }];
+const navigation = [{ name: "Dashboard", href: "/", current: true }];
 const userNavigation = [
   { name: "Your Profile", href: "#" },
   { name: "Settings", href: "#" },
@@ -83,6 +83,21 @@ enum State {
   NewApplicationSelected,
 }
 
+const applicationTypeToFriendlyName = (value: ApplicationType) => {
+  switch (value) {
+    case ApplicationType.NextJs:
+      return "Next.js";
+    case ApplicationType.Astro:
+      return "Astro";
+    case ApplicationType.Remix:
+      return "Remix";
+    case ApplicationType.Solid:
+      return "SolidJS";
+    case ApplicationType.Static:
+      return "Static Website";
+  }
+};
+
 export default function Dashboard() {
   const [state, setState] = useState(State.Initialized);
   const { isLoading, isAuthenticated, error, user, loginWithRedirect, logout } =
@@ -104,6 +119,12 @@ export default function Dashboard() {
     return <>Loading...</>;
   }
   const applications = data?.listApplications ?? [];
+  const sortedApplications = applications.sort((a, b) => {
+    return (
+      new Date(b?.lastDeploymentTime ?? 0)?.getTime() -
+      new Date(a?.lastDeploymentTime ?? 0)?.getTime()
+    );
+  });
   return (
     <>
       <div className="relative flex flex-col min-h-full">
@@ -326,7 +347,7 @@ export default function Dashboard() {
                           aria-hidden="true"
                         />
                         <span className="text-sm font-medium text-gray-500">
-                          {applications.length} Applications
+                          {sortedApplications.length} Applications
                         </span>
                       </div>
                     </div>
@@ -407,7 +428,7 @@ export default function Dashboard() {
                 role="list"
                 className="border-b border-gray-200 divide-y divide-gray-200"
               >
-                {applications.map((application) => (
+                {sortedApplications.map((application) => (
                   <li
                     key={application?.repository}
                     className="relative py-5 pl-4 pr-6 hover:bg-gray-50 sm:py-6 sm:pl-6 lg:pl-8 xl:pl-6"
@@ -480,18 +501,21 @@ export default function Dashboard() {
                         </p>
 
                         <p className="flex space-x-2 text-sm text-gray-500">
-                          <span>Next.js</span>
+                          <span>
+                            {applicationTypeToFriendlyName(
+                              application.applicationType
+                            )}
+                          </span>
                           <span aria-hidden="true">&middot;</span>
                           {application.lastDeploymentTime && (
                             <>
                               <span>
-                                Last deploy{" "}
+                                Deployed{" "}
                                 {timeAgo(application.lastDeploymentTime)}
                               </span>
                               <span aria-hidden="true">&middot;</span>
                             </>
                           )}
-                          <span>All Edge Locations</span>
                         </p>
                       </div>
                     </div>

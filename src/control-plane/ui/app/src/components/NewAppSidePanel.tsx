@@ -4,6 +4,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth0 } from "@auth0/auth0-react";
 import ReposCombobox from "./ReposCombobox";
 import RegionSelect from "./RegionSelect";
+import ApplicationTypeSelect from "./ApplicationTypeSelect";
 
 interface NewAppSidePanelProps {
   isOpen: boolean;
@@ -111,6 +112,9 @@ export default function NewAppSidePanel({
                             </div>
                             <div>
                               <RegionSelect />
+                            </div>
+                            <div>
+                              <ApplicationTypeSelect />
                             </div>
                           </div>
                         </div>
