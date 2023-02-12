@@ -66,7 +66,7 @@ export const updateApplicationToInitiated = async (applicationId: string) => {
       PK: `APPLICATION#${applicationId}`,
       SK: `APPLICATION#${applicationId}`,
     },
-    UpdateExpression: "#status = :status",
+    UpdateExpression: "SET #status = :status",
     ExpressionAttributeNames: {
       "#status": ":status",
     },
