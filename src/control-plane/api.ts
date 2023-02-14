@@ -4,6 +4,7 @@ import { Resolvers } from "./generated/graphql.types";
 import { typeDefs } from "./schema";
 import {
   createApplicationResolver,
+  deleteApplicationResolver,
   getApplicationResolver,
   listApplicationsResolver,
 } from "./application/application.resolver";
@@ -34,6 +35,9 @@ const resolvers: Resolvers = {
     },
     initiateDeployment: async (_, args) => {
       return initiateDeploymentResolver(args);
+    },
+    deleteApplication: async (_, args) => {
+      return deleteApplicationResolver(args);
     },
   },
 };

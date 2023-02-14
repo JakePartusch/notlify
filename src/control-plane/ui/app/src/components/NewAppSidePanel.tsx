@@ -75,7 +75,6 @@ export default function NewAppSidePanel({
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log({ repository, applicationType, description, region });
     await createApplication.mutateAsync();
     //TODO: loader
     onClose();

@@ -49,7 +49,6 @@ const triggerDataPlaneDeployment = async (
       },
     });
     const responseText = await response.text();
-    console.log(responseText);
   } catch (e) {
     console.error("Unable to trigger workflow", e);
   }

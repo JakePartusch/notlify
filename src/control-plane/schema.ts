@@ -59,6 +59,10 @@ type InitiateDeploymentResponse {
   deploymentUploadLocation: String
 }
 
+type DeleteApplicationResponse {
+  message: String!
+}
+
 input CreateApplicationInput {
   name: String!
   repository: String!
@@ -86,6 +90,11 @@ input InitiateDeploymentInput {
   commitHash: String!
 }
 
+input DeleteApplicationInput {
+  name: String
+  id: ID
+}
+
 type Query {
   listApplications: [Application!]!
   getApplication(input: ApplicationQueryInput!): Application!
@@ -97,12 +106,14 @@ type Mutation {
   initiateDeployment(
     input: InitiateDeploymentInput!
   ): InitiateDeploymentResponse!
+  deleteApplication(input: DeleteApplicationInput!): DeleteApplicationResponse!
 }
 
 schema {
   query: Query
   mutation: Mutation
 }
+
 
 
 

@@ -2,11 +2,14 @@ import { customAlphabet } from "nanoid";
 import {
   Application,
   ApplicationStatus,
+  DeleteApplicationResponse,
   MutationCreateApplicationArgs,
+  MutationDeleteApplicationArgs,
   QueryGetApplicationArgs,
 } from "../generated/graphql.types";
 import {
   createApplicationRecord,
+  deleteApplication,
   findAllApplicationsByCustomerId,
   findApplicationByName,
   getApplicationById,
@@ -75,5 +78,29 @@ export const createApplicationResolver = async (
     name,
     status,
     ...rest,
+  };
+};
+
+export const deleteApplicationResolver = async (
+  args: MutationDeleteApplicationArgs
+): Promise<DeleteApplicationResponse> => {
+  const { input } = args;
+  const { id, name } = input;
+  const customerId = CUSTOMER_ID;
+  let application: InternalApplication | undefined;
+  if (id) {
+    application = await getApplicationById(id);
+    if (!application) {
+      throw new Error("Not found");
+    }
+  } else if (name) {
+    application = await findApplicationByName(customerId, name);
+    if (!application) {
+      throw new Error("Not found");
+    }
+  }
+  await deleteApplication(application?.id!);
+  return {
+    message: "Successfully deleted.",
   };
 };

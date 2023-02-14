@@ -65,6 +65,16 @@ export type CreateApplicationInput = {
   repository: Scalars['String'];
 };
 
+export type DeleteApplicationInput = {
+  id?: InputMaybe<Scalars['ID']>;
+  name?: InputMaybe<Scalars['String']>;
+};
+
+export type DeleteApplicationResponse = {
+  __typename?: 'DeleteApplicationResponse';
+  message: Scalars['String'];
+};
+
 export type Deployment = {
   __typename?: 'Deployment';
   commitHash: Scalars['String'];
@@ -101,12 +111,18 @@ export type ListDeploymentsInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   createApplication: Application;
+  deleteApplication: DeleteApplicationResponse;
   initiateDeployment: InitiateDeploymentResponse;
 };
 
 
 export type MutationCreateApplicationArgs = {
   input: CreateApplicationInput;
+};
+
+
+export type MutationDeleteApplicationArgs = {
+  input: DeleteApplicationInput;
 };
 
 

@@ -128,3 +128,13 @@ export const triggerDataPlaneUpdate = async (
     },
   });
 };
+
+export const deleteApplication = async (applicationId: string) => {
+  return dynamoDbDocumentClient.delete({
+    TableName: TABLE_NAME,
+    Key: {
+      PK: `APPLICATION#${applicationId}`,
+      SK: `APPLICATION#${applicationId}`,
+    },
+  });
+};

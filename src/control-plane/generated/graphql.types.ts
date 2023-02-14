@@ -65,6 +65,16 @@ export type CreateApplicationInput = {
   repository: Scalars['String'];
 };
 
+export type DeleteApplicationInput = {
+  id?: InputMaybe<Scalars['ID']>;
+  name?: InputMaybe<Scalars['String']>;
+};
+
+export type DeleteApplicationResponse = {
+  __typename?: 'DeleteApplicationResponse';
+  message: Scalars['String'];
+};
+
 export type Deployment = {
   __typename?: 'Deployment';
   commitHash: Scalars['String'];
@@ -101,12 +111,18 @@ export type ListDeploymentsInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   createApplication: Application;
+  deleteApplication: DeleteApplicationResponse;
   initiateDeployment: InitiateDeploymentResponse;
 };
 
 
 export type MutationCreateApplicationArgs = {
   input: CreateApplicationInput;
+};
+
+
+export type MutationDeleteApplicationArgs = {
+  input: DeleteApplicationInput;
 };
 
 
@@ -219,6 +235,8 @@ export type ResolversTypes = {
   AvailableRegions: AvailableRegions;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CreateApplicationInput: CreateApplicationInput;
+  DeleteApplicationInput: DeleteApplicationInput;
+  DeleteApplicationResponse: ResolverTypeWrapper<DeleteApplicationResponse>;
   Deployment: ResolverTypeWrapper<Deployment>;
   GetDeploymentInput: GetDeploymentInput;
   ID: ResolverTypeWrapper<Scalars['ID']>;
@@ -237,6 +255,8 @@ export type ResolversParentTypes = {
   ApplicationQueryInput: ApplicationQueryInput;
   Boolean: Scalars['Boolean'];
   CreateApplicationInput: CreateApplicationInput;
+  DeleteApplicationInput: DeleteApplicationInput;
+  DeleteApplicationResponse: DeleteApplicationResponse;
   Deployment: Deployment;
   GetDeploymentInput: GetDeploymentInput;
   ID: Scalars['ID'];
@@ -262,6 +282,11 @@ export type ApplicationResolvers<ContextType = any, ParentType extends Resolvers
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type DeleteApplicationResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteApplicationResponse'] = ResolversParentTypes['DeleteApplicationResponse']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type DeploymentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Deployment'] = ResolversParentTypes['Deployment']> = {
   commitHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   completionTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -283,6 +308,7 @@ export type InitiateDeploymentResponseResolvers<ContextType = any, ParentType ex
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createApplication?: Resolver<ResolversTypes['Application'], ParentType, ContextType, RequireFields<MutationCreateApplicationArgs, 'input'>>;
+  deleteApplication?: Resolver<ResolversTypes['DeleteApplicationResponse'], ParentType, ContextType, RequireFields<MutationDeleteApplicationArgs, 'input'>>;
   initiateDeployment?: Resolver<ResolversTypes['InitiateDeploymentResponse'], ParentType, ContextType, RequireFields<MutationInitiateDeploymentArgs, 'input'>>;
 };
 
@@ -295,6 +321,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type Resolvers<ContextType = any> = {
   Application?: ApplicationResolvers<ContextType>;
+  DeleteApplicationResponse?: DeleteApplicationResponseResolvers<ContextType>;
   Deployment?: DeploymentResolvers<ContextType>;
   InitiateDeploymentResponse?: InitiateDeploymentResponseResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
