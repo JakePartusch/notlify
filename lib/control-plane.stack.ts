@@ -38,6 +38,7 @@ import { BlockPublicAccess, Bucket, EventType } from "aws-cdk-lib/aws-s3";
 import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
 import { Construct } from "constructs";
 import * as path from "path";
+import { LambdaAlarm } from "./lambda-alarm.construct";
 
 interface ControlPlaneStackProps extends StackProps {
   gitHubToken: string;
@@ -93,6 +94,11 @@ export class ControlPlaneStack extends cdk.Stack {
         GITHUB_TOKEN: props.gitHubToken,
         GITHUB_WORKFLOW_URL: props.gitHubWorkflowUrl,
       },
+    });
+
+    new LambdaAlarm(this, "ControlPlaneApiAlarm", {
+      emailRecipient: "jakepartusch@gmail.com",
+      lambdaFunction: lambda,
     });
 
     const httpApi = new HttpApi(this, "HttpApi", {
@@ -174,6 +180,11 @@ export class ControlPlaneStack extends cdk.Stack {
     table.grantReadWriteData(lambda);
     table.grantReadWriteData(s3NotifyLambda);
 
+    new LambdaAlarm(this, "DeploymentInitiatedHandlerAlarm", {
+      emailRecipient: "jakepartusch@gmail.com",
+      lambdaFunction: s3NotifyLambda,
+    });
+
     const eventbus = new CfnEventBus(this, "CloudformationEventBus", {
       name: "CloudformationEventBus",
     });
@@ -241,6 +252,11 @@ export class ControlPlaneStack extends cdk.Stack {
         source: ["aws.cloudformation"],
       },
       targets: [new LambdaFunction(deploymentProgressHandler)],
+    });
+
+    new LambdaAlarm(this, "DeploymentProgressHandlerAlarm", {
+      emailRecipient: "jakepartusch@gmail.com",
+      lambdaFunction: deploymentProgressHandler,
     });
   }
 }
