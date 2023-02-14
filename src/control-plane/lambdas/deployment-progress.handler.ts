@@ -17,6 +17,7 @@ import {
   getRegionStringFromGraphqlRegion,
 } from "../common/aws/utils";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
+import { ApplicationStatus } from "../generated/graphql.types";
 
 interface CloudformationDetail {
   "stack-id": string;
@@ -70,6 +71,13 @@ export const handler = async (
       });
       if (!deploymentUrl) {
         throw new Error("Unable to parse stack for deployment url");
+      }
+      if (application.status === ApplicationStatus.CreateRequested) {
+        await updateApplicationDeployment(
+          appId,
+          application.status,
+          deploymentUrl.OutputValue!
+        );
       }
       const initiatedDeployments =
         await findInitiatedDeploymentsByApplicationId(appId);
