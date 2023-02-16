@@ -33,7 +33,7 @@ jobs:
           DATA_PLANE_ACCOUNTS: ${{ secrets.DATA_PLANE_ACCOUNTS }}
           ORG_ID: ${{ secrets.ORG_ID }}
       - name: Deploy UI
-        uses: ./.github/actions/deploy-notlify
+        uses: JakePartusch/notlify-action@main
         with:
           applicationName: notlify
           distributionDirectory: src/control-plane/ui/app/out

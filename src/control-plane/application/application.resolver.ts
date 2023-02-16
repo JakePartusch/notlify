@@ -100,6 +100,7 @@ export const deleteApplicationResolver = async (
     }
   }
   await deleteApplication(application?.id!);
+  //TODO: Delete Deployment records and data plane stack
   return {
     message: "Successfully deleted.",
   };

@@ -66,14 +66,6 @@ const userNavigation = [
   { name: "Settings", href: "#" },
   { name: "Sign out", href: "#" },
 ];
-const activityItems = [
-  {
-    application: "test-app-2",
-    commit: "2d89f0c8",
-    environment: "production",
-    time: "1h",
-  },
-];
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(" ");
@@ -145,6 +137,18 @@ export default function Dashboard() {
       new Date(a?.lastDeploymentTime ?? 0)?.getTime()
     );
   });
+
+  const activityItems = sortedApplications
+    .filter(
+      (application) =>
+        application.status === ApplicationStatus.DeploymentComplete
+    )
+    .map((application) => ({
+      application: application.name,
+      commit: "2d89f0c8",
+      environment: "production",
+      time: timeAgo(application.lastDeploymentTime!),
+    }));
   return (
     <>
       <div className="relative flex flex-col min-h-full">
