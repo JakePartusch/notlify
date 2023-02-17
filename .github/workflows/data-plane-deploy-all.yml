@@ -1,0 +1,27 @@
+name: "Data Plane Deploy All"
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+jobs:
+  deploy-data-plane:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/checkout@v3
+        with:
+          node-version: 18
+          cache: "npm"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.awsAccountId }}:role/GitHubDeployer
+          aws-region: ${{ inputs.region }}
+      - run: npm ci
+      - name: Deploy All
+        uses: ./actions/deploy-all
+        with:
+          gitHubtoken: ${{ secrets.GH_TOKEN }}
+          gitHubWorkflowUrl: ${{ secrets.GH_WORKFLOW_URL }}
+          controlPlaneTableNamee: ${{ secrets.CONTROL_PLANE_TABLE_NAME }}

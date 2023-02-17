@@ -1,4 +1,4 @@
-name: "Data Plane Deploy"
+name: "Data Plane Deploy Single"
 on:
   workflow_dispatch:
     inputs:

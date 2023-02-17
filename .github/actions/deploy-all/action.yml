@@ -1,0 +1,16 @@
+name: "Deploy All Data Plane stacks"
+description: "Deploy all the things"
+inputs:
+  controlPlaneTable:
+    description: "Control Plane table name"
+    required: true
+  gitHubWorkflowUrl:
+    description: "Target GitHub Url"
+    required: true
+  gitHubToken:
+    description: "GitHub token to execute the request"
+    required: true
+
+runs:
+  using: "node16"
+  main: "dist/index.js"
