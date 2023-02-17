@@ -26,6 +26,6 @@ jobs:
       - name: Deploy All
         uses: ./.github/actions/deploy-all
         with:
-          gitHubtoken: ${{ secrets.GH_TOKEN }}
+          gitHubToken: ${{ secrets.GH_TOKEN }}
           gitHubWorkflowUrl: ${{ secrets.GH_WORKFLOW_URL }}
-          controlPlaneTableNamee: ${{ secrets.CONTROL_PLANE_TABLE_NAME }}
+          controlPlaneTable: ${{ secrets.CONTROL_PLANE_TABLE_NAME }}
