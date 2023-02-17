@@ -24,7 +24,7 @@ jobs:
           aws-region: us-east-1
       - run: npm ci
       - name: Deploy All
-        uses: ./actions/deploy-all
+        uses: ./.github/actions/deploy-all
         with:
           gitHubtoken: ${{ secrets.GH_TOKEN }}
           gitHubWorkflowUrl: ${{ secrets.GH_WORKFLOW_URL }}
