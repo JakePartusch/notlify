@@ -8,7 +8,9 @@ interface InternalApplication {
   id: string;
   awsAccountId: string;
   region: string;
-  domainConfig?: string;
+  domain?: string;
+  domainZoneId?: string;
+  domainCertificateArn?: string;
 }
 
 const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
@@ -47,7 +49,9 @@ export const triggerDataPlaneUpdate = async (
         applicationId: application.id,
         awsAccountId: application.awsAccountId,
         region: application.region.replaceAll("_", "-").toLowerCase(),
-        domainConfig: application.domainConfig,
+        domain: application.domain,
+        domainZoneId: application.domainZoneId,
+        domainCertificateArn: application.domainCertificateArn,
       },
     }),
     headers: {

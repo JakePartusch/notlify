@@ -9,11 +9,9 @@ const app = new cdk.App();
 const customerId = app.node.tryGetContext("customerId");
 const applicationId = app.node.tryGetContext("applicationId");
 const sourceFilesZipName = app.node.tryGetContext("sourceFilesZipName");
-const domainConfigAsString = app.node.tryGetContext("domainConfig");
-let domainConfig: Domain | undefined;
-if (domainConfigAsString) {
-  domainConfig = JSON.parse(domainConfigAsString);
-}
+const domain = app.node.tryGetContext("domain");
+const domainZoneId = app.node.tryGetContext("domainZoneId");
+const domainCertificateArn = app.node.tryGetContext("domainCertificateArn");
 
 new DataPlaneStack(app, `DataPlaneStack-${customerId}-${applicationId}`, {
   /* If you don't specify 'env', this stack will be environment-agnostic.
@@ -28,7 +26,9 @@ new DataPlaneStack(app, `DataPlaneStack-${customerId}-${applicationId}`, {
   sourceFilesZipName,
   customerId,
   applicationId,
-  domain: domainConfig,
+  domainName: domain,
+  zoneId: domainZoneId,
+  certificateArn: domainCertificateArn,
 
   /* Uncomment the next line if you know exactly what Account and Region you
    * want to deploy the stack to. */

@@ -17,8 +17,14 @@ on:
       sourceFilesZipName:
         description: "Source files Zip Name"
         required: false
-      domainConfig:
-        description: "Domain configuration"
+      domain:
+        description: "Domain Name"
+        required: false
+      domainZoneId:
+        description: "Domain Zone ID"
+        required: false
+      domainCertificateArn:
+        description: "Domain Certificate ARN"
         required: false
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -40,4 +46,4 @@ jobs:
           role-to-assume: arn:aws:iam::${{ inputs.awsAccountId }}:role/GitHubDeployer
           aws-region: ${{ inputs.region }}
       - run: npm ci
-      - run: npm run cdk deploy -- --require-approval=never --app "npx ts-node --prefer-ts-exts bin/data-plane.app.ts" --context customerId=${{ inputs.customerId }} --context applicationId=${{ inputs.applicationId }} --context sourceFilesZipName=${{ inputs.sourceFilesZipName }} --context domainConfig=${{ inputs.domainConfig }}
+      - run: npm run cdk deploy -- --require-approval=never --app "npx ts-node --prefer-ts-exts bin/data-plane.app.ts" --context customerId=${{ inputs.customerId }} --context applicationId=${{ inputs.applicationId }} --context sourceFilesZipName=${{ inputs.sourceFilesZipName }} --context domain=${{ inputs.domain }} --context domainZoneId=${{ inputs.domainZoneId }} --context domainCertificateArn=${{ inputs.domainCertificateArn }}
