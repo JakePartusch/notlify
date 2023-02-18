@@ -2,12 +2,18 @@
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { DataPlaneStack } from "../lib/data-plane.stack";
+import { Domain } from "../lib/data-plane.construct";
 
 const app = new cdk.App();
 
 const customerId = app.node.tryGetContext("customerId");
 const applicationId = app.node.tryGetContext("applicationId");
 const sourceFilesZipName = app.node.tryGetContext("sourceFilesZipName");
+const domainConfigAsString = app.node.tryGetContext("domainConfig");
+let domainConfig: Domain | undefined;
+if (domainConfigAsString) {
+  domainConfig = JSON.parse(domainConfigAsString);
+}
 
 new DataPlaneStack(app, `DataPlaneStack-${customerId}-${applicationId}`, {
   /* If you don't specify 'env', this stack will be environment-agnostic.
@@ -22,6 +28,7 @@ new DataPlaneStack(app, `DataPlaneStack-${customerId}-${applicationId}`, {
   sourceFilesZipName,
   customerId,
   applicationId,
+  domain: domainConfig,
 
   /* Uncomment the next line if you know exactly what Account and Region you
    * want to deploy the stack to. */

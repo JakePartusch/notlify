@@ -120,6 +120,7 @@ export const triggerDataPlaneUpdate = async (
         applicationId: application.id,
         awsAccountId: application.awsAccountId,
         region: application.region.replaceAll("_", "-").toLowerCase(),
+        domainConfig: application.domainConfig,
       },
     }),
     headers: {

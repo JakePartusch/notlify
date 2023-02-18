@@ -42,7 +42,7 @@ import { EventBus, Rule } from "aws-cdk-lib/aws-events";
 import { EventBus as EventBusTarget } from "aws-cdk-lib/aws-events-targets";
 import { Api, StaticSite } from "sst/constructs";
 
-interface Domain {
+export interface Domain {
   /**
    * The custom domain name for this deployment
    */

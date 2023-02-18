@@ -17,6 +17,9 @@ on:
       sourceFilesZipName:
         description: "Source files Zip Name"
         required: false
+      domainConfig:
+        description: "Domain configuration"
+        required: false
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
@@ -37,4 +40,4 @@ jobs:
           role-to-assume: arn:aws:iam::${{ inputs.awsAccountId }}:role/GitHubDeployer
           aws-region: ${{ inputs.region }}
       - run: npm ci
-      - run: npm run cdk deploy -- --require-approval=never --app "npx ts-node --prefer-ts-exts bin/data-plane.app.ts" --context customerId=${{ inputs.customerId }} --context applicationId=${{ inputs.applicationId }} --context sourceFilesZipName=${{ inputs.sourceFilesZipName }}
+      - run: npm run cdk deploy -- --require-approval=never --app "npx ts-node --prefer-ts-exts bin/data-plane.app.ts" --context customerId=${{ inputs.customerId }} --context applicationId=${{ inputs.applicationId }} --context sourceFilesZipName=${{ inputs.sourceFilesZipName }} --context domainConfig=${{ inputs.domainConfig }}

@@ -1,11 +1,12 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { DataPlaneConstruct } from "./data-plane.construct";
+import { DataPlaneConstruct, Domain } from "./data-plane.construct";
 
 interface DataPlaneStackProps extends cdk.StackProps {
   sourceFilesZipName?: string;
   customerId: string;
   applicationId: string;
+  domain?: Domain;
 }
 
 export class DataPlaneStack extends cdk.Stack {
@@ -20,7 +21,7 @@ export class DataPlaneStack extends cdk.Stack {
       apiEnvironment: undefined, //TODO
       buildId: undefined, //TODO
       cloudFrontDistributionProps: undefined, //TODO
-      domain: undefined, //TODO
+      domain: props?.domain, //TODO
       isPrivateS3: false, //TODO
     });
   }
