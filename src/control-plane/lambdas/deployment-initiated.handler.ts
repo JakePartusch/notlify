@@ -20,14 +20,12 @@ import {
   getDataPlaneSourceFilesBucketName,
   getRegionStringFromGraphqlRegion,
 } from "../common/aws/utils";
+import { InternalApplication } from "../application/application.types";
 
 const { AWS_REGION, GITHUB_TOKEN, GITHUB_WORKFLOW_URL } = process.env;
 
 const triggerDataPlaneDeployment = async (
-  customerId: string,
-  applicationId: string,
-  awsAccountId: string,
-  region: string,
+  application: InternalApplication,
   sourceFilesZipName: string
 ) => {
   try {
@@ -36,11 +34,14 @@ const triggerDataPlaneDeployment = async (
       body: JSON.stringify({
         ref: "main",
         inputs: {
-          customerId,
-          applicationId,
-          awsAccountId,
-          region,
+          customerId: application.customerId,
+          applicationId: application.id,
+          awsAccountId: application.awsAccountId,
+          region: getRegionStringFromGraphqlRegion(application.region),
           sourceFilesZipName,
+          domain: application.domain,
+          domainZoneId: application.domainZoneId,
+          domainCertificateArn: application.domainCertificateArn,
         },
       }),
       headers: {
@@ -101,13 +102,7 @@ export const handler = async (event: S3Event) => {
       await crossAccountS3Client.send(putObjectCommand);
       await updateDeploymentToInitiated(application.id, deploymentId);
       await updateApplicationToInitiated(application.id);
-      await triggerDataPlaneDeployment(
-        customerId,
-        applicationId,
-        application.awsAccountId,
-        region,
-        objectKey
-      );
+      await triggerDataPlaneDeployment(application, objectKey);
     } else {
       throw new Error(
         `No pending deployment for app ${applicationId} with deploymentId ${deploymentId}`
