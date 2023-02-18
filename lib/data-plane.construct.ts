@@ -24,13 +24,8 @@ import {
   Function as Lambda,
 } from "aws-cdk-lib/aws-lambda";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
-import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
-import {
-  BlockPublicAccess,
-  Bucket,
-  EventType,
-  IBucket,
-} from "aws-cdk-lib/aws-s3";
+import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
+import { BlockPublicAccess, Bucket, IBucket } from "aws-cdk-lib/aws-s3";
 import {
   PolicyStatement,
   Effect,
@@ -43,13 +38,9 @@ import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-al
 import { HttpApi, IHttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { overrideProps } from "./utils";
 import { Construct } from "constructs";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import path from "path";
 import { EventBus, Rule } from "aws-cdk-lib/aws-events";
-import {
-  LambdaFunction,
-  EventBus as EventBusTarget,
-} from "aws-cdk-lib/aws-events-targets";
+import { EventBus as EventBusTarget } from "aws-cdk-lib/aws-events-targets";
+import { Api, StaticSite } from "sst/constructs";
 
 interface Domain {
   /**

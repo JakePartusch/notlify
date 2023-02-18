@@ -3,6 +3,7 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { ControlPlaneStack } from "../lib/control-plane.stack";
 import * as dotenv from "dotenv";
+import { DomainStack } from "../lib/domain.stack";
 dotenv.config();
 
 const app = new cdk.App();
@@ -31,4 +32,11 @@ new ControlPlaneStack(app, `ControlPlane`, {
    * want to deploy the stack to. */
   // env: { account: '123456789012', region: 'us-east-1' },
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+});
+
+new DomainStack(app, "NotlifyDomain", {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: "us-east-1",
+  },
 });
