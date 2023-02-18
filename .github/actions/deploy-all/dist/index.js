@@ -35709,7 +35709,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.isCrtAvailable = void 0;
 const isCrtAvailable = () => {
     try {
-        if ( true && __nccwpck_require__(87578)) {
+        if ( true && __nccwpck_require__(71667)) {
             return ["md/crt-avail"];
         }
         return null;
@@ -35936,6 +35936,4674 @@ const checkExceptions = (result) => {
 };
 exports.checkExceptions = checkExceptions;
 
+
+/***/ }),
+
+/***/ 23381:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.extractRegionFromEndpoint = exports.buildMqtt5FinalUsername = exports.populate_username_string_with_custom_authorizer = exports.is_string_and_not_empty = exports.add_to_username_parameter = void 0;
+/**
+ *
+ * A module containing miscellaneous functionality that is shared across both native and browser for aws_iot
+ *
+ * @packageDocumentation
+ * @module aws_iot
+ */
+const platform = __importStar(__nccwpck_require__(17709));
+/**
+ * A helper function to add parameters to the username in with_custom_authorizer function
+ *
+ * @internal
+ */
+function add_to_username_parameter(current_username, parameter_value, parameter_pre_text) {
+    let return_string = current_username;
+    if (return_string.indexOf("?") != -1) {
+        return_string += "&";
+    }
+    else {
+        return_string += "?";
+    }
+    if (parameter_value.indexOf(parameter_pre_text) != -1) {
+        return return_string + parameter_value;
+    }
+    else {
+        return return_string + parameter_pre_text + parameter_value;
+    }
+}
+exports.add_to_username_parameter = add_to_username_parameter;
+/**
+ * A helper function to see if a string is not null, is defined, and is not an empty string
+ *
+ * @internal
+ */
+function is_string_and_not_empty(item) {
+    return item != undefined && typeof (item) == 'string' && item != "";
+}
+exports.is_string_and_not_empty = is_string_and_not_empty;
+/**
+ * A helper function to populate the username with the Custom Authorizer fields
+ * @param current_username the current username
+ * @param input_username the username to add - can be an empty string to skip
+ * @param input_authorizer the name of the authorizer to add - can be an empty string to skip
+ * @param input_signature the name of the signature to add - can be an empty string to skip
+ * @param input_builder_username the username from the MQTT builder
+ * @returns The finished username with the additions added to it
+ *
+ * @internal
+ */
+function populate_username_string_with_custom_authorizer(current_username, input_username, input_authorizer, input_signature, input_builder_username) {
+    let username_string = "";
+    if (current_username) {
+        username_string += current_username;
+    }
+    if (is_string_and_not_empty(input_username) == false) {
+        if (is_string_and_not_empty(input_builder_username) && input_builder_username) {
+            username_string += input_builder_username;
+        }
+    }
+    else {
+        username_string += input_username;
+    }
+    if (is_string_and_not_empty(input_authorizer) && input_authorizer) {
+        username_string = add_to_username_parameter(username_string, input_authorizer, "x-amz-customauthorizer-name=");
+    }
+    if (is_string_and_not_empty(input_signature) && input_signature) {
+        username_string = add_to_username_parameter(username_string, input_signature, "x-amz-customauthorizer-signature=");
+    }
+    return username_string;
+}
+exports.populate_username_string_with_custom_authorizer = populate_username_string_with_custom_authorizer;
+;
+/** @internal */
+function addParam(paramName, paramValue, paramSet) {
+    if (paramValue) {
+        paramSet.push([paramName, paramValue]);
+    }
+}
+/**
+ * Builds the final value for the CONNECT packet's username property based on AWS IoT custom auth configuration
+ * and SDK metrics properties.
+ *
+ * @param customAuthConfig intended AWS IoT custom auth client configuration
+ *
+ * @internal
+ */
+function buildMqtt5FinalUsername(customAuthConfig) {
+    let path = "";
+    let paramList = [];
+    if (customAuthConfig) {
+        /* If we're using token-signing authentication, then all token properties must be set */
+        let usingSigning = false;
+        if (customAuthConfig.tokenValue || customAuthConfig.tokenKeyName || customAuthConfig.tokenSignature) {
+            usingSigning = true;
+            if (!customAuthConfig.tokenValue || !customAuthConfig.tokenKeyName || !customAuthConfig.tokenSignature) {
+                throw new Error("Token-based custom authentication requires all token-related properties to be set");
+            }
+        }
+        let username = customAuthConfig.username;
+        let pathSplit = (username !== null && username !== void 0 ? username : "").split("?");
+        let params = pathSplit.slice(1);
+        path = pathSplit[0];
+        if (params.length > 1) {
+            throw new Error("Custom auth username property value is invalid");
+        }
+        else if (params.length == 1) {
+            params[0].split("&").forEach((keyValue, index, array) => {
+                var _a;
+                let kvPair = keyValue.split("=");
+                paramList.push([kvPair[0], (_a = kvPair[1]) !== null && _a !== void 0 ? _a : ""]);
+            });
+        }
+        addParam("x-amz-customauthorizer-name", customAuthConfig.authorizerName, paramList);
+        if (usingSigning) {
+            // @ts-ignore verified earlier
+            addParam(customAuthConfig.tokenKeyName, customAuthConfig.tokenValue, paramList);
+            addParam("x-amz-customauthorizer-signature", customAuthConfig.tokenSignature, paramList);
+        }
+    }
+    paramList.push(["SDK", "NodeJSv2"]);
+    paramList.push(["Version", platform.crt_version()]);
+    return (path !== null && path !== void 0 ? path : "") + "?" + paramList.map((value) => `${value[0]}=${value[1]}`).join("&");
+}
+exports.buildMqtt5FinalUsername = buildMqtt5FinalUsername;
+/**
+ * Attempts to determine the AWS region associated with an endpoint.
+ *
+ * @param endpoint endpoint to compute the region for
+ *
+ * @internal
+ */
+function extractRegionFromEndpoint(endpoint) {
+    const regexpRegion = /^[\w\-]+\.[\w\-]+\.([\w+\-]+)\./;
+    const match = endpoint.match(regexpRegion);
+    if (match) {
+        return match[1];
+    }
+    throw new Error("AWS region could not be extracted from endpoint.  Use 'region' property on WebsocketConfig to set manually.");
+}
+exports.extractRegionFromEndpoint = extractRegionFromEndpoint;
+//# sourceMappingURL=aws_iot_shared.js.map
+
+/***/ }),
+
+/***/ 85985:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.BufferedEventEmitter = void 0;
+/**
+ * Module for base types related to event emission
+ *
+ * @packageDocumentation
+ * @module event
+ */
+const events_1 = __nccwpck_require__(82361);
+/**
+ * @internal
+ */
+class BufferedEvent {
+    constructor(event, args) {
+        this.event = event;
+        this.args = args;
+    }
+}
+/**
+ * Provides buffered event emitting semantics, similar to many Node-style streams.
+ * Subclasses will override EventEmitter.on() and trigger uncorking.
+ * NOTE: It is HIGHLY recommended that uncorking should always be done via
+ * ```process.nextTick()```, not during the EventEmitter.on() call.
+ *
+ * See also: [Node writable streams](https://nodejs.org/api/stream.html#stream_writable_cork)
+ *
+ * @category Events
+ */
+class BufferedEventEmitter extends events_1.EventEmitter {
+    constructor() {
+        super();
+        this.corked = false;
+    }
+    /**
+     * Forces all written events to be buffered in memory. The buffered data will be
+     * flushed when {@link BufferedEventEmitter.uncork} is called.
+     */
+    cork() {
+        this.corked = true;
+    }
+    /**
+     * Flushes all data buffered since {@link BufferedEventEmitter.cork} was called.
+     *
+     * NOTE: It is HIGHLY recommended that uncorking should always be done via
+     * ``` process.nextTick```, not during the ```EventEmitter.on()``` call.
+     */
+    uncork() {
+        this.corked = false;
+        while (this.eventQueue) {
+            const event = this.eventQueue;
+            super.emit(event.event, ...event.args);
+            this.eventQueue = this.eventQueue.next;
+        }
+    }
+    /**
+     * Synchronously calls each of the listeners registered for the event key supplied
+     * in registration order. If the {@link BufferedEventEmitter} is currently corked,
+     * the event will be buffered until {@link BufferedEventEmitter.uncork} is called.
+     * @param event The name of the event
+     * @param args Event payload
+     */
+    emit(event, ...args) {
+        if (this.corked) {
+            // queue requests in order
+            let last = this.lastQueuedEvent;
+            this.lastQueuedEvent = new BufferedEvent(event, args);
+            if (last) {
+                last.next = this.lastQueuedEvent;
+            }
+            else {
+                this.eventQueue = this.lastQueuedEvent;
+            }
+            return this.listeners(event).length > 0;
+        }
+        return super.emit(event, ...args);
+    }
+}
+exports.BufferedEventEmitter = BufferedEventEmitter;
+//# sourceMappingURL=event.js.map
+
+/***/ }),
+
+/***/ 80866:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CommonHttpProxyOptions = exports.HttpProxyAuthenticationType = exports.HttpVersion = void 0;
+/**
+ *
+ * A module containing support for creating http connections and making requests on them.
+ *
+ * @packageDocumentation
+ * @module http
+ */
+/**
+ * HTTP protocol version
+ *
+ * @category HTTP
+ */
+var HttpVersion;
+(function (HttpVersion) {
+    HttpVersion[HttpVersion["Unknown"] = 0] = "Unknown";
+    /** HTTP/1.0 */
+    HttpVersion[HttpVersion["Http1_0"] = 1] = "Http1_0";
+    /** HTTP/1.1 */
+    HttpVersion[HttpVersion["Http1_1"] = 2] = "Http1_1";
+    /** HTTP/2 */
+    HttpVersion[HttpVersion["Http2"] = 3] = "Http2";
+})(HttpVersion = exports.HttpVersion || (exports.HttpVersion = {}));
+/**
+ * Proxy authentication types
+ *
+ * @category HTTP
+ */
+var HttpProxyAuthenticationType;
+(function (HttpProxyAuthenticationType) {
+    /**
+     * No to-proxy authentication logic
+     */
+    HttpProxyAuthenticationType[HttpProxyAuthenticationType["None"] = 0] = "None";
+    /**
+     * Use basic authentication (user/pass).  Supply these values in {@link HttpProxyOptions}
+     */
+    HttpProxyAuthenticationType[HttpProxyAuthenticationType["Basic"] = 1] = "Basic";
+})(HttpProxyAuthenticationType = exports.HttpProxyAuthenticationType || (exports.HttpProxyAuthenticationType = {}));
+;
+/**
+ * Options used when connecting to an HTTP endpoint via a proxy
+ *
+ * @category HTTP
+ */
+class CommonHttpProxyOptions {
+    /**
+     *
+     * @param host_name endpoint of the proxy to use
+     * @param port port of proxy to use
+     * @param auth_method type of authentication to use with the proxy
+     * @param auth_username (basic authentication only) proxy username
+     * @param auth_password (basic authentication only) password associated with the username
+     */
+    constructor(host_name, port, auth_method = HttpProxyAuthenticationType.None, auth_username, auth_password) {
+        this.host_name = host_name;
+        this.port = port;
+        this.auth_method = auth_method;
+        this.auth_username = auth_username;
+        this.auth_password = auth_password;
+    }
+}
+exports.CommonHttpProxyOptions = CommonHttpProxyOptions;
+//# sourceMappingURL=http.js.map
+
+/***/ }),
+
+/***/ 46566:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SocketDomain = exports.SocketType = exports.TlsVersion = void 0;
+/**
+ *
+ * A module containing a grab bag of support for core network I/O functionality, including sockets, TLS, DNS, logging,
+ * error handling, streams, and connection -> thread mapping.
+ *
+ * Categories include:
+ * - Network: socket configuration
+ * - TLS: tls configuration
+ * - Logging: logging controls and configuration
+ * - IO: everything else
+ *
+ * @packageDocumentation
+ * @module io
+ */
+/**
+ * TLS Version
+ *
+ * @category TLS
+ */
+var TlsVersion;
+(function (TlsVersion) {
+    TlsVersion[TlsVersion["SSLv3"] = 0] = "SSLv3";
+    TlsVersion[TlsVersion["TLSv1"] = 1] = "TLSv1";
+    TlsVersion[TlsVersion["TLSv1_1"] = 2] = "TLSv1_1";
+    TlsVersion[TlsVersion["TLSv1_2"] = 3] = "TLSv1_2";
+    TlsVersion[TlsVersion["TLSv1_3"] = 4] = "TLSv1_3";
+    TlsVersion[TlsVersion["Default"] = 128] = "Default";
+})(TlsVersion = exports.TlsVersion || (exports.TlsVersion = {}));
+/**
+ * @category Network
+ */
+var SocketType;
+(function (SocketType) {
+    /**
+     * A streaming socket sends reliable messages over a two-way connection.
+     * This means TCP when used with {@link SocketDomain.IPV4}/{@link SocketDomain.IPV6},
+     * and Unix domain sockets when used with {@link SocketDomain.LOCAL }
+      */
+    SocketType[SocketType["STREAM"] = 0] = "STREAM";
+    /**
+     * A datagram socket is connectionless and sends unreliable messages.
+     * This means UDP when used with {@link SocketDomain.IPV4}/{@link SocketDomain.IPV6}.
+     * {@link SocketDomain.LOCAL} is not compatible with {@link DGRAM}
+     */
+    SocketType[SocketType["DGRAM"] = 1] = "DGRAM";
+})(SocketType = exports.SocketType || (exports.SocketType = {}));
+/**
+ * @category Network
+ */
+var SocketDomain;
+(function (SocketDomain) {
+    /** IPv4 sockets */
+    SocketDomain[SocketDomain["IPV4"] = 0] = "IPV4";
+    /** IPv6 sockets */
+    SocketDomain[SocketDomain["IPV6"] = 1] = "IPV6";
+    /** UNIX domain socket/Windows named pipes */
+    SocketDomain[SocketDomain["LOCAL"] = 2] = "LOCAL";
+})(SocketDomain = exports.SocketDomain || (exports.SocketDomain = {}));
+//# sourceMappingURL=io.js.map
+
+/***/ }),
+
+/***/ 3826:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DEFAULT_RECONNECT_MIN_SEC = exports.DEFAULT_RECONNECT_MAX_SEC = exports.MqttWill = exports.QoS = void 0;
+/**
+ *
+ * A module containing support for mqtt connection establishment and operations.
+ *
+ * @packageDocumentation
+ * @module mqtt
+ */
+/**
+ * Quality of service control for mqtt publish operations
+ *
+ * @category MQTT
+ */
+var QoS;
+(function (QoS) {
+    /**
+     * QoS 0 - At most once delivery
+     * The message is delivered according to the capabilities of the underlying network.
+     * No response is sent by the receiver and no retry is performed by the sender.
+     * The message arrives at the receiver either once or not at all.
+     */
+    QoS[QoS["AtMostOnce"] = 0] = "AtMostOnce";
+    /**
+     * QoS 1 - At least once delivery
+     * This quality of service ensures that the message arrives at the receiver at least once.
+     */
+    QoS[QoS["AtLeastOnce"] = 1] = "AtLeastOnce";
+    /**
+     * QoS 2 - Exactly once delivery
+
+     * This is the highest quality of service, for use when neither loss nor
+     * duplication of messages are acceptable. There is an increased overhead
+     * associated with this quality of service.
+
+     * Note that, while this client supports QoS 2, the AWS IoT Core service
+     * does not support QoS 2 at time of writing (May 2020).
+     */
+    QoS[QoS["ExactlyOnce"] = 2] = "ExactlyOnce";
+})(QoS = exports.QoS || (exports.QoS = {}));
+/**
+ * A Will message is published by the server if a client is lost unexpectedly.
+ *
+ * The Will message is stored on the server when a client connects.
+ * It is published if the client connection is lost without the server
+ * receiving a DISCONNECT packet.
+ *
+ * [MQTT - 3.1.2 - 8]
+ *
+ * @category MQTT
+ */
+class MqttWill {
+    constructor(
+    /** Topic to publish Will message on. */
+    topic, 
+    /** QoS used when publishing the Will message. */
+    qos, 
+    /** Content of Will message. */
+    payload, 
+    /** Whether the Will message is to be retained when it is published. */
+    retain = false) {
+        this.topic = topic;
+        this.qos = qos;
+        this.payload = payload;
+        this.retain = retain;
+    }
+}
+exports.MqttWill = MqttWill;
+/**
+ * Const value for max reconnection back off time
+ *
+ * @category MQTT
+ */
+exports.DEFAULT_RECONNECT_MAX_SEC = 128;
+/**
+ * Const value for min reconnection back off time
+ *
+ * @category MQTT
+ */
+exports.DEFAULT_RECONNECT_MIN_SEC = 1;
+//# sourceMappingURL=mqtt.js.map
+
+/***/ }),
+
+/***/ 90650:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RetryJitterType = exports.ClientSessionBehavior = void 0;
+/**
+ * Controls how the MQTT5 client should behave with respect to MQTT sessions.
+ */
+var ClientSessionBehavior;
+(function (ClientSessionBehavior) {
+    /** Maps to Clean */
+    ClientSessionBehavior[ClientSessionBehavior["Default"] = 0] = "Default";
+    /**
+     * Always ask for a clean session when connecting
+     */
+    ClientSessionBehavior[ClientSessionBehavior["Clean"] = 1] = "Clean";
+    /**
+     * Always attempt to rejoin an existing session after an initial connection success.
+     *
+     * Session rejoin requires an appropriate non-zero session expiry interval in the client's CONNECT options.
+     */
+    ClientSessionBehavior[ClientSessionBehavior["RejoinPostSuccess"] = 2] = "RejoinPostSuccess";
+    /**
+     * Always attempt to rejoin an existing session.  Since the client does not yet support durable session persistence,
+     * this option is not guaranteed to be spec compliant because any unacknowledged qos1 publishes (which are
+     * part of the client session state) will not be present on the initial connection.  Until we support
+     * durable session resumption, this option is technically spec-breaking, but useful.
+     */
+    ClientSessionBehavior[ClientSessionBehavior["RejoinAlways"] = 3] = "RejoinAlways";
+})(ClientSessionBehavior = exports.ClientSessionBehavior || (exports.ClientSessionBehavior = {}));
+/**
+ * Controls how the reconnect delay is modified in order to smooth out the distribution of reconnection attempt
+ * timepoints for a large set of reconnecting clients.
+ *
+ * See [Exponential Backoff and Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)
+ */
+var RetryJitterType;
+(function (RetryJitterType) {
+    /**
+     * Maps to Full
+     */
+    RetryJitterType[RetryJitterType["Default"] = 0] = "Default";
+    /**
+     * Do not perform any randomization on the reconnect delay:
+     * ```NextReconnectDelay = CurrentExponentialBackoffValue```
+     */
+    RetryJitterType[RetryJitterType["None"] = 1] = "None";
+    /**
+     * Fully random between no delay and the current exponential backoff value.
+     * ```NextReconnectDelay = Random(0, CurrentExponentialBackoffValue)```
+     */
+    RetryJitterType[RetryJitterType["Full"] = 2] = "Full";
+    /**
+     * ```NextReconnectDelay = Min(MaxReconnectDelay, Random(MinReconnectDelay, 3 * CurrentReconnectDelay)```
+     */
+    RetryJitterType[RetryJitterType["Decorrelated"] = 3] = "Decorrelated";
+})(RetryJitterType = exports.RetryJitterType || (exports.RetryJitterType = {}));
+//# sourceMappingURL=mqtt5.js.map
+
+/***/ }),
+
+/***/ 18281:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PacketType = exports.RetainHandlingType = exports.QoS = exports.PayloadFormatIndicator = exports.isSuccessfulPubackReasonCode = exports.PubackReasonCode = exports.isSuccessfulUnsubackReasonCode = exports.UnsubackReasonCode = exports.isSuccessfulSubackReasonCode = exports.SubackReasonCode = exports.isSuccessfulDisconnectReasonCode = exports.DisconnectReasonCode = exports.isSuccessfulConnectReasonCode = exports.ConnectReasonCode = void 0;
+/**
+ * Server return code for connect attempts.
+ *
+ * Enum values match [MQTT5 spec](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901079) encoding values.
+ */
+var ConnectReasonCode;
+(function (ConnectReasonCode) {
+    /**
+     * Returned when the connection is accepted.
+     */
+    ConnectReasonCode[ConnectReasonCode["Success"] = 0] = "Success";
+    /**
+     * Returned when the server has a failure but does not want to specify a reason or none
+     * of the other reason codes apply.
+     */
+    ConnectReasonCode[ConnectReasonCode["UnspecifiedError"] = 128] = "UnspecifiedError";
+    /**
+     * Returned when data in the CONNECT packet could not be correctly parsed by the server.
+     */
+    ConnectReasonCode[ConnectReasonCode["MalformedPacket"] = 129] = "MalformedPacket";
+    /**
+     * Returned when data in the CONNECT packet does not conform to the MQTT5 specification requirements.
+     */
+    ConnectReasonCode[ConnectReasonCode["ProtocolError"] = 130] = "ProtocolError";
+    /**
+     * Returned when the CONNECT packet is valid but was not accepted by the server.
+     */
+    ConnectReasonCode[ConnectReasonCode["ImplementationSpecificError"] = 131] = "ImplementationSpecificError";
+    /**
+     * Returned when the server does not support MQTT5 protocol version specified in the connection.
+     */
+    ConnectReasonCode[ConnectReasonCode["UnsupportedProtocolVersion"] = 132] = "UnsupportedProtocolVersion";
+    /**
+     * Returned when the client identifier in the CONNECT packet is a valid string but not one that
+     * is allowed on the server.
+     */
+    ConnectReasonCode[ConnectReasonCode["ClientIdentifierNotValid"] = 133] = "ClientIdentifierNotValid";
+    /**
+     * Returned when the server does not accept the username and/or password specified by the client
+     * in the connection packet.
+     */
+    ConnectReasonCode[ConnectReasonCode["BadUsernameOrPassword"] = 134] = "BadUsernameOrPassword";
+    /**
+     * Returned when the client is not authorized to connect to the server.
+     */
+    ConnectReasonCode[ConnectReasonCode["NotAuthorized"] = 135] = "NotAuthorized";
+    /**
+     * Returned when the MQTT5 server is not available.
+     */
+    ConnectReasonCode[ConnectReasonCode["ServerUnavailable"] = 136] = "ServerUnavailable";
+    /**
+     * Returned when the server is too busy to make a connection. It is recommended that the client try again later.
+     */
+    ConnectReasonCode[ConnectReasonCode["ServerBusy"] = 137] = "ServerBusy";
+    /**
+     * Returned when the client has been banned by the server.
+     */
+    ConnectReasonCode[ConnectReasonCode["Banned"] = 138] = "Banned";
+    /**
+     * Returned when the authentication method used in the connection is either not supported on the server or it does
+     * not match the authentication method currently in use in the CONNECT packet.
+     */
+    ConnectReasonCode[ConnectReasonCode["BadAuthenticationMethod"] = 140] = "BadAuthenticationMethod";
+    /**
+     * Returned when the Will topic name sent in the connection packet is correctly formed, but is not accepted by
+     * the server.
+     */
+    ConnectReasonCode[ConnectReasonCode["TopicNameInvalid"] = 144] = "TopicNameInvalid";
+    /**
+     * Returned when the connection packet exceeded the maximum permissible size on the server.
+     */
+    ConnectReasonCode[ConnectReasonCode["PacketTooLarge"] = 149] = "PacketTooLarge";
+    /**
+     * Returned when the quota limits set on the server have been met and/or exceeded.
+     */
+    ConnectReasonCode[ConnectReasonCode["QuotaExceeded"] = 151] = "QuotaExceeded";
+    /**
+     * Returned when the Will payload in the CONNECT packet does not match the specified payload format indicator.
+     */
+    ConnectReasonCode[ConnectReasonCode["PayloadFormatInvalid"] = 153] = "PayloadFormatInvalid";
+    /**
+     * Returned when the server does not retain messages but the connection packet on the client had Will retain enabled.
+     */
+    ConnectReasonCode[ConnectReasonCode["RetainNotSupported"] = 154] = "RetainNotSupported";
+    /**
+     * Returned when the server does not support the QOS setting in the Will QOS in the connection packet.
+     */
+    ConnectReasonCode[ConnectReasonCode["QosNotSupported"] = 155] = "QosNotSupported";
+    /**
+     * Returned when the server is telling the client to temporarily use another server instead of the one they
+     * are trying to connect to.
+     */
+    ConnectReasonCode[ConnectReasonCode["UseAnotherServer"] = 156] = "UseAnotherServer";
+    /**
+     * Returned when the server is telling the client to permanently use another server instead of the one they
+     * are trying to connect to.
+     */
+    ConnectReasonCode[ConnectReasonCode["ServerMoved"] = 157] = "ServerMoved";
+    /**
+     * Returned when the server connection rate limit has been exceeded.
+     */
+    ConnectReasonCode[ConnectReasonCode["ConnectionRateExceeded"] = 159] = "ConnectionRateExceeded";
+})(ConnectReasonCode = exports.ConnectReasonCode || (exports.ConnectReasonCode = {}));
+/**
+ * Determines if a reason code represents a successful connect operation
+ *
+ * @param reasonCode reason code to check success for
+ */
+function isSuccessfulConnectReasonCode(reasonCode) {
+    return reasonCode < 128;
+}
+exports.isSuccessfulConnectReasonCode = isSuccessfulConnectReasonCode;
+/**
+ * Reason code inside DISCONNECT packets.  Helps determine why a connection was terminated.
+ *
+ * Enum values match [MQTT5 spec](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901208) encoding values.
+ */
+var DisconnectReasonCode;
+(function (DisconnectReasonCode) {
+    /**
+     * Returned when the remote endpoint wishes to disconnect normally. Will not trigger the publish of a Will message if a
+     * Will message was configured on the connection.
+     *
+     * May be sent by the client or server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["NormalDisconnection"] = 0] = "NormalDisconnection";
+    /**
+     * Returns that the client wants to disconnect but requires that the server publish the Will message configured
+     * on the connection.
+     *
+     * May only be sent by the client.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["DisconnectWithWillMessage"] = 4] = "DisconnectWithWillMessage";
+    /**
+     * Returned when the connection was closed but the sender does not want to specify a reason or none
+     * of the other reason codes apply.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["UnspecifiedError"] = 128] = "UnspecifiedError";
+    /**
+     * Indicates the remote endpoint received a packet that does not conform to the MQTT specification.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["MalformedPacket"] = 129] = "MalformedPacket";
+    /**
+     * Returned when an unexpected or out-of-order packet was received by the remote endpoint.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["ProtocolError"] = 130] = "ProtocolError";
+    /**
+     * Returned when a valid packet was received by the remote endpoint, but could not be processed by the current implementation.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["ImplementationSpecificError"] = 131] = "ImplementationSpecificError";
+    /**
+     * Returned when the remote endpoint received a packet that represented an operation that was not authorized within
+     * the current connection.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["NotAuthorized"] = 135] = "NotAuthorized";
+    /**
+     * Returned when the server is busy and cannot continue processing packets from the client.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["ServerBusy"] = 137] = "ServerBusy";
+    /**
+     * Returned when the server is shutting down.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["ServerShuttingDown"] = 139] = "ServerShuttingDown";
+    /**
+     * Returned when the server closes the connection because no packet from the client has been received in
+     * 1.5 times the KeepAlive time set when the connection was established.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["KeepAliveTimeout"] = 141] = "KeepAliveTimeout";
+    /**
+     * Returned when the server has established another connection with the same client ID as a client's current
+     * connection, causing the current client to become disconnected.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["SessionTakenOver"] = 142] = "SessionTakenOver";
+    /**
+     * Returned when the topic filter name is correctly formed but not accepted by the server.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["TopicFilterInvalid"] = 143] = "TopicFilterInvalid";
+    /**
+     * Returned when topic name is correctly formed, but is not accepted.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["TopicNameInvalid"] = 144] = "TopicNameInvalid";
+    /**
+     * Returned when the remote endpoint reached a state where there were more in-progress QoS1+ publishes then the
+     * limit it established for itself when the connection was opened.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["ReceiveMaximumExceeded"] = 147] = "ReceiveMaximumExceeded";
+    /**
+     * Returned when the remote endpoint receives a PUBLISH packet that contained a topic alias greater than the
+     * maximum topic alias limit that it established for itself when the connection was opened.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["TopicAliasInvalid"] = 148] = "TopicAliasInvalid";
+    /**
+     * Returned when the remote endpoint received a packet whose size was greater than the maximum packet size limit
+     * it established for itself when the connection was opened.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["PacketTooLarge"] = 149] = "PacketTooLarge";
+    /**
+     * Returned when the remote endpoint's incoming data rate was too high.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["MessageRateTooHigh"] = 150] = "MessageRateTooHigh";
+    /**
+     * Returned when an internal quota of the remote endpoint was exceeded.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["QuotaExceeded"] = 151] = "QuotaExceeded";
+    /**
+     * Returned when the connection was closed due to an administrative action.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["AdministrativeAction"] = 152] = "AdministrativeAction";
+    /**
+     * Returned when the remote endpoint received a packet where payload format did not match the format specified
+     * by the payload format indicator.
+     *
+     * May be sent by the client or the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["PayloadFormatInvalid"] = 153] = "PayloadFormatInvalid";
+    /**
+     * Returned when the server does not support retained messages.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["RetainNotSupported"] = 154] = "RetainNotSupported";
+    /**
+     * Returned when the client sends a QOS that is greater than the maximum QOS established when the connection was
+     * opened.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["QosNotSupported"] = 155] = "QosNotSupported";
+    /**
+     * Returned by the server to tell the client to temporarily use a different server.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["UseAnotherServer"] = 156] = "UseAnotherServer";
+    /**
+     * Returned by the server to tell the client to permanently use a different server.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["ServerMoved"] = 157] = "ServerMoved";
+    /**
+     * Returned by the server to tell the client that shared subscriptions are not supported on the server.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["SharedSubscriptionsNotSupported"] = 158] = "SharedSubscriptionsNotSupported";
+    /**
+     * Returned when the server disconnects the client due to the connection rate being too high.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["ConnectionRateExceeded"] = 159] = "ConnectionRateExceeded";
+    /**
+     * Returned by the server when the maximum connection time authorized for the connection was exceeded.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["MaximumConnectTime"] = 160] = "MaximumConnectTime";
+    /**
+     * Returned by the server when it received a SUBSCRIBE packet with a subscription identifier, but the server does
+     * not support subscription identifiers.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["SubscriptionIdentifiersNotSupported"] = 161] = "SubscriptionIdentifiersNotSupported";
+    /**
+     * Returned by the server when it received a SUBSCRIBE packet with a wildcard topic filter, but the server does
+     * not support wildcard topic filters.
+     *
+     * May only be sent by the server.
+     */
+    DisconnectReasonCode[DisconnectReasonCode["WildcardSubscriptionsNotSupported"] = 162] = "WildcardSubscriptionsNotSupported";
+})(DisconnectReasonCode = exports.DisconnectReasonCode || (exports.DisconnectReasonCode = {}));
+/**
+ * Determines if a reason code represents a successful disconnect operation
+ *
+ * @param reasonCode reason code to check success for
+ */
+function isSuccessfulDisconnectReasonCode(reasonCode) {
+    return reasonCode < 128;
+}
+exports.isSuccessfulDisconnectReasonCode = isSuccessfulDisconnectReasonCode;
+/**
+ * Reason codes inside SUBACK packet payloads that specify the results for each subscription in the associated
+ * SUBSCRIBE packet.
+ *
+ * Enum values match [MQTT5 spec](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901178) encoding values.
+ */
+var SubackReasonCode;
+(function (SubackReasonCode) {
+    /**
+     * Returned when the subscription was accepted and the maximum QOS sent will be QOS 0.
+     */
+    SubackReasonCode[SubackReasonCode["GrantedQoS0"] = 0] = "GrantedQoS0";
+    /**
+     * Returned when the subscription was accepted and the maximum QOS sent will be QOS 1.
+     */
+    SubackReasonCode[SubackReasonCode["GrantedQoS1"] = 1] = "GrantedQoS1";
+    /**
+     * Returned when the subscription was accepted and the maximum QOS sent will be QOS 2.
+     */
+    SubackReasonCode[SubackReasonCode["GrantedQoS2"] = 2] = "GrantedQoS2";
+    /**
+     * Returned when the connection was closed but the sender does not want to specify a reason or none
+     * of the other reason codes apply.
+     */
+    SubackReasonCode[SubackReasonCode["UnspecifiedError"] = 128] = "UnspecifiedError";
+    /**
+     * Returned when the subscription was valid but the server did not accept it.
+     */
+    SubackReasonCode[SubackReasonCode["ImplementationSpecificError"] = 131] = "ImplementationSpecificError";
+    /**
+     * Returned when the client was not authorized to make the subscription on the server.
+     */
+    SubackReasonCode[SubackReasonCode["NotAuthorized"] = 135] = "NotAuthorized";
+    /**
+     * Returned when the subscription topic filter was correctly formed but not allowed for the client.
+     */
+    SubackReasonCode[SubackReasonCode["TopicFilterInvalid"] = 143] = "TopicFilterInvalid";
+    /**
+     * Returned when the packet identifier was already in use on the server.
+     */
+    SubackReasonCode[SubackReasonCode["PacketIdentifierInUse"] = 145] = "PacketIdentifierInUse";
+    /**
+     * Returned when a subscribe-related quota set on the server was exceeded.
+     */
+    SubackReasonCode[SubackReasonCode["QuotaExceeded"] = 151] = "QuotaExceeded";
+    /**
+     * Returned when the subscription's topic filter was a shared subscription and the server does not support
+     * shared subscriptions.
+     */
+    SubackReasonCode[SubackReasonCode["SharedSubscriptionsNotSupported"] = 158] = "SharedSubscriptionsNotSupported";
+    /**
+     * Returned when the SUBSCRIBE packet contained a subscription identifier and the server does not support
+     * subscription identifiers.
+     */
+    SubackReasonCode[SubackReasonCode["SubscriptionIdentifiersNotSupported"] = 161] = "SubscriptionIdentifiersNotSupported";
+    /**
+     * Returned when the subscription's topic filter contains a wildcard but the server does not support
+     * wildcard subscriptions.
+     */
+    SubackReasonCode[SubackReasonCode["WildcardSubscriptionsNotSupported"] = 162] = "WildcardSubscriptionsNotSupported";
+})(SubackReasonCode = exports.SubackReasonCode || (exports.SubackReasonCode = {}));
+/**
+ * Determines if a reason code represents a successful subscribe operation
+ *
+ * @param reasonCode reason code to check success for
+ */
+function isSuccessfulSubackReasonCode(reasonCode) {
+    return reasonCode < 128;
+}
+exports.isSuccessfulSubackReasonCode = isSuccessfulSubackReasonCode;
+/**
+ * Reason codes inside UNSUBACK packet payloads that specify the results for each topic filter in the associated
+ * UNSUBSCRIBE packet.
+ *
+ * Enum values match [MQTT5 spec](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901194) encoding values.
+ */
+var UnsubackReasonCode;
+(function (UnsubackReasonCode) {
+    /**
+     * Returned when the unsubscribe was successful and the client is no longer subscribed to the topic filter on the server.
+     */
+    UnsubackReasonCode[UnsubackReasonCode["Success"] = 0] = "Success";
+    /**
+     * Returned when the topic filter did not match one of the client's existing subscriptions on the server.
+     */
+    UnsubackReasonCode[UnsubackReasonCode["NoSubscriptionExisted"] = 17] = "NoSubscriptionExisted";
+    /**
+     * Returned when the unsubscribe of the topic filter was not accepted and the server does not want to specify a
+     * reason or none of the other reason codes apply.
+     */
+    UnsubackReasonCode[UnsubackReasonCode["UnspecifiedError"] = 128] = "UnspecifiedError";
+    /**
+     * Returned when the topic filter was valid but the server does not accept an unsubscribe for it.
+     */
+    UnsubackReasonCode[UnsubackReasonCode["ImplementationSpecificError"] = 131] = "ImplementationSpecificError";
+    /**
+     * Returned when the client was not authorized to unsubscribe from that topic filter on the server.
+     */
+    UnsubackReasonCode[UnsubackReasonCode["NotAuthorized"] = 135] = "NotAuthorized";
+    /**
+     * Returned when the topic filter was correctly formed but is not allowed for the client on the server.
+     */
+    UnsubackReasonCode[UnsubackReasonCode["TopicFilterInvalid"] = 143] = "TopicFilterInvalid";
+    /**
+     * Returned when the packet identifier was already in use on the server.
+     */
+    UnsubackReasonCode[UnsubackReasonCode["PacketIdentifierInUse"] = 145] = "PacketIdentifierInUse";
+})(UnsubackReasonCode = exports.UnsubackReasonCode || (exports.UnsubackReasonCode = {}));
+/**
+ * Determines if a reason code represents a successful unsubscribe operation
+ *
+ * @param reasonCode reason code to check success for
+ */
+function isSuccessfulUnsubackReasonCode(reasonCode) {
+    return reasonCode < 128;
+}
+exports.isSuccessfulUnsubackReasonCode = isSuccessfulUnsubackReasonCode;
+/**
+ * Reason code inside PUBACK packets that indicates the result of the associated PUBLISH request.
+ *
+ * Enum values match [MQTT5 spec](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901124) encoding values.
+ */
+var PubackReasonCode;
+(function (PubackReasonCode) {
+    /**
+     * Returned when the (QoS 1) publish was accepted by the recipient.
+     *
+     * May be sent by the client or the server.
+     */
+    PubackReasonCode[PubackReasonCode["Success"] = 0] = "Success";
+    /**
+     * Returned when the (QoS 1) publish was accepted but there were no matching subscribers.
+     *
+     * May only be sent by the server.
+     */
+    PubackReasonCode[PubackReasonCode["NoMatchingSubscribers"] = 16] = "NoMatchingSubscribers";
+    /**
+     * Returned when the (QoS 1) publish was not accepted and the receiver does not want to specify a reason or none
+     * of the other reason codes apply.
+     *
+     * May be sent by the client or the server.
+     */
+    PubackReasonCode[PubackReasonCode["UnspecifiedError"] = 128] = "UnspecifiedError";
+    /**
+     * Returned when the (QoS 1) publish was valid but the receiver was not willing to accept it.
+     *
+     * May be sent by the client or the server.
+     */
+    PubackReasonCode[PubackReasonCode["ImplementationSpecificError"] = 131] = "ImplementationSpecificError";
+    /**
+     * Returned when the (QoS 1) publish was not authorized by the receiver.
+     *
+     * May be sent by the client or the server.
+     */
+    PubackReasonCode[PubackReasonCode["NotAuthorized"] = 135] = "NotAuthorized";
+    /**
+     * Returned when the topic name was valid but the receiver was not willing to accept it.
+     *
+     * May be sent by the client or the server.
+     */
+    PubackReasonCode[PubackReasonCode["TopicNameInvalid"] = 144] = "TopicNameInvalid";
+    /**
+     * Returned when the packet identifier used in the associated PUBLISH was already in use.
+     * This can indicate a mismatch in the session state between client and server.
+     *
+     * May be sent by the client or the server.
+     */
+    PubackReasonCode[PubackReasonCode["PacketIdentifierInUse"] = 145] = "PacketIdentifierInUse";
+    /**
+     * Returned when the associated PUBLISH failed because an internal quota on the recipient was exceeded.
+     *
+     * May be sent by the client or the server.
+     */
+    PubackReasonCode[PubackReasonCode["QuotaExceeded"] = 151] = "QuotaExceeded";
+    /**
+     * Returned when the PUBLISH packet's payload format did not match its payload format indicator property.
+     *
+     * May be sent by the client or the server.
+     */
+    PubackReasonCode[PubackReasonCode["PayloadFormatInvalid"] = 153] = "PayloadFormatInvalid";
+})(PubackReasonCode = exports.PubackReasonCode || (exports.PubackReasonCode = {}));
+/**
+ * Determines if a reason code represents a successful QoS 1 publish operation
+ *
+ * @param reasonCode reason code to check success for
+ */
+function isSuccessfulPubackReasonCode(reasonCode) {
+    return reasonCode < 128;
+}
+exports.isSuccessfulPubackReasonCode = isSuccessfulPubackReasonCode;
+/**
+ * Optional property describing a PUBLISH payload's format.
+ *
+ * Enum values match [MQTT5 spec](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111) encoding values.
+ */
+var PayloadFormatIndicator;
+(function (PayloadFormatIndicator) {
+    /**
+     * The payload is arbitrary binary data
+     */
+    PayloadFormatIndicator[PayloadFormatIndicator["Bytes"] = 0] = "Bytes";
+    /**
+     * The payload is a well-formed utf-8 string value.
+     */
+    PayloadFormatIndicator[PayloadFormatIndicator["Utf8"] = 1] = "Utf8";
+})(PayloadFormatIndicator = exports.PayloadFormatIndicator || (exports.PayloadFormatIndicator = {}));
+/**
+ * MQTT message delivery quality of service.
+ *
+ * Enum values match [MQTT5 spec](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901234) encoding values.
+ */
+var QoS;
+(function (QoS) {
+    /**
+     * The message is delivered according to the capabilities of the underlying network. No response is sent by the
+     * receiver and no retry is performed by the sender. The message arrives at the receiver either once or not at all.
+     */
+    QoS[QoS["AtMostOnce"] = 0] = "AtMostOnce";
+    /**
+     * A level of service that ensures that the message arrives at the receiver at least once.
+     */
+    QoS[QoS["AtLeastOnce"] = 1] = "AtLeastOnce";
+    /**
+     * A level of service that ensures that the message arrives at the receiver exactly once.
+     */
+    QoS[QoS["ExactlyOnce"] = 2] = "ExactlyOnce";
+})(QoS = exports.QoS || (exports.QoS = {}));
+/**
+ * Configures how retained messages should be handled when subscribing with a topic filter that matches topics with
+ * associated retained messages.
+ *
+ * Enum values match [MQTT5 spec](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901169) encoding values.
+ */
+var RetainHandlingType;
+(function (RetainHandlingType) {
+    /**
+     * The server should always send all retained messages on topics that match a subscription's filter.
+     */
+    RetainHandlingType[RetainHandlingType["SendOnSubscribe"] = 0] = "SendOnSubscribe";
+    /**
+     * The server should send retained messages on topics that match the subscription's filter, but only for the
+     * first matching subscription, per session.
+     */
+    RetainHandlingType[RetainHandlingType["SendOnSubscribeIfNew"] = 1] = "SendOnSubscribeIfNew";
+    /**
+     * Subscriptions must not trigger any retained message publishes from the server.
+     */
+    RetainHandlingType[RetainHandlingType["DontSend"] = 2] = "DontSend";
+})(RetainHandlingType = exports.RetainHandlingType || (exports.RetainHandlingType = {}));
+/**
+ * Packet type indicator that allows for basic polymorphism with user-received packets.  Enum values
+ * match the mqtt spec's [packet type encoding](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901022) values.
+ */
+var PacketType;
+(function (PacketType) {
+    PacketType[PacketType["Connect"] = 1] = "Connect";
+    PacketType[PacketType["Connack"] = 2] = "Connack";
+    PacketType[PacketType["Publish"] = 3] = "Publish";
+    PacketType[PacketType["Puback"] = 4] = "Puback";
+    PacketType[PacketType["Pubrec"] = 5] = "Pubrec";
+    PacketType[PacketType["Pubrel"] = 6] = "Pubrel";
+    PacketType[PacketType["Pubcomp"] = 7] = "Pubcomp";
+    PacketType[PacketType["Subscribe"] = 8] = "Subscribe";
+    PacketType[PacketType["Suback"] = 9] = "Suback";
+    PacketType[PacketType["Unsubscribe"] = 10] = "Unsubscribe";
+    PacketType[PacketType["Unsuback"] = 11] = "Unsuback";
+    PacketType[PacketType["Pingreq"] = 12] = "Pingreq";
+    PacketType[PacketType["Pingresp"] = 13] = "Pingresp";
+    PacketType[PacketType["Disconnect"] = 14] = "Disconnect";
+    PacketType[PacketType["Auth"] = 15] = "Auth";
+})(PacketType = exports.PacketType || (exports.PacketType = {}));
+//# sourceMappingURL=mqtt5_packet.js.map
+
+/***/ }),
+
+/***/ 80823:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DEFAULT_KEEP_ALIVE = exports.normalize_payload = void 0;
+/**
+ * @packageDocumentation
+ */
+/**
+ * Converts payload to Buffer or string regardless of the supplied type
+ * @param payload The payload to convert
+ * @internal
+ */
+function normalize_payload(payload) {
+    if (payload instanceof Buffer) {
+        // pass Buffer through
+        return payload;
+    }
+    if (typeof payload === 'string') {
+        // pass string through
+        return payload;
+    }
+    if (ArrayBuffer.isView(payload)) {
+        // return Buffer with view upon the same bytes (no copy)
+        const view = payload;
+        return Buffer.from(view.buffer, view.byteOffset, view.byteLength);
+    }
+    if (payload instanceof ArrayBuffer) {
+        // return Buffer with view upon the same bytes (no copy)
+        return Buffer.from(payload);
+    }
+    if (typeof payload === 'object') {
+        // Convert Object to JSON string
+        return JSON.stringify(payload);
+    }
+    if (!payload) {
+        return "";
+    }
+    throw new TypeError("payload parameter must be a string, object, or DataView.");
+}
+exports.normalize_payload = normalize_payload;
+/** @internal */
+exports.DEFAULT_KEEP_ALIVE = 1200;
+//# sourceMappingURL=mqtt_shared.js.map
+
+/***/ }),
+
+/***/ 17709:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.crt_version = exports.package_info = exports.is_browser = exports.is_nodejs = void 0;
+/**
+ *
+ * A module containing miscellaneous platform-related queries
+ *
+ * @packageDocumentation
+ * @module platform
+ * @mergeTarget
+ */
+/**
+ * Returns true if this script is running under nodejs
+ *
+ * @category System
+ */
+function is_nodejs() {
+    return (typeof process === 'object' &&
+        typeof process.versions === 'object' &&
+        typeof process.versions.node !== 'undefined');
+}
+exports.is_nodejs = is_nodejs;
+/**
+ * Returns true if this script is running in a browser
+ *
+ * @category System
+ */
+function is_browser() {
+    return !is_nodejs();
+}
+exports.is_browser = is_browser;
+/**
+ * Returns the package information for aws-crt-nodejs
+ *
+ * @category System
+ */
+function package_info() {
+    try {
+        const pkg = __nccwpck_require__(84104);
+        return pkg;
+    }
+    catch (err) {
+        return {
+            name: 'aws-crt-nodejs',
+            version: 'UNKNOWN'
+        };
+    }
+}
+exports.package_info = package_info;
+/**
+ * Returns the AWS CRT version
+ *
+ * @category System
+ */
+function crt_version() {
+    const pkg = package_info();
+    return pkg.version;
+}
+exports.crt_version = crt_version;
+//# sourceMappingURL=platform.js.map
+
+/***/ }),
+
+/***/ 96918:
+/***/ (function(__unused_webpack_module, exports) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.using = void 0;
+/**
+ * Use this function to create a resource in an async context. This will make sure the
+ * resources are cleaned up before returning.
+ *
+ * Example:
+ * ```
+ * await using(res = new SomeResource(), async (res) =>  {
+ *     res.do_the_thing();
+ * });
+ * ```
+ *
+ * @category System
+ */
+function using(resource, func) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield func(resource);
+        }
+        finally {
+            resource.close();
+        }
+    });
+}
+exports.using = using;
+//# sourceMappingURL=resource_safety.js.map
+
+/***/ }),
+
+/***/ 71667:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CrtError = exports.resource_safety = exports.platform = exports.mqtt5 = exports.mqtt = exports.iot = exports.io = exports.http = exports.crt = exports.crypto = exports.checksums = exports.auth = void 0;
+// This is the entry point for the AWS CRT nodejs native libraries
+/* common libs */
+const platform = __importStar(__nccwpck_require__(17709));
+exports.platform = platform;
+const resource_safety = __importStar(__nccwpck_require__(96918));
+exports.resource_safety = resource_safety;
+/* node specific libs */
+const auth = __importStar(__nccwpck_require__(73798));
+exports.auth = auth;
+const checksums = __importStar(__nccwpck_require__(78969));
+exports.checksums = checksums;
+const crt = __importStar(__nccwpck_require__(19952));
+exports.crt = crt;
+const crypto = __importStar(__nccwpck_require__(92642));
+exports.crypto = crypto;
+const http = __importStar(__nccwpck_require__(19471));
+exports.http = http;
+const io = __importStar(__nccwpck_require__(62829));
+exports.io = io;
+const iot = __importStar(__nccwpck_require__(37427));
+exports.iot = iot;
+const mqtt = __importStar(__nccwpck_require__(20495));
+exports.mqtt = mqtt;
+const mqtt5 = __importStar(__nccwpck_require__(37313));
+exports.mqtt5 = mqtt5;
+const error_1 = __nccwpck_require__(55757);
+Object.defineProperty(exports, "CrtError", ({ enumerable: true, get: function () { return error_1.CrtError; } }));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ 73798:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.aws_verify_sigv4a_signing = exports.aws_sign_request = exports.AwsSignedBodyHeaderType = exports.AwsSignedBodyValue = exports.AwsSignatureType = exports.AwsSigningAlgorithm = exports.AwsCredentialsProvider = void 0;
+const binding_1 = __importDefault(__nccwpck_require__(53924));
+const error_1 = __nccwpck_require__(55757);
+const io_1 = __nccwpck_require__(62829);
+/**
+ * Credentials providers source the AwsCredentials needed to sign an authenticated AWS request.
+ *
+ * We don't currently expose an interface for fetching credentials from Javascript.
+ *
+ * @category Auth
+ */
+/* Subclass for the purpose of exposing a non-NativeHandle based API */
+class AwsCredentialsProvider extends binding_1.default.AwsCredentialsProvider {
+    /**
+     * Creates a new default credentials provider to be used internally for AWS credentials resolution:
+     *
+     *   The CRT's default provider chain currently sources in this order:
+     *
+     *     1. Environment
+     *     2. Profile
+     *     3. (conditional, off by default) ECS
+     *     4. (conditional, on by default) EC2 Instance Metadata
+     *
+     * @param bootstrap (optional) client bootstrap to be used to establish any required network connections
+     *
+     * @returns a new credentials provider using default credentials resolution rules
+     */
+    static newDefault(bootstrap = undefined) {
+        return super.newDefault(bootstrap != null ? bootstrap.native_handle() : null);
+    }
+    /**
+     * Creates a new credentials provider that returns a fixed set of credentials.
+     *
+     * @param access_key access key to use in the static credentials
+     * @param secret_key secret key to use in the static credentials
+     * @param session_token (optional) session token to use in the static credentials
+     *
+     * @returns a new credentials provider that will return a fixed set of AWS credentials
+     */
+    static newStatic(access_key, secret_key, session_token) {
+        return super.newStatic(access_key, secret_key, session_token);
+    }
+    /**
+     * Creates a new credentials provider that sources credentials from the AWS Cognito Identity service via the
+     * GetCredentialsForIdentity http API.
+     *
+     * @param config provider configuration necessary to make GetCredentialsForIdentity web requests
+     *
+     * @returns a new credentials provider that returns credentials sourced from the AWS Cognito Identity service
+     */
+    static newCognito(config) {
+        return super.newCognito(config, config.tlsContext != null ? config.tlsContext.native_handle() : new io_1.ClientTlsContext().native_handle(), config.bootstrap != null ? config.bootstrap.native_handle() : null, config.httpProxyOptions ? config.httpProxyOptions.create_native_handle() : null);
+    }
+}
+exports.AwsCredentialsProvider = AwsCredentialsProvider;
+/**
+ * AWS signing algorithm enumeration.
+ *
+ * @category Auth
+ */
+var AwsSigningAlgorithm;
+(function (AwsSigningAlgorithm) {
+    /** Use the Aws signature version 4 signing process to sign the request */
+    AwsSigningAlgorithm[AwsSigningAlgorithm["SigV4"] = 0] = "SigV4";
+    /** Use the Aws signature version 4 Asymmetric signing process to sign the request */
+    AwsSigningAlgorithm[AwsSigningAlgorithm["SigV4Asymmetric"] = 1] = "SigV4Asymmetric";
+})(AwsSigningAlgorithm = exports.AwsSigningAlgorithm || (exports.AwsSigningAlgorithm = {}));
+/**
+ * AWS signature type enumeration.
+ *
+ * @category Auth
+ */
+var AwsSignatureType;
+(function (AwsSignatureType) {
+    /** Sign an http request and apply the signing results as headers */
+    AwsSignatureType[AwsSignatureType["HttpRequestViaHeaders"] = 0] = "HttpRequestViaHeaders";
+    /** Sign an http request and apply the signing results as query params */
+    AwsSignatureType[AwsSignatureType["HttpRequestViaQueryParams"] = 1] = "HttpRequestViaQueryParams";
+    /** Sign an http request payload chunk */
+    AwsSignatureType[AwsSignatureType["HttpRequestChunk"] = 2] = "HttpRequestChunk";
+    /** Sign an event stream event */
+    AwsSignatureType[AwsSignatureType["HttpRequestEvent"] = 3] = "HttpRequestEvent";
+})(AwsSignatureType = exports.AwsSignatureType || (exports.AwsSignatureType = {}));
+/**
+ * Values for use with {@link AwsSigningConfig.signed_body_value}.
+ *
+ * Some services use special values (e.g. 'UNSIGNED-PAYLOAD') when the body
+ * is not being signed in the usual way.
+ *
+ * @category Auth
+ */
+var AwsSignedBodyValue;
+(function (AwsSignedBodyValue) {
+    /** Use the SHA-256 of the empty string as the canonical request payload value */
+    AwsSignedBodyValue["EmptySha256"] = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+    /** Use the literal string 'UNSIGNED-PAYLOAD' as the canonical request payload value  */
+    AwsSignedBodyValue["UnsignedPayload"] = "UNSIGNED-PAYLOAD";
+    /** Use the literal string 'STREAMING-AWS4-HMAC-SHA256-PAYLOAD' as the canonical request payload value  */
+    AwsSignedBodyValue["StreamingAws4HmacSha256Payload"] = "STREAMING-AWS4-HMAC-SHA256-PAYLOAD";
+    /** Use the literal string 'STREAMING-AWS4-HMAC-SHA256-EVENTS' as the canonical request payload value  */
+    AwsSignedBodyValue["StreamingAws4HmacSha256Events"] = "STREAMING-AWS4-HMAC-SHA256-EVENTS";
+})(AwsSignedBodyValue = exports.AwsSignedBodyValue || (exports.AwsSignedBodyValue = {}));
+/**
+ * AWS signed body header enumeration.
+ *
+ * @category Auth
+ */
+var AwsSignedBodyHeaderType;
+(function (AwsSignedBodyHeaderType) {
+    /** Do not add a header containing the canonical request payload value */
+    AwsSignedBodyHeaderType[AwsSignedBodyHeaderType["None"] = 0] = "None";
+    /** Add the X-Amz-Content-Sha256 header with the canonical request payload value */
+    AwsSignedBodyHeaderType[AwsSignedBodyHeaderType["XAmzContentSha256"] = 1] = "XAmzContentSha256";
+})(AwsSignedBodyHeaderType = exports.AwsSignedBodyHeaderType || (exports.AwsSignedBodyHeaderType = {}));
+/**
+ * Perform AWS HTTP request signing.
+ *
+ * The {@link HttpRequest} is transformed asynchronously,
+ * according to the {@link AwsSigningConfig}.
+ *
+ * When signing:
+ *  1.  It is good practice to use a new config for each signature,
+ *      or the date might get too old.
+ *
+ *  2.  Do not add the following headers to requests before signing, they may be added by the signer:
+ *      x-amz-content-sha256,
+ *      X-Amz-Date,
+ *      Authorization
+ *
+ *  3.  Do not add the following query params to requests before signing, they may be added by the signer:
+ *      X-Amz-Signature,
+ *      X-Amz-Date,
+ *      X-Amz-Credential,
+ *      X-Amz-Algorithm,
+ *      X-Amz-SignedHeaders
+ * @param request The HTTP request to sign.
+ * @param config Configuration for signing.
+ * @returns A promise whose result will be the signed
+ *       {@link HttpRequest}. The future will contain an exception
+ *       if the signing process fails.
+ *
+ * @category Auth
+ */
+function aws_sign_request(request, config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => {
+            try {
+                /* Note: if the body of request has not fully loaded, it will lead to an endless loop.
+                 * User should set the signed_body_value of config to prevent this endless loop in this case */
+                binding_1.default.aws_sign_request(request, config, (error_code) => {
+                    if (error_code == 0) {
+                        resolve(request);
+                    }
+                    else {
+                        reject(new error_1.CrtError(error_code));
+                    }
+                });
+            }
+            catch (error) {
+                reject(error);
+            }
+        });
+    });
+}
+exports.aws_sign_request = aws_sign_request;
+/**
+ *
+ * @internal
+ *
+ * Test only.
+ * Verifies:
+ *  (1) The canonical request generated during sigv4a signing of the request matches what is passed in
+ *  (2) The signature passed in is a valid ECDSA signature of the hashed string-to-sign derived from the
+ *  canonical request
+ *
+ * @param request The HTTP request to sign.
+ * @param config Configuration for signing.
+ * @param expected_canonical_request String type of expected canonical request. Refer to XXX(link to doc?)
+ * @param signature The generated signature string from {@link aws_sign_request}, which is verified here.
+ * @param ecc_key_pub_x the x coordinate of the public part of the ecc key to verify the signature.
+ * @param ecc_key_pub_y the y coordinate of the public part of the ecc key to verify the signature
+ * @returns True, if the verification succeed. Otherwise, false.
+ */
+function aws_verify_sigv4a_signing(request, config, expected_canonical_request, signature, ecc_key_pub_x, ecc_key_pub_y) {
+    return binding_1.default.aws_verify_sigv4a_signing(request, config, expected_canonical_request, signature, ecc_key_pub_x, ecc_key_pub_y);
+}
+exports.aws_verify_sigv4a_signing = aws_verify_sigv4a_signing;
+//# sourceMappingURL=auth.js.map
+
+/***/ }),
+
+/***/ 67975:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.AwsIotMqttConnectionConfigBuilder = void 0;
+const mqtt_1 = __nccwpck_require__(3826);
+const io = __importStar(__nccwpck_require__(62829));
+const io_1 = __nccwpck_require__(62829);
+const platform = __importStar(__nccwpck_require__(17709));
+const error_1 = __nccwpck_require__(55757);
+const auth_1 = __nccwpck_require__(73798);
+const iot_shared = __importStar(__nccwpck_require__(23381));
+/**
+ * Builder functions to create a {@link MqttConnectionConfig} which can then be used to create
+ * a {@link MqttClientConnection}, configured for use with AWS IoT.
+ *
+ * @category IoT
+ */
+class AwsIotMqttConnectionConfigBuilder {
+    constructor(tls_ctx_options) {
+        this.tls_ctx_options = tls_ctx_options;
+        this.params = {
+            client_id: '',
+            host_name: '',
+            socket_options: new io.SocketOptions(),
+            port: 8883,
+            use_websocket: false,
+            clean_session: false,
+            keep_alive: undefined,
+            will: undefined,
+            username: "",
+            password: undefined,
+            tls_ctx: undefined,
+            reconnect_min_sec: mqtt_1.DEFAULT_RECONNECT_MIN_SEC,
+            reconnect_max_sec: mqtt_1.DEFAULT_RECONNECT_MAX_SEC
+        };
+        this.is_using_custom_authorizer = false;
+    }
+    /**
+     * Create a new builder with mTLS file paths
+     * @param cert_path - Path to certificate, in PEM format
+     * @param key_path - Path to private key, in PEM format
+     */
+    static new_mtls_builder_from_path(cert_path, key_path) {
+        let builder = new AwsIotMqttConnectionConfigBuilder(io_1.TlsContextOptions.create_client_with_mtls_from_path(cert_path, key_path));
+        builder.params.port = 8883;
+        if (io.is_alpn_available()) {
+            builder.tls_ctx_options.alpn_list.unshift('x-amzn-mqtt-ca');
+        }
+        return builder;
+    }
+    /**
+     * Create a new builder with mTLS cert pair in memory
+     * @param cert - Certificate, in PEM format
+     * @param private_key - Private key, in PEM format
+     */
+    static new_mtls_builder(cert, private_key) {
+        let builder = new AwsIotMqttConnectionConfigBuilder(io_1.TlsContextOptions.create_client_with_mtls(cert, private_key));
+        builder.params.port = 8883;
+        if (io.is_alpn_available()) {
+            builder.tls_ctx_options.alpn_list.unshift('x-amzn-mqtt-ca');
+        }
+        return builder;
+    }
+    /**
+     * Create a new builder with mTLS using a PKCS#11 library for private key operations.
+     *
+     * NOTE: This configuration only works on Unix devices.
+     * @param pkcs11_options - PKCS#11 options.
+     */
+    static new_mtls_pkcs11_builder(pkcs11_options) {
+        let builder = new AwsIotMqttConnectionConfigBuilder(io_1.TlsContextOptions.create_client_with_mtls_pkcs11(pkcs11_options));
+        builder.params.port = 8883;
+        if (io.is_alpn_available()) {
+            builder.tls_ctx_options.alpn_list.unshift('x-amzn-mqtt-ca');
+        }
+        return builder;
+    }
+    /**
+     * Create a new builder with mTLS using a certificate in a Windows certificate store.
+     *
+     * NOTE: This configuration only works on Windows devices.
+     * @param certificate_path - Path to certificate in a Windows certificate store.
+     *      The path must use backslashes and end with the certificate's thumbprint.
+     *      Example: `CurrentUser\MY\A11F8A9B5DF5B98BA3508FBCA575D09570E0D2C6`
+     */
+    static new_mtls_windows_cert_store_path_builder(certificate_path) {
+        let builder = new AwsIotMqttConnectionConfigBuilder(io_1.TlsContextOptions.create_client_with_mtls_windows_cert_store_path(certificate_path));
+        builder.params.port = 8883;
+        if (io.is_alpn_available()) {
+            builder.tls_ctx_options.alpn_list.unshift('x-amzn-mqtt-ca');
+        }
+        return builder;
+    }
+    /**
+     * Creates a new builder with default Tls options. This requires setting the connection details manually.
+     */
+    static new_default_builder() {
+        let ctx_options = new io.TlsContextOptions();
+        let builder = new AwsIotMqttConnectionConfigBuilder(ctx_options);
+        return builder;
+    }
+    static new_websocket_builder(...args) {
+        return this.new_with_websockets(...args);
+    }
+    static configure_websocket_handshake(builder, options) {
+        if (options) {
+            builder.params.websocket_handshake_transform = (request, done) => __awaiter(this, void 0, void 0, function* () {
+                var _a, _b, _c;
+                const signing_config = (_b = (_a = options.create_signing_config) === null || _a === void 0 ? void 0 : _a.call(options)) !== null && _b !== void 0 ? _b : {
+                    algorithm: auth_1.AwsSigningAlgorithm.SigV4,
+                    signature_type: auth_1.AwsSignatureType.HttpRequestViaQueryParams,
+                    provider: options.credentials_provider,
+                    region: options.region,
+                    service: (_c = options.service) !== null && _c !== void 0 ? _c : "iotdevicegateway",
+                    signed_body_value: auth_1.AwsSignedBodyValue.EmptySha256,
+                    omit_session_token: true,
+                };
+                try {
+                    yield (0, auth_1.aws_sign_request)(request, signing_config);
+                    done();
+                }
+                catch (error) {
+                    if (error instanceof error_1.CrtError) {
+                        done(error.error_code);
+                    }
+                    else {
+                        done(3); /* TODO: AWS_ERROR_UNKNOWN */
+                    }
+                }
+            });
+        }
+        return builder;
+    }
+    /**
+     * Configures the connection to use MQTT over websockets. Forces the port to 443.
+     */
+    static new_with_websockets(options) {
+        let tls_ctx_options = options === null || options === void 0 ? void 0 : options.tls_ctx_options;
+        if (!tls_ctx_options) {
+            tls_ctx_options = new io_1.TlsContextOptions();
+            tls_ctx_options.alpn_list = [];
+        }
+        let builder = new AwsIotMqttConnectionConfigBuilder(tls_ctx_options);
+        builder.params.use_websocket = true;
+        builder.params.proxy_options = options === null || options === void 0 ? void 0 : options.proxy_options;
+        if (builder.tls_ctx_options) {
+            builder.params.port = 443;
+        }
+        this.configure_websocket_handshake(builder, options);
+        return builder;
+    }
+    /**
+     * Overrides the default system trust store.
+     * @param ca_dirpath - Only used on Unix-style systems where all trust anchors are
+     * stored in a directory (e.g. /etc/ssl/certs).
+     * @param ca_filepath - Single file containing all trust CAs, in PEM format
+     */
+    with_certificate_authority_from_path(ca_dirpath, ca_filepath) {
+        this.tls_ctx_options.override_default_trust_store_from_path(ca_dirpath, ca_filepath);
+        return this;
+    }
+    /**
+     * Overrides the default system trust store.
+     * @param ca - Buffer containing all trust CAs, in PEM format
+     */
+    with_certificate_authority(ca) {
+        this.tls_ctx_options.override_default_trust_store(ca);
+        return this;
+    }
+    /**
+     * Configures the IoT endpoint for this connection
+     * @param endpoint The IoT endpoint to connect to
+     */
+    with_endpoint(endpoint) {
+        this.params.host_name = endpoint;
+        return this;
+    }
+    /**
+     * The port to connect to on the IoT endpoint
+     * @param port The port to connect to on the IoT endpoint. Usually 8883 for MQTT, or 443 for websockets
+     */
+    with_port(port) {
+        this.params.port = port;
+        return this;
+    }
+    /**
+     * Configures the client_id to use to connect to the IoT Core service
+     * @param client_id The client id for this connection. Needs to be unique across all devices/clients.
+     */
+    with_client_id(client_id) {
+        this.params.client_id = client_id;
+        return this;
+    }
+    /**
+     * Determines whether or not the service should try to resume prior subscriptions, if it has any
+     * @param clean_session true if the session should drop prior subscriptions when this client connects, false to resume the session
+     */
+    with_clean_session(clean_session) {
+        this.params.clean_session = clean_session;
+        return this;
+    }
+    /**
+     * Configures MQTT keep-alive via PING messages. Note that this is not TCP keepalive.
+     * @param keep_alive How often in seconds to send an MQTT PING message to the service to keep the connection alive
+     */
+    with_keep_alive_seconds(keep_alive) {
+        this.params.keep_alive = keep_alive;
+        return this;
+    }
+    /**
+     * Configures the TCP socket timeout (in milliseconds)
+     * @param timeout_ms TCP socket timeout
+     * @deprecated
+     */
+    with_timeout_ms(timeout_ms) {
+        this.with_ping_timeout_ms(timeout_ms);
+        return this;
+    }
+    /**
+     * Configures the PINGREQ response timeout (in milliseconds)
+     * @param ping_timeout PINGREQ response timeout
+     */
+    with_ping_timeout_ms(ping_timeout) {
+        this.params.ping_timeout = ping_timeout;
+        return this;
+    }
+    /**
+     * Configures the protocol operation timeout (in milliseconds)
+     * @param protocol_operation_timeout protocol operation timeout
+     */
+    with_protocol_operation_timeout_ms(protocol_operation_timeout) {
+        this.params.protocol_operation_timeout = protocol_operation_timeout;
+        return this;
+    }
+    /**
+     * Configures the will message to be sent when this client disconnects
+     * @param will The will topic, qos, and message
+     */
+    with_will(will) {
+        this.params.will = will;
+        return this;
+    }
+    /**
+     * Configures the common settings for the socket to use when opening a connection to the server
+     * @param socket_options The socket settings
+     */
+    with_socket_options(socket_options) {
+        this.params.socket_options = socket_options;
+        return this;
+    }
+    /**
+     * Configures AWS credentials (usually from Cognito) for this connection
+     * @param aws_region The service region to connect to
+     * @param aws_access_id IAM Access ID
+     * @param aws_secret_key IAM Secret Key
+     * @param aws_sts_token STS token from Cognito (optional)
+     */
+    with_credentials(aws_region, aws_access_id, aws_secret_key, aws_sts_token) {
+        return AwsIotMqttConnectionConfigBuilder.configure_websocket_handshake(this, {
+            credentials_provider: auth_1.AwsCredentialsProvider.newStatic(aws_access_id, aws_secret_key, aws_sts_token),
+            region: aws_region,
+            service: "iotdevicegateway",
+        });
+    }
+    /**
+     * Configure the http proxy options to use to establish the connection
+     * @param proxy_options proxy options to use to establish the mqtt connection
+     */
+    with_http_proxy_options(proxy_options) {
+        this.params.proxy_options = proxy_options;
+        return this;
+    }
+    /**
+     * Sets the custom authorizer settings. This function will modify the username, port, and TLS options.
+     *
+     * @param username The username to use with the custom authorizer. If an empty string is passed, it will
+     *                 check to see if a username has already been set (via WithUsername function). If no
+     *                 username is set then no username will be passed with the MQTT connection.
+     * @param authorizerName The name of the custom authorizer. If an empty string is passed, then
+     *                       'x-amz-customauthorizer-name' will not be added with the MQTT connection.
+     * @param authorizerSignature The signature of the custom authorizer. If an empty string is passed, then
+     *                            'x-amz-customauthorizer-signature' will not be added with the MQTT connection.
+     * @param password The password to use with the custom authorizer. If null is passed, then no password will
+     *                 be set.
+     */
+    with_custom_authorizer(username, authorizer_name, authorizer_signature, password) {
+        this.is_using_custom_authorizer = true;
+        let username_string = iot_shared.populate_username_string_with_custom_authorizer("", username, authorizer_name, authorizer_signature, this.params.username);
+        this.params.username = username_string;
+        this.params.password = password;
+        if (!this.params.use_websocket) {
+            this.tls_ctx_options.alpn_list = ["mqtt"];
+        }
+        this.params.port = 443;
+        return this;
+    }
+    /**
+     * Sets username for the connection
+     *
+     * @param username the username that will be passed with the MQTT connection
+     */
+    with_username(username) {
+        this.params.username = username;
+        return this;
+    }
+    /**
+     * Sets password for the connection
+     *
+     * @param password the password that will be passed with the MQTT connection
+     */
+    with_password(password) {
+        this.params.password = password;
+        return this;
+    }
+    /**
+     * Configure the max reconnection period (in second). The reonnection period will
+     * be set in range of [reconnect_min_sec,reconnect_max_sec].
+     * @param reconnect_max_sec max reconnection period
+     */
+    with_reconnect_max_sec(max_sec) {
+        this.params.reconnect_max_sec = max_sec;
+        return this;
+    }
+    /**
+     * Configure the min reconnection period (in second). The reonnection period will
+     * be set in range of [reconnect_min_sec,reconnect_max_sec].
+     * @param reconnect_min_sec min reconnection period
+     */
+    with_reconnect_min_sec(min_sec) {
+        this.params.reconnect_min_sec = min_sec;
+        return this;
+    }
+    /**
+     * Returns the configured MqttConnectionConfig.  On the first invocation of this function, the TLS context is cached
+     * and re-used on all subsequent calls to build().
+     * @returns The configured MqttConnectionConfig
+     */
+    build() {
+        var _a, _b, _c;
+        if (this.params.client_id === undefined || this.params.host_name === undefined) {
+            throw 'client_id and endpoint are required';
+        }
+        // Check to see if a custom authorizer is being used but not through the builder
+        if (this.is_using_custom_authorizer == false) {
+            if (iot_shared.is_string_and_not_empty(this.params.username)) {
+                if (((_a = this.params.username) === null || _a === void 0 ? void 0 : _a.indexOf("x-amz-customauthorizer-name=")) != -1 || ((_b = this.params.username) === null || _b === void 0 ? void 0 : _b.indexOf("x-amz-customauthorizer-signature=")) != -1) {
+                    this.is_using_custom_authorizer = true;
+                }
+            }
+        }
+        // Is the user trying to connect using a custom authorizer?
+        if (this.is_using_custom_authorizer == true) {
+            if (this.params.port != 443) {
+                console.log("Warning: Attempting to connect to authorizer with unsupported port. Port is not 443...");
+            }
+        }
+        /*
+         * By caching and reusing the TLS context we get an enormous memory savings on a per-connection basis.
+         * The tradeoff is that you can't modify TLS options in between calls to build.
+         * Previously we were making a new one with every single connection which had a huge negative impact on large
+         * scale tests.
+         */
+        if (this.params.tls_ctx === undefined) {
+            this.params.tls_ctx = new io.ClientTlsContext(this.tls_ctx_options);
+        }
+        // Add the metrics string
+        if (iot_shared.is_string_and_not_empty(this.params.username) == false) {
+            this.params.username = "?SDK=NodeJSv2&Version=";
+        }
+        else {
+            if (((_c = this.params.username) === null || _c === void 0 ? void 0 : _c.indexOf("?")) != -1) {
+                this.params.username += "&SDK=NodeJSv2&Version=";
+            }
+            else {
+                this.params.username += "?SDK=NodeJSv2&Version=";
+            }
+        }
+        this.params.username += platform.crt_version();
+        return this.params;
+    }
+}
+exports.AwsIotMqttConnectionConfigBuilder = AwsIotMqttConnectionConfigBuilder;
+//# sourceMappingURL=aws_iot.js.map
+
+/***/ }),
+
+/***/ 81032:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.AwsIotMqtt5ClientConfigBuilder = void 0;
+/**
+ * Module for the configuration of MQTT5 clients to connect to AWS IoT
+ *
+ * @packageDocumentation
+ */
+const mqtt5 = __importStar(__nccwpck_require__(37313));
+const io = __importStar(__nccwpck_require__(62829));
+const auth = __importStar(__nccwpck_require__(73798));
+const error_1 = __nccwpck_require__(55757);
+const iot_shared = __importStar(__nccwpck_require__(23381));
+const mqtt_shared = __importStar(__nccwpck_require__(80823));
+/**
+ * Builder pattern class to create an {@link Mqtt5ClientConfig} which can then be used to create
+ * an {@link Mqtt5Client}, configured for use with AWS IoT.
+ *
+ * DEVELOPER PREVIEW DISCLAIMER
+ *
+ * MQTT5 support is currently in **developer preview**.  We encourage feedback at all times, but feedback during the
+ * preview window is especially valuable in shaping the final product.  During the preview period we may make
+ * backwards-incompatible changes to the public API, but in general, this is something we will try our best to avoid.
+ *
+ * [MQTT5 Client User Guide](https://www.github.com/awslabs/aws-crt-nodejs/blob/main/MQTT5-UserGuide.md)
+ *
+ * @category IoT
+ */
+class AwsIotMqtt5ClientConfigBuilder {
+    constructor(hostName, port, tlsContextOptions) {
+        this.tlsContextOptions = tlsContextOptions;
+        this.config = {
+            hostName: hostName,
+            port: port,
+            connectProperties: {
+                keepAliveIntervalSeconds: mqtt_shared.DEFAULT_KEEP_ALIVE
+            },
+            extendedValidationAndFlowControlOptions: mqtt5.ClientExtendedValidationAndFlowControl.AwsIotCoreDefaults
+        };
+    }
+    /* Builders for different connection methods to AWS IoT Core */
+    /**
+     * Create a new MQTT5 client builder that will create MQTT5 clients that connect to AWS IoT Core via mutual TLS
+     * using X509 certificate and key at the supplied file paths.
+     *
+     * @param hostName - AWS IoT endpoint to connect to
+     * @param certPath - Path to certificate, in PEM format
+     * @param keyPath - Path to private key, in PEM format
+     */
+    static newDirectMqttBuilderWithMtlsFromPath(hostName, certPath, keyPath) {
+        let builder = new AwsIotMqtt5ClientConfigBuilder(hostName, AwsIotMqtt5ClientConfigBuilder.DEFAULT_DIRECT_MQTT_PORT, io.TlsContextOptions.create_client_with_mtls_from_path(certPath, keyPath));
+        if (io.is_alpn_available()) {
+            builder.tlsContextOptions.alpn_list.unshift('x-amzn-mqtt-ca');
+        }
+        return builder;
+    }
+    /**
+     * Create a new MQTT5 client builder that will create MQTT5 clients that connect to AWS IoT Core via mutual TLS
+     * using in-memory X509 certificate and key.
+     *
+     * @param hostName - AWS IoT endpoint to connect to
+     * @param cert - Certificate, in PEM format
+     * @param privateKey - Private key, in PEM format
+     */
+    static newDirectMqttBuilderWithMtlsFromMemory(hostName, cert, privateKey) {
+        let builder = new AwsIotMqtt5ClientConfigBuilder(hostName, AwsIotMqtt5ClientConfigBuilder.DEFAULT_DIRECT_MQTT_PORT, io.TlsContextOptions.create_client_with_mtls(cert, privateKey));
+        if (io.is_alpn_available()) {
+            builder.tlsContextOptions.alpn_list.unshift('x-amzn-mqtt-ca');
+        }
+        return builder;
+    }
+    /**
+     * Create a new MQTT5 client builder that will create MQTT5 clients that connect to AWS IoT Core via mutual TLS
+     * using a PKCS11 library for certificate and private key operations.
+     *
+     * NOTE: This configuration only works on Unix devices.
+     *
+     * @param hostName - AWS IoT endpoint to connect to
+     * @param pkcs11Options - PKCS#11 options.
+     */
+    static newDirectMqttBuilderWithMtlsFromPkcs11(hostName, pkcs11Options) {
+        let builder = new AwsIotMqtt5ClientConfigBuilder(hostName, AwsIotMqtt5ClientConfigBuilder.DEFAULT_DIRECT_MQTT_PORT, io.TlsContextOptions.create_client_with_mtls_pkcs11(pkcs11Options));
+        if (io.is_alpn_available()) {
+            builder.tlsContextOptions.alpn_list.unshift('x-amzn-mqtt-ca');
+        }
+        return builder;
+    }
+    /**
+     * Create a new MQTT5 client builder that will create MQTT5 clients that connect to AWS IoT Core via mutual TLS
+     * using a certificate entry in a Windows certificate store.
+     *
+     * NOTE: This configuration only works on Windows devices.
+     *
+     * @param hostName - AWS IoT endpoint to connect to
+     * @param certificatePath - Path to certificate in a Windows certificate store.
+     *      The path must use backslashes and end with the certificate's thumbprint.
+     *      Example: `CurrentUser\MY\A11F8A9B5DF5B98BA3508FBCA575D09570E0D2C6`
+     */
+    static newDirectMqttBuilderWithMtlsFromWindowsCertStorePath(hostName, certificatePath) {
+        let builder = new AwsIotMqtt5ClientConfigBuilder(hostName, AwsIotMqtt5ClientConfigBuilder.DEFAULT_DIRECT_MQTT_PORT, io.TlsContextOptions.create_client_with_mtls_windows_cert_store_path(certificatePath));
+        if (io.is_alpn_available()) {
+            builder.tlsContextOptions.alpn_list.unshift('x-amzn-mqtt-ca');
+        }
+        return builder;
+    }
+    /**
+     * Create a new MQTT5 client builder that will create MQTT5 clients that connect to AWS IoT Core via TLS,
+     * authenticating via a custom authenticator.
+     *
+     * @param hostName - AWS IoT endpoint to connect to
+     * @param customAuthConfig - AWS IoT custom auth configuration
+     */
+    static newDirectMqttBuilderWithCustomAuth(hostName, customAuthConfig) {
+        let builder = new AwsIotMqtt5ClientConfigBuilder(hostName, AwsIotMqtt5ClientConfigBuilder.DEFAULT_WEBSOCKET_MQTT_PORT, new io.TlsContextOptions());
+        builder.customAuthConfig = customAuthConfig;
+        builder.tlsContextOptions.alpn_list = ["mqtt"];
+        return builder;
+    }
+    /**
+     * Create a new MQTT5 client builder that will create MQTT5 clients that connect to AWS IoT Core via websockets,
+     * using AWS Sigv4 signing to establish authenticate.
+     *
+     * @param hostName - AWS IoT endpoint to connect to
+     * @param options - additional sigv4-oriented options to use
+     */
+    static newWebsocketMqttBuilderWithSigv4Auth(hostName, options) {
+        let tlsContextOptions = new io.TlsContextOptions();
+        tlsContextOptions.alpn_list = [];
+        let builder = new AwsIotMqtt5ClientConfigBuilder(hostName, AwsIotMqtt5ClientConfigBuilder.DEFAULT_WEBSOCKET_MQTT_PORT, tlsContextOptions);
+        let credentialsProvider = options === null || options === void 0 ? void 0 : options.credentialsProvider;
+        if (!credentialsProvider) {
+            credentialsProvider = auth.AwsCredentialsProvider.newDefault();
+        }
+        builder.config.websocketHandshakeTransform = (request, done) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const signingConfig = {
+                    algorithm: auth.AwsSigningAlgorithm.SigV4,
+                    signature_type: auth.AwsSignatureType.HttpRequestViaQueryParams,
+                    provider: credentialsProvider,
+                    region: (_a = options === null || options === void 0 ? void 0 : options.region) !== null && _a !== void 0 ? _a : iot_shared.extractRegionFromEndpoint(hostName),
+                    service: "iotdevicegateway",
+                    signed_body_value: auth.AwsSignedBodyValue.EmptySha256,
+                    omit_session_token: true,
+                };
+                yield auth.aws_sign_request(request, signingConfig);
+                done();
+            }
+            catch (error) {
+                if (error instanceof error_1.CrtError) {
+                    done(error.error_code);
+                }
+                else {
+                    done(3); /* TODO: AWS_ERROR_UNKNOWN */
+                }
+            }
+        });
+        return builder;
+    }
+    /**
+     * Create a new MQTT5 client builder that will create MQTT5 clients that connect to AWS IoT Core via websockets,
+     * authenticating via a custom authenticator.
+     *
+     * @param hostName - AWS IoT endpoint to connect to
+     * @param customAuthConfig - AWS IoT custom auth configuration
+     */
+    static newWebsocketMqttBuilderWithCustomAuth(hostName, customAuthConfig) {
+        let builder = new AwsIotMqtt5ClientConfigBuilder(hostName, AwsIotMqtt5ClientConfigBuilder.DEFAULT_WEBSOCKET_MQTT_PORT, new io.TlsContextOptions());
+        builder.customAuthConfig = customAuthConfig;
+        builder.config.websocketHandshakeTransform = (request, done) => __awaiter(this, void 0, void 0, function* () {
+            done(0);
+        });
+        return builder;
+    }
+    /* Instance Methods for various config overrides */
+    /**
+     * Overrides the default system trust store.
+     *
+     * @param caDirpath - Only used on Unix-style systems where all trust anchors are
+     * stored in a directory (e.g. /etc/ssl/certs).
+     * @param caFilepath - Single file containing all trust CAs, in PEM format
+     */
+    withCertificateAuthorityFromPath(caDirpath, caFilepath) {
+        this.tlsContextOptions.override_default_trust_store_from_path(caDirpath, caFilepath);
+        return this;
+    }
+    /**
+     * Overrides the default system trust store.
+     *
+     * @param ca - Buffer containing all trust CAs, in PEM format
+     */
+    withCertificateAuthority(ca) {
+        this.tlsContextOptions.override_default_trust_store(ca);
+        return this;
+    }
+    /**
+     * Overrides the IoT endpoint port to connect to.
+     *
+     * @param port The IoT endpoint port to connect to. Usually 8883 for MQTT, or 443 for websockets
+     */
+    withPort(port) {
+        this.config.port = port;
+        return this;
+    }
+    /**
+     * Overrides all configurable options with respect to the CONNECT packet sent by the client, including the will.
+     * These connect properties will be used for every connection attempt made by the client.  Custom authentication
+     * configuration will override the username and password values in this configuration.
+     *
+     * @param connectPacket all configurable options with respect to the CONNECT packet sent by the client
+     */
+    withConnectProperties(connectPacket) {
+        this.config.connectProperties = connectPacket;
+        return this;
+    }
+    /**
+     * Overrides how the MQTT5 client should behave with respect to MQTT sessions.
+     *
+     * @param sessionBehavior how the MQTT5 client should behave with respect to MQTT sessions.
+     */
+    withSessionBehavior(sessionBehavior) {
+        this.config.sessionBehavior = sessionBehavior;
+        return this;
+    }
+    /**
+     * Overrides how the reconnect delay is modified in order to smooth out the distribution of reconnection attempt
+     * timepoints for a large set of reconnecting clients.
+     *
+     * @param retryJitterMode controls how the reconnect delay is modified in order to smooth out the distribution of
+     * econnection attempt timepoints for a large set of reconnecting clients.
+     */
+    withRetryJitterMode(retryJitterMode) {
+        this.config.retryJitterMode = retryJitterMode;
+        return this;
+    }
+    /**
+     * Overrides the minimum amount of time to wait to reconnect after a disconnect.  Exponential backoff is performed
+     * with controllable jitter after each connection failure.
+     *
+     * @param minReconnectDelayMs minimum amount of time to wait to reconnect after a disconnect.
+     */
+    withMinReconnectDelayMs(minReconnectDelayMs) {
+        this.config.minReconnectDelayMs = minReconnectDelayMs;
+        return this;
+    }
+    /**
+     * Overrides the maximum amount of time to wait to reconnect after a disconnect.  Exponential backoff is performed
+     * with controllable jitter after each connection failure.
+     *
+     * @param maxReconnectDelayMs maximum amount of time to wait to reconnect after a disconnect.
+     */
+    withMaxReconnectDelayMs(maxReconnectDelayMs) {
+        this.config.maxReconnectDelayMs = maxReconnectDelayMs;
+        return this;
+    }
+    /**
+     * Overrides the amount of time that must elapse with an established connection before the reconnect delay is
+     * reset to the minimum.  This helps alleviate bandwidth-waste in fast reconnect cycles due to permission
+     * failures on operations.
+     *
+     * @param minConnectedTimeToResetReconnectDelayMs the amount of time that must elapse with an established
+     * connection before the reconnect delay is reset to the minimum
+     */
+    withMinConnectedTimeToResetReconnectDelayMs(minConnectedTimeToResetReconnectDelayMs) {
+        this.config.minConnectedTimeToResetReconnectDelayMs = minConnectedTimeToResetReconnectDelayMs;
+        return this;
+    }
+    /**
+     * Overrides the time interval to wait after sending a CONNECT request for a CONNACK to arrive.  If one does not
+     * arrive, the connection will be shut down.
+     *
+     * @param connackTimeoutMs time interval to wait after sending a CONNECT request for a CONNACK to arrive
+     */
+    withConnackTimeoutMs(connackTimeoutMs) {
+        this.config.connackTimeoutMs = connackTimeoutMs;
+        return this;
+    }
+    /**
+     * Overrides how disconnects affect the queued and in-progress operations tracked by the client.  Also controls
+     * how new operations are handled while the client is not connected.  In particular, if the client is not connected,
+     * then any operation that would be failed on disconnect (according to these rules) will also be rejected.
+     *
+     * @param offlineQueueBehavior how disconnects affect the queued and in-progress operations tracked by the client
+     *
+     * @group Node-only
+     */
+    withOfflineQueueBehavior(offlineQueueBehavior) {
+        this.config.offlineQueueBehavior = offlineQueueBehavior;
+        return this;
+    }
+    /**
+     * Overrides the time interval to wait after sending a PINGREQ for a PINGRESP to arrive.  If one does not arrive,
+     * the client will close the current connection.
+     *
+     * @param pingTimeoutMs time interval to wait after sending a PINGREQ for a PINGRESP to arrive
+     *
+     * @group Node-only
+     */
+    withPingTimeoutMs(pingTimeoutMs) {
+        this.config.pingTimeoutMs = pingTimeoutMs;
+        return this;
+    }
+    /**
+     * Overrides the time interval to wait for an ack after sending a QoS 1+ PUBLISH, SUBSCRIBE, or UNSUBSCRIBE before
+     * failing the operation.  Defaults to no timeout.
+     *
+     * @param ackTimeoutSeconds the time interval to wait for an ack after sending a QoS 1+ PUBLISH, SUBSCRIBE,
+     * or UNSUBSCRIBE before failing the operation
+     *
+     * @group Node-only
+     */
+    withAckTimeoutSeconds(ackTimeoutSeconds) {
+        this.config.ackTimeoutSeconds = ackTimeoutSeconds;
+        return this;
+    }
+    /**
+     * Overrides the socket properties of the underlying MQTT connections made by the client.  Leave undefined to use
+     * defaults (no TCP keep alive, 10 second socket timeout).
+     *
+     * @param socketOptions socket properties of the underlying MQTT connections made by the client
+     *
+     * @group Node-only
+     */
+    withSocketOptions(socketOptions) {
+        this.config.socketOptions = socketOptions;
+        return this;
+    }
+    /**
+     * Overrides (tunneling) HTTP proxy usage when establishing MQTT connections.
+     *
+     * @param httpProxyOptions HTTP proxy options to use when establishing MQTT connections
+     *
+     * @group Node-only
+     */
+    withHttpProxyOptions(httpProxyOptions) {
+        this.config.httpProxyOptions = httpProxyOptions;
+        return this;
+    }
+    /**
+     * Overrides additional controls for client behavior with respect to operation validation and flow control; these
+     * checks go beyond the base MQTT5 spec to respect limits of specific MQTT brokers.
+     *
+     * @param extendedValidationAndFlowControlOptions additional controls for client behavior with respect to operation
+     * validation and flow control
+     *
+     * @group Node-only
+     */
+    withExtendedValidationAndFlowControlOptions(extendedValidationAndFlowControlOptions) {
+        this.config.extendedValidationAndFlowControlOptions = extendedValidationAndFlowControlOptions;
+        return this;
+    }
+    /**
+     * Constructs an MQTT5 Client configuration object for creating mqtt5 clients.
+     */
+    build() {
+        var _a, _b;
+        if (this.config.tlsCtx === undefined) {
+            this.config.tlsCtx = new io.ClientTlsContext(this.tlsContextOptions);
+        }
+        // this is always set by the constructor, but check it to make typescript happy
+        if (this.config.connectProperties) {
+            this.config.connectProperties.username = iot_shared.buildMqtt5FinalUsername(this.customAuthConfig);
+            if ((_a = this.customAuthConfig) === null || _a === void 0 ? void 0 : _a.password) {
+                this.config.connectProperties.password = (_b = this.customAuthConfig) === null || _b === void 0 ? void 0 : _b.password;
+            }
+        }
+        return this.config;
+    }
+}
+exports.AwsIotMqtt5ClientConfigBuilder = AwsIotMqtt5ClientConfigBuilder;
+AwsIotMqtt5ClientConfigBuilder.DEFAULT_WEBSOCKET_MQTT_PORT = 443;
+AwsIotMqtt5ClientConfigBuilder.DEFAULT_DIRECT_MQTT_PORT = 8883;
+//# sourceMappingURL=aws_iot_mqtt5.js.map
+
+/***/ }),
+
+/***/ 53924:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const path = __importStar(__nccwpck_require__(71017));
+const os_1 = __nccwpck_require__(22037);
+const fs_1 = __nccwpck_require__(57147);
+const process_1 = __nccwpck_require__(77282);
+const upgrade_string = "Please upgrade to node >=10.16.0, or use the provided browser implementation.";
+if ('napi' in process_1.versions) {
+    // @ts-ignore
+    const napi_version = parseInt(process_1.versions['napi']);
+    if (napi_version < 4) {
+        throw new Error("The AWS CRT native implementation requires that NAPI version 4 be present. " + upgrade_string);
+    }
+}
+else {
+    throw new Error("The current runtime is not reporting an NAPI version. " + upgrade_string);
+}
+const binary_name = 'aws-crt-nodejs';
+const platformDir = `${os_1.platform}-${os_1.arch}`;
+let source_root = path.resolve(__dirname, '..', '..');
+const dist = path.join(source_root, 'dist');
+if ((0, fs_1.existsSync)(dist)) {
+    source_root = dist;
+}
+const bin_path = path.resolve(source_root, 'bin');
+const search_paths = [
+    path.join(bin_path, platformDir, binary_name),
+];
+let binding;
+for (const path of search_paths) {
+    if ((0, fs_1.existsSync)(path + '.node')) {
+        binding = require(path);
+        break;
+    }
+}
+if (binding == undefined) {
+    throw new Error("AWS CRT binary not present in any of the following locations:\n\t" + search_paths.join('\n\t'));
+}
+exports["default"] = binding;
+//# sourceMappingURL=binding.js.map
+
+/***/ }),
+
+/***/ 78969:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.crc32c = exports.crc32 = void 0;
+/**
+ *
+ * A module containing various checksum implementations intended for streaming payloads
+ *
+ * @packageDocumentation
+ * @module checksums
+ * @mergeTarget
+ */
+const binding_1 = __importDefault(__nccwpck_require__(53924));
+/**
+ * Computes an crc32 checksum.
+ *
+ * @param data The data to checksum
+ * @param previous previous crc32 checksum result. Used if you are buffering large input.
+ *
+ * @category Crypto
+ */
+function crc32(data, previous) {
+    return binding_1.default.checksums_crc32(data, previous);
+}
+exports.crc32 = crc32;
+/**
+ * Computes a crc32c checksum.
+ *
+ * @param data The data to checksum
+ * @param previous previous crc32c checksum result. Used if you are buffering large input.
+ *
+ * @category Crypto
+ */
+function crc32c(data, previous) {
+    return binding_1.default.checksums_crc32c(data, previous);
+}
+exports.crc32c = crc32c;
+//# sourceMappingURL=checksums.js.map
+
+/***/ }),
+
+/***/ 19952:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.native_memory_dump = exports.native_memory = void 0;
+/**
+ *
+ * A module containing some miscellaneous crt native memory queries
+ *
+ * @packageDocumentation
+ * @module crt
+ * @mergeTarget
+ */
+/**
+ * Memory reporting is controlled by the AWS_CRT_MEMORY_TRACING environment
+ * variable. Possible values are:
+ * * 0 - No tracing
+ * * 1 - Track active memory usage. Incurs a small performance penalty.
+ * * 2 - Track active memory usage, and also track callstacks for every allocation.
+ *   This incurs a performance penalty, depending on the cost of the platform's
+ *   stack unwinding/backtrace API.
+ * @category System
+ */
+const binding_1 = __importDefault(__nccwpck_require__(53924));
+/**
+ * If the ```AWS_CRT_MEMORY_TRACING``` is environment variable is set to 1 or 2,
+ * will return the native memory usage in bytes. Otherwise, returns 0.
+ * @returns The total allocated native memory, in bytes.
+ *
+ * @category System
+ */
+function native_memory() {
+    return binding_1.default.native_memory();
+}
+exports.native_memory = native_memory;
+/**
+ * Dumps outstanding native memory allocations. If the ```AWS_CRT_MEMORY_TRACING```
+ * environment variable is set to 1 or 2, will dump all active native memory to
+ * the console log.
+ *
+ * @category System
+ */
+function native_memory_dump() {
+    return binding_1.default.native_memory_dump();
+}
+exports.native_memory_dump = native_memory_dump;
+//# sourceMappingURL=crt.js.map
+
+/***/ }),
+
+/***/ 92642:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.hmac_sha256 = exports.Sha256Hmac = exports.hash_sha1 = exports.Sha1Hash = exports.hash_sha256 = exports.Sha256Hash = exports.hash_md5 = exports.Md5Hash = void 0;
+/**
+ * A module containing support for a variety of cryptographic operations.
+ *
+ * @packageDocumentation
+ * @module crypto
+ * @mergeTarget
+ */
+const binding_1 = __importDefault(__nccwpck_require__(53924));
+const native_resource_1 = __nccwpck_require__(82076);
+/**
+ * Object that allows for continuous hashing of data.
+ *
+ * @internal
+ */
+class Hash extends native_resource_1.NativeResource {
+    /**
+     * Hash additional data.
+     * @param data Additional data to hash
+     */
+    update(data) {
+        binding_1.default.hash_update(this.native_handle(), data);
+    }
+    /**
+     * Completes the hash computation and returns the final hash digest.
+     *
+     * @param truncate_to The maximum number of bytes to receive. Leave as undefined or 0 to receive the entire digest.
+     */
+    finalize(truncate_to) {
+        return binding_1.default.hash_digest(this.native_handle(), truncate_to);
+    }
+    constructor(hash_handle) {
+        super(hash_handle);
+    }
+}
+/**
+ * Object that allows for continuous MD5 hashing of data.
+ *
+ * @category Crypto
+ */
+class Md5Hash extends Hash {
+    constructor() {
+        super(binding_1.default.hash_md5_new());
+    }
+}
+exports.Md5Hash = Md5Hash;
+/**
+ * Computes an MD5 hash. Use this if you don't need to stream the data you're hashing and can load the entire input
+ * into memory.
+ *
+ * @param data The data to hash
+ * @param truncate_to The maximum number of bytes to receive. Leave as undefined or 0 to receive the entire digest.
+ *
+ * @category Crypto
+ */
+function hash_md5(data, truncate_to) {
+    return binding_1.default.hash_md5_compute(data, truncate_to);
+}
+exports.hash_md5 = hash_md5;
+/**
+ * Object that allows for continuous SHA256 hashing of data.
+ *
+ * @category Crypto
+ */
+class Sha256Hash extends Hash {
+    constructor() {
+        super(binding_1.default.hash_sha256_new());
+    }
+}
+exports.Sha256Hash = Sha256Hash;
+/**
+ * Computes an SHA256 hash. Use this if you don't need to stream the data you're hashing and can load the entire input
+ * into memory.
+ *
+ * @param data The data to hash
+ * @param truncate_to The maximum number of bytes to receive. Leave as undefined or 0 to receive the entire digest.
+ *
+ * @category Crypto
+ */
+function hash_sha256(data, truncate_to) {
+    return binding_1.default.hash_sha256_compute(data, truncate_to);
+}
+exports.hash_sha256 = hash_sha256;
+/**
+ * Object that allows for continuous SHA1 hashing of data.
+ *
+ * @category Crypto
+ */
+class Sha1Hash extends Hash {
+    constructor() {
+        super(binding_1.default.hash_sha1_new());
+    }
+}
+exports.Sha1Hash = Sha1Hash;
+/**
+ * Computes an SHA1 hash. Use this if you don't need to stream the data you're hashing and can load the entire input
+ * into memory.
+ *
+ * @param data The data to hash
+ * @param truncate_to The maximum number of bytes to receive. Leave as undefined or 0 to receive the entire digest.
+ *
+ * @category Crypto
+ */
+function hash_sha1(data, truncate_to) {
+    return binding_1.default.hash_sha1_compute(data, truncate_to);
+}
+exports.hash_sha1 = hash_sha1;
+/**
+ * Object that allows for continuous hashing of data with an hmac secret.
+ *
+ * @category Crypto
+ */
+class Hmac extends native_resource_1.NativeResource {
+    /**
+     * Hash additional data.
+     *
+     * @param data additional data to hash
+     */
+    update(data) {
+        binding_1.default.hmac_update(this.native_handle(), data);
+    }
+    /**
+     * Completes the hash computation and returns the final hmac digest.
+     *
+     * @param truncate_to The maximum number of bytes to receive. Leave as undefined or 0 to receive the entire digest.
+     */
+    finalize(truncate_to) {
+        return binding_1.default.hmac_digest(this.native_handle(), truncate_to);
+    }
+    constructor(hash_handle) {
+        super(hash_handle);
+    }
+}
+/**
+ * Object that allows for continuous SHA256 HMAC hashing of data.
+ *
+ * @category Crypto
+ */
+class Sha256Hmac extends Hmac {
+    constructor(secret) {
+        super(binding_1.default.hmac_sha256_new(secret));
+    }
+}
+exports.Sha256Hmac = Sha256Hmac;
+/**
+ * Computes an SHA256 HMAC. Use this if you don't need to stream the data you're hashing and can load the entire input
+ * into memory.
+ *
+ * @param secret The key to use for the HMAC process
+ * @param data The data to hash
+ * @param truncate_to The maximum number of bytes to receive. Leave as undefined or 0 to receive the entire digest.
+ *
+ * @category Crypto
+ */
+function hmac_sha256(secret, data, truncate_to) {
+    return binding_1.default.hmac_sha256_compute(secret, data, truncate_to);
+}
+exports.hmac_sha256 = hmac_sha256;
+//# sourceMappingURL=crypto.js.map
+
+/***/ }),
+
+/***/ 55757:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CrtError = void 0;
+/**
+ * Library-specific error extension type
+ *
+ * @packageDocumentation
+ * @module error
+ * @mergeTarget
+ */
+const binding_1 = __importDefault(__nccwpck_require__(53924));
+/**
+ * Represents an error encountered in native code. Can also be used to convert a numeric error code into
+ * a human-readable string.
+ *
+ * @category System
+ */
+class CrtError extends Error {
+    /** @var error - The original error. Most often an error_code, but possibly some other context */
+    constructor(error) {
+        super(extract_message(error));
+        this.error = error;
+        this.error_code = extract_code(error);
+        this.error_name = extract_name(error);
+    }
+}
+exports.CrtError = CrtError;
+function extract_message(error) {
+    if (typeof error === 'number') {
+        return binding_1.default.error_code_to_string(error);
+    }
+    else if (error instanceof CrtError) {
+        return error.message;
+    }
+    return error.toString();
+}
+function extract_code(error) {
+    if (typeof error === 'number') {
+        return error;
+    }
+    else if (error instanceof CrtError) {
+        return error.error_code;
+    }
+    return undefined;
+}
+function extract_name(error) {
+    if (typeof error === 'number') {
+        return binding_1.default.error_code_to_name(error);
+    }
+    else if (error instanceof CrtError) {
+        return error.error_name;
+    }
+    return undefined;
+}
+//# sourceMappingURL=error.js.map
+
+/***/ }),
+
+/***/ 19471:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.HttpClientConnectionManager = exports.HttpClientStream = exports.HttpStream = exports.HttpClientConnection = exports.HttpProxyOptions = exports.HttpProxyConnectionType = exports.HttpConnection = exports.HttpRequest = exports.HttpHeaders = exports.HttpProxyAuthenticationType = void 0;
+/**
+ *
+ * A module containing support for creating http connections and making requests on them.
+ *
+ * @packageDocumentation
+ * @module http
+ * @mergeTarget
+ */
+const binding_1 = __importDefault(__nccwpck_require__(53924));
+const native_resource_1 = __nccwpck_require__(82076);
+const error_1 = __nccwpck_require__(55757);
+const http_1 = __nccwpck_require__(80866);
+/** @internal */
+var http_2 = __nccwpck_require__(80866);
+Object.defineProperty(exports, "HttpProxyAuthenticationType", ({ enumerable: true, get: function () { return http_2.HttpProxyAuthenticationType; } }));
+const event_1 = __nccwpck_require__(85985);
+/**
+ * @category HTTP
+ */
+exports.HttpHeaders = binding_1.default.HttpHeaders;
+/** @internal */
+const nativeHttpRequest = binding_1.default.HttpRequest;
+/**
+ * @category HTTP
+ */
+class HttpRequest extends nativeHttpRequest {
+    constructor(method, path, headers, body) {
+        super(method, path, headers, body === null || body === void 0 ? void 0 : body.native_handle());
+    }
+}
+exports.HttpRequest = HttpRequest;
+/**
+ * Base class for HTTP connections
+ *
+ * @category HTTP
+ */
+class HttpConnection extends (0, native_resource_1.NativeResourceMixin)(event_1.BufferedEventEmitter) {
+    constructor(native_handle) {
+        super();
+        this._super(native_handle);
+    }
+    /**
+     * Close the connection.
+     * Shutdown is asynchronous. This call has no effect if the connection is already
+     * closing.
+     */
+    close() {
+        binding_1.default.http_connection_close(this.native_handle());
+    }
+    // Overridden to allow uncorking on ready
+    on(event, listener) {
+        super.on(event, listener);
+        if (event == 'connect') {
+            process.nextTick(() => {
+                this.uncork();
+            });
+        }
+        return this;
+    }
+}
+exports.HttpConnection = HttpConnection;
+/**
+ * Emitted when the connection is connected and ready to start streams
+ *
+ * @event
+ */
+HttpConnection.CONNECT = 'connect';
+/**
+ * Emitted when an error occurs on the connection
+ *
+ * @event
+ */
+HttpConnection.ERROR = 'error';
+/**
+ * Emitted when the connection has completed
+ *
+ * @event
+ */
+HttpConnection.CLOSE = 'close';
+/**
+ * Proxy connection types.
+ *
+ * The original behavior was to make a tunneling connection if TLS was used, and a forwarding connection if it was not.
+ * There are legitimate use cases for plaintext tunneling connections, and so the implicit behavior has now
+ * been replaced by this setting, with a default that maps to the old behavior.
+ *
+ * @category HTTP
+ */
+var HttpProxyConnectionType;
+(function (HttpProxyConnectionType) {
+    /**
+     * (Default for backwards compatibility).  If Tls options are supplied then the connection will be a tunneling
+     * one, otherwise it will be a forwarding one.
+     */
+    HttpProxyConnectionType[HttpProxyConnectionType["Legacy"] = 0] = "Legacy";
+    /**
+     * Establish a forwarding-based connection with the proxy.  Tls is not allowed in this case.
+     */
+    HttpProxyConnectionType[HttpProxyConnectionType["Forwarding"] = 1] = "Forwarding";
+    /**
+     * Establish a tunneling-based connection with the proxy.
+     */
+    HttpProxyConnectionType[HttpProxyConnectionType["Tunneling"] = 2] = "Tunneling";
+})(HttpProxyConnectionType = exports.HttpProxyConnectionType || (exports.HttpProxyConnectionType = {}));
+;
+/**
+ * Proxy options for HTTP clients.
+ *
+ * @category HTTP
+ */
+class HttpProxyOptions extends http_1.CommonHttpProxyOptions {
+    /**
+     *
+     * @param host_name Name of the proxy server to connect through
+     * @param port Port number of the proxy server to connect through
+     * @param auth_method Type of proxy authentication to use. Default is {@link HttpProxyAuthenticationType.None}
+     * @param auth_username Username to use when `auth_type` is {@link HttpProxyAuthenticationType.Basic}
+     * @param auth_password Password to use when `auth_type` is {@link HttpProxyAuthenticationType.Basic}
+     * @param tls_opts Optional TLS connection options for the connection to the proxy host.
+     *                 Must be distinct from the {@link TlsConnectionOptions} provided to
+     *                 the HTTP connection
+     * @param connection_type Optional Type of connection to make.  If not specified,
+     *                 {@link HttpProxyConnectionType.Legacy} will be used.
+     */
+    constructor(host_name, port, auth_method = http_1.HttpProxyAuthenticationType.None, auth_username, auth_password, tls_opts, connection_type) {
+        super(host_name, port, auth_method, auth_username, auth_password);
+        this.tls_opts = tls_opts;
+        this.connection_type = connection_type;
+    }
+    /** @internal */
+    create_native_handle() {
+        return binding_1.default.http_proxy_options_new(this.host_name, this.port, this.auth_method, this.auth_username, this.auth_password, this.tls_opts ? this.tls_opts.native_handle() : undefined, this.connection_type ? this.connection_type : HttpProxyConnectionType.Legacy);
+    }
+}
+exports.HttpProxyOptions = HttpProxyOptions;
+/**
+ * Represents an HTTP connection from a client to a server
+ *
+ * @category HTTP
+ */
+class HttpClientConnection extends HttpConnection {
+    /** Asynchronously establish a new HttpClientConnection.
+     * @param bootstrap Client bootstrap to use when initiating socket connection.  Leave undefined to use the
+     *          default system-wide bootstrap (recommended).
+     * @param host_name Host to connect to
+     * @param port Port to connect to on host
+     * @param socket_options Socket options
+     * @param tls_opts Optional TLS connection options
+     * @param proxy_options Optional proxy options
+    */
+    constructor(bootstrap, host_name, port, socket_options, tls_opts, proxy_options, handle) {
+        super(handle
+            ? handle
+            : binding_1.default.http_connection_new(bootstrap != null ? bootstrap.native_handle() : null, (handle, error_code) => {
+                this._on_setup(handle, error_code);
+            }, (handle, error_code) => {
+                this._on_shutdown(handle, error_code);
+            }, host_name, port, socket_options.native_handle(), tls_opts ? tls_opts.native_handle() : undefined, proxy_options ? proxy_options.create_native_handle() : undefined));
+        this.bootstrap = bootstrap;
+        this.socket_options = socket_options;
+        this.tls_opts = tls_opts;
+    }
+    _on_setup(native_handle, error_code) {
+        if (error_code) {
+            this.emit('error', new error_1.CrtError(error_code));
+            return;
+        }
+        this.emit('connect');
+    }
+    _on_shutdown(native_handle, error_code) {
+        if (error_code) {
+            this.emit('error', new error_1.CrtError(error_code));
+            return;
+        }
+        this.emit('close');
+    }
+    /**
+     * Create {@link HttpClientStream} to carry out the request/response exchange.
+     *
+     * NOTE: The stream sends no data until :meth:`HttpClientStream.activate()`
+     * is called. Call {@link HttpStream.activate} when you're ready for
+     * callbacks and events to fire.
+     * @param request - The HttpRequest to attempt on this connection
+     * @returns A new stream that will deliver events for the request
+     */
+    request(request) {
+        let stream;
+        const on_response_impl = (status_code, headers) => {
+            stream._on_response(status_code, headers);
+        };
+        const on_body_impl = (data) => {
+            stream._on_body(data);
+        };
+        const on_complete_impl = (error_code) => {
+            stream._on_complete(error_code);
+        };
+        const native_handle = binding_1.default.http_stream_new(this.native_handle(), request, on_complete_impl, on_response_impl, on_body_impl);
+        return stream = new HttpClientStream(native_handle, this, request);
+    }
+}
+exports.HttpClientConnection = HttpClientConnection;
+/**
+ * Represents a single http message exchange (request/response) in HTTP/1.1. In H2, it may
+ * also represent a PUSH_PROMISE followed by the accompanying response.
+ *
+ * NOTE: Binding either the ready or response event will uncork any buffered events and start
+ * event delivery
+ *
+ * @category HTTP
+ */
+class HttpStream extends (0, native_resource_1.NativeResourceMixin)(event_1.BufferedEventEmitter) {
+    constructor(native_handle, connection) {
+        super();
+        this.connection = connection;
+        this._super(native_handle);
+        this.cork();
+    }
+    /**
+     * Begin sending the request.
+     *
+     * The stream does nothing until this is called. Call activate() when you
+     * are ready for its callbacks and events to fire.
+     */
+    activate() {
+        binding_1.default.http_stream_activate(this.native_handle());
+    }
+    /**
+     * Closes and ends all communication on this stream. Called automatically after the 'end'
+     * event is delivered. Calling this manually is only necessary if you wish to terminate
+     * communication mid-request/response.
+     */
+    close() {
+        binding_1.default.http_stream_close(this.native_handle());
+    }
+    /** @internal */
+    _on_body(data) {
+        this.emit('data', data);
+    }
+    /** @internal */
+    _on_complete(error_code) {
+        if (error_code) {
+            this.emit('error', new error_1.CrtError(error_code));
+            this.close();
+            return;
+        }
+        // schedule death after end is delivered
+        this.on('end', () => {
+            this.close();
+        });
+        this.emit('end');
+    }
+}
+exports.HttpStream = HttpStream;
+/**
+ * Stream that sends a request and receives a response.
+ *
+ * Create an HttpClientStream with {@link HttpClientConnection.request}.
+ *
+ * NOTE: The stream sends no data until {@link HttpStream.activate} is called.
+ * Call {@link HttpStream.activate} when you're ready for callbacks and events to fire.
+ *
+ * @category HTTP
+ */
+class HttpClientStream extends HttpStream {
+    constructor(native_handle, connection, request) {
+        super(native_handle, connection);
+        this.request = request;
+    }
+    /**
+     * HTTP status code returned from the server.
+     * @return Either the status code, or undefined if the server response has not arrived yet.
+     */
+    status_code() {
+        return this.response_status_code;
+    }
+    // Overridden to allow uncorking on ready and response
+    on(event, listener) {
+        super.on(event, listener);
+        if (event == 'response') {
+            process.nextTick(() => {
+                this.uncork();
+            });
+        }
+        return this;
+    }
+    /** @internal */
+    _on_response(status_code, header_array) {
+        this.response_status_code = status_code;
+        let headers = new exports.HttpHeaders(header_array);
+        this.emit('response', status_code, headers);
+    }
+}
+exports.HttpClientStream = HttpClientStream;
+/**
+ * Emitted when the http response headers have arrived.
+ *
+ * @event
+ */
+HttpClientStream.RESPONSE = 'response';
+/**
+ * Emitted when http response data is available.
+ *
+ * @event
+ */
+HttpClientStream.DATA = 'data';
+/**
+ * Emitted when an error occurs in stream processing
+ *
+ * @event
+ */
+HttpClientStream.ERROR = 'error';
+/**
+ * Emitted when the stream has completed
+ *
+ * @event
+ */
+HttpClientStream.END = 'end';
+/**
+ * Emitted when inline headers are delivered while communicating over H2
+ *
+ * @event
+ */
+HttpClientStream.HEADERS = 'headers';
+/**
+ * Creates, manages, and vends connections to a given host/port endpoint
+ *
+ * @category HTTP
+ */
+class HttpClientConnectionManager extends native_resource_1.NativeResource {
+    /**
+     * @param bootstrap Client bootstrap to use when initiating socket connections.  Leave undefined to use the
+     *          default system-wide bootstrap (recommended).
+     * @param host Host to connect to
+     * @param port Port to connect to on host
+     * @param max_connections Maximum number of connections to pool
+     * @param initial_window_size Optional initial window size
+     * @param socket_options Socket options to use when initiating socket connections
+     * @param tls_opts Optional TLS connection options
+     * @param proxy_options Optional proxy options
+     */
+    constructor(bootstrap, host, port, max_connections, initial_window_size, socket_options, tls_opts, proxy_options) {
+        super(binding_1.default.http_connection_manager_new(bootstrap != null ? bootstrap.native_handle() : null, host, port, max_connections, initial_window_size, socket_options.native_handle(), tls_opts ? tls_opts.native_handle() : undefined, proxy_options ? proxy_options.create_native_handle() : undefined, undefined /* on_shutdown */));
+        this.bootstrap = bootstrap;
+        this.host = host;
+        this.port = port;
+        this.max_connections = max_connections;
+        this.initial_window_size = initial_window_size;
+        this.socket_options = socket_options;
+        this.tls_opts = tls_opts;
+        this.proxy_options = proxy_options;
+        this.connections = new Map();
+    }
+    /**
+    * Vends a connection from the pool
+    * @returns A promise that results in an HttpClientConnection. When done with the connection, return
+    *          it via {@link release}
+    */
+    acquire() {
+        return new Promise((resolve, reject) => {
+            // Only create 1 connection in JS/TS from each native connection
+            const on_acquired = (handle, error_code) => {
+                if (error_code) {
+                    reject(new error_1.CrtError(error_code));
+                    return;
+                }
+                let connection = this.connections.get(handle);
+                if (!connection) {
+                    connection = new HttpClientConnection(this.bootstrap, this.host, this.port, this.socket_options, this.tls_opts, this.proxy_options, handle);
+                    this.connections.set(handle, connection);
+                    connection.on('close', () => {
+                        this.connections.delete(handle);
+                    });
+                }
+                resolve(connection);
+            };
+            binding_1.default.http_connection_manager_acquire(this.native_handle(), on_acquired);
+        });
+    }
+    /**
+     * Returns an unused connection to the pool
+     * @param connection - The connection to return
+    */
+    release(connection) {
+        binding_1.default.http_connection_manager_release(this.native_handle(), connection.native_handle());
+    }
+    /** Closes all connections and rejects all pending requests */
+    close() {
+        binding_1.default.http_connection_manager_close(this.native_handle());
+    }
+}
+exports.HttpClientConnectionManager = HttpClientConnectionManager;
+//# sourceMappingURL=http.js.map
+
+/***/ }),
+
+/***/ 62829:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Pkcs11Lib = exports.TlsConnectionOptions = exports.ServerTlsContext = exports.ClientTlsContext = exports.TlsContext = exports.TlsContextOptions = exports.SocketOptions = exports.ClientBootstrap = exports.InputStream = exports.is_alpn_available = exports.enable_logging = exports.LogLevel = exports.error_code_to_name = exports.error_code_to_string = exports.SocketDomain = exports.SocketType = exports.TlsVersion = void 0;
+/**
+ *
+ * A module containing a grab bag of support for core network I/O functionality, including sockets, TLS, DNS, logging,
+ * error handling, streams, and connection -> thread mapping.
+ *
+ * Categories include:
+ * - Network: socket configuration
+ * - TLS: tls configuration
+ * - Logging: logging controls and configuration
+ * - IO: everything else
+ *
+ * @packageDocumentation
+ * @module io
+ * @mergeTarget
+ */
+const binding_1 = __importDefault(__nccwpck_require__(53924));
+const native_resource_1 = __nccwpck_require__(82076);
+const io_1 = __nccwpck_require__(46566);
+var io_2 = __nccwpck_require__(46566);
+Object.defineProperty(exports, "TlsVersion", ({ enumerable: true, get: function () { return io_2.TlsVersion; } }));
+Object.defineProperty(exports, "SocketType", ({ enumerable: true, get: function () { return io_2.SocketType; } }));
+Object.defineProperty(exports, "SocketDomain", ({ enumerable: true, get: function () { return io_2.SocketDomain; } }));
+/**
+ * Convert a native error code into a human-readable string
+ * @param error_code - An error code returned from a native API call, or delivered
+ * via callback.
+ * @returns Long-form description of the error
+ * @see CrtError
+ *
+ * nodejs only.
+ *
+ * @category System
+ */
+function error_code_to_string(error_code) {
+    return binding_1.default.error_code_to_string(error_code);
+}
+exports.error_code_to_string = error_code_to_string;
+/**
+ * Convert a native error code into a human-readable identifier
+ * @param error_code - An error code returned from a native API call, or delivered
+ * via callback.
+ * @return error name as a string
+ * @see CrtError
+ *
+ * nodejs only.
+ *
+ * @category System
+ */
+function error_code_to_name(error_code) {
+    return binding_1.default.error_code_to_name(error_code);
+}
+exports.error_code_to_name = error_code_to_name;
+/**
+ * The amount of detail that will be logged
+ * @category Logging
+ */
+var LogLevel;
+(function (LogLevel) {
+    /** No logging whatsoever. Equivalent to never calling {@link enable_logging}. */
+    LogLevel[LogLevel["NONE"] = 0] = "NONE";
+    /** Only fatals. In practice, this will not do much, as the process will log and then crash (intentionally) if a fatal condition occurs */
+    LogLevel[LogLevel["FATAL"] = 1] = "FATAL";
+    /** Only errors */
+    LogLevel[LogLevel["ERROR"] = 2] = "ERROR";
+    /** Only warnings and errors */
+    LogLevel[LogLevel["WARN"] = 3] = "WARN";
+    /** Information about connection/stream creation/destruction events */
+    LogLevel[LogLevel["INFO"] = 4] = "INFO";
+    /** Enough information to debug the chain of events a given network connection encounters */
+    LogLevel[LogLevel["DEBUG"] = 5] = "DEBUG";
+    /** Everything. Only use this if you really need to know EVERY single call */
+    LogLevel[LogLevel["TRACE"] = 6] = "TRACE";
+})(LogLevel = exports.LogLevel || (exports.LogLevel = {}));
+/**
+ * Enables logging of the native AWS CRT libraries.
+ * @param level - The logging level to filter to. It is not possible to log less than WARN.
+ *
+ * nodejs only.
+ * @category Logging
+ */
+function enable_logging(level) {
+    binding_1.default.io_logging_enable(level);
+}
+exports.enable_logging = enable_logging;
+/**
+ * Returns true if ALPN is available on this platform natively
+ * @return true if ALPN is supported natively, false otherwise
+ *
+ * nodejs only.
+ * @category TLS
+*/
+function is_alpn_available() {
+    return binding_1.default.is_alpn_available();
+}
+exports.is_alpn_available = is_alpn_available;
+/**
+ * Wraps a ```Readable``` for reading by native code, used to stream
+ *  data into the AWS CRT libraries.
+ *
+ * nodejs only.
+ * @category IO
+ */
+class InputStream extends native_resource_1.NativeResource {
+    constructor(source) {
+        super(binding_1.default.io_input_stream_new(16 * 1024));
+        this.source = source;
+        this.source.on('data', (data) => {
+            data = Buffer.isBuffer(data) ? data : new Buffer(data.toString(), 'utf8');
+            binding_1.default.io_input_stream_append(this.native_handle(), data);
+        });
+        this.source.on('end', () => {
+            binding_1.default.io_input_stream_append(this.native_handle(), undefined);
+        });
+    }
+}
+exports.InputStream = InputStream;
+/**
+ * Represents native resources required to bootstrap a client connection
+ * Things like a host resolver, event loop group, etc. There should only need
+ * to be 1 of these per application, in most cases.
+ *
+ * nodejs only.
+ * @category IO
+ */
+class ClientBootstrap extends native_resource_1.NativeResource {
+    constructor() {
+        super(binding_1.default.io_client_bootstrap_new());
+    }
+}
+exports.ClientBootstrap = ClientBootstrap;
+/**
+ * Standard Berkeley socket style options.
+ *
+ * nodejs only.
+ * @category Network
+*/
+class SocketOptions extends native_resource_1.NativeResource {
+    constructor(type = io_1.SocketType.STREAM, domain = io_1.SocketDomain.IPV6, connect_timeout_ms = 5000, keepalive = false, keep_alive_interval_sec = 0, keep_alive_timeout_sec = 0, keep_alive_max_failed_probes = 0) {
+        super(binding_1.default.io_socket_options_new(type, domain, connect_timeout_ms, keep_alive_interval_sec, keep_alive_timeout_sec, keep_alive_max_failed_probes, keepalive));
+    }
+}
+exports.SocketOptions = SocketOptions;
+/**
+ * Options for creating a {@link ClientTlsContext} or {@link ServerTlsContext}.
+ *
+ * nodejs only.
+ * @category TLS
+ */
+class TlsContextOptions {
+    constructor() {
+        /** Minimum version of TLS to support. Uses OS/system default if unspecified. */
+        this.min_tls_version = io_1.TlsVersion.Default;
+        /** List of ALPN protocols to be used on platforms which support ALPN */
+        this.alpn_list = [];
+        /**
+         * In client mode, this turns off x.509 validation. Don't do this unless you are testing.
+         * It is much better to just override the default trust store and pass the self-signed
+         * certificate as the ca_file argument.
+         *
+         * In server mode (ServerTlsContext), this defaults to false. If you want to enforce mutual TLS on the server,
+         * set this to true.
+         */
+        this.verify_peer = true;
+    }
+    /**
+     * Overrides the default system trust store.
+     * @param ca_dirpath - Only used on Unix-style systems where all trust anchors are
+     * stored in a directory (e.g. /etc/ssl/certs).
+     * @param ca_filepath - Single file containing all trust CAs, in PEM format
+     */
+    override_default_trust_store_from_path(ca_dirpath, ca_filepath) {
+        this.ca_dirpath = ca_dirpath;
+        this.ca_filepath = ca_filepath;
+    }
+    /**
+     * Overrides the default system trust store.
+     * @param certificate_authority - String containing all trust CAs, in PEM format
+     */
+    override_default_trust_store(certificate_authority) {
+        this.certificate_authority = certificate_authority;
+    }
+    /**
+     * Create options configured for mutual TLS in client mode,
+     * with client certificate and private key provided as in-memory strings.
+     * @param certificate - Client certificate file contents, in PEM format
+     * @param private_key - Client private key file contents, in PEM format
+     *
+     * @returns newly configured TlsContextOptions object
+     */
+    static create_client_with_mtls(certificate, private_key) {
+        let opt = new TlsContextOptions();
+        opt.certificate = certificate;
+        opt.private_key = private_key;
+        opt.verify_peer = true;
+        return opt;
+    }
+    /**
+     * Create options configured for mutual TLS in client mode,
+     * with client certificate and private key provided via filepath.
+     * @param certificate_filepath - Path to client certificate, in PEM format
+     * @param private_key_filepath - Path to private key, in PEM format
+     *
+     * @returns newly configured TlsContextOptions object
+     */
+    static create_client_with_mtls_from_path(certificate_filepath, private_key_filepath) {
+        let opt = new TlsContextOptions();
+        opt.certificate_filepath = certificate_filepath;
+        opt.private_key_filepath = private_key_filepath;
+        opt.verify_peer = true;
+        return opt;
+    }
+    /**
+     * Create options for mutual TLS in client mode,
+     * with client certificate and private key bundled in a single PKCS#12 file.
+     * @param pkcs12_filepath - Path to PKCS#12 file containing client certificate and private key.
+     * @param pkcs12_password - PKCS#12 password
+     *
+     * @returns newly configured TlsContextOptions object
+    */
+    static create_client_with_mtls_pkcs12_from_path(pkcs12_filepath, pkcs12_password) {
+        let opt = new TlsContextOptions();
+        opt.pkcs12_filepath = pkcs12_filepath;
+        opt.pkcs12_password = pkcs12_password;
+        opt.verify_peer = true;
+        return opt;
+    }
+    /**
+     * @deprecated Renamed [[create_client_with_mtls_pkcs12_from_path]]
+     */
+    static create_client_with_mtls_pkcs_from_path(pkcs12_filepath, pkcs12_password) {
+        return this.create_client_with_mtls_pkcs12_from_path(pkcs12_filepath, pkcs12_password);
+    }
+    /**
+     * Create options configured for mutual TLS in client mode,
+     * using a PKCS#11 library for private key operations.
+     *
+     * NOTE: This configuration only works on Unix devices.
+     *
+     * @param options - PKCS#11 options
+     *
+     * @returns newly configured TlsContextOptions object
+     */
+    static create_client_with_mtls_pkcs11(options) {
+        let opt = new TlsContextOptions();
+        opt.pkcs11_options = options;
+        opt.verify_peer = true;
+        return opt;
+    }
+    /**
+     * Create options configured for mutual TLS in client mode,
+     * using a certificate in a Windows certificate store.
+     *
+     * NOTE: Windows only.
+     *
+     * @param certificate_path - Path to certificate in a Windows certificate store.
+     *      The path must use backslashes and end with the certificate's thumbprint.
+     *      Example: `CurrentUser\MY\A11F8A9B5DF5B98BA3508FBCA575D09570E0D2C6`
+     */
+    static create_client_with_mtls_windows_cert_store_path(certificate_path) {
+        let opt = new TlsContextOptions();
+        opt.windows_cert_store_path = certificate_path;
+        opt.verify_peer = true;
+        return opt;
+    }
+    /**
+     * Creates TLS context with peer verification disabled, along with a certificate and private key
+     * @param certificate_filepath - Path to certificate, in PEM format
+     * @param private_key_filepath - Path to private key, in PEM format
+     *
+     * @returns newly configured TlsContextOptions object
+     */
+    static create_server_with_mtls_from_path(certificate_filepath, private_key_filepath) {
+        let opt = new TlsContextOptions();
+        opt.certificate_filepath = certificate_filepath;
+        opt.private_key_filepath = private_key_filepath;
+        opt.verify_peer = false;
+        return opt;
+    }
+    /**
+     * Creates TLS context with peer verification disabled, along with a certificate and private key
+     * in PKCS#12 format
+     * @param pkcs12_filepath - Path to certificate, in PKCS#12 format
+     * @param pkcs12_password - PKCS#12 Password
+     *
+     * @returns newly configured TlsContextOptions object
+     */
+    static create_server_with_mtls_pkcs_from_path(pkcs12_filepath, pkcs12_password) {
+        let opt = new TlsContextOptions();
+        opt.pkcs12_filepath = pkcs12_filepath;
+        opt.pkcs12_password = pkcs12_password;
+        opt.verify_peer = false;
+        return opt;
+    }
+}
+exports.TlsContextOptions = TlsContextOptions;
+/**
+ * Abstract base TLS context used for client/server TLS communications over sockets.
+ *
+ * @see ClientTlsContext
+ * @see ServerTlsContext
+ *
+ * nodejs only.
+ * @category TLS
+ */
+class TlsContext extends native_resource_1.NativeResource {
+    constructor(ctx_opt) {
+        super(binding_1.default.io_tls_ctx_new(ctx_opt.min_tls_version, ctx_opt.ca_filepath, ctx_opt.ca_dirpath, ctx_opt.certificate_authority, (ctx_opt.alpn_list && ctx_opt.alpn_list.length > 0) ? ctx_opt.alpn_list.join(';') : undefined, ctx_opt.certificate_filepath, ctx_opt.certificate, ctx_opt.private_key_filepath, ctx_opt.private_key, ctx_opt.pkcs12_filepath, ctx_opt.pkcs12_password, ctx_opt.pkcs11_options, ctx_opt.windows_cert_store_path, ctx_opt.verify_peer));
+    }
+}
+exports.TlsContext = TlsContext;
+/**
+ * TLS context used for client TLS communications over sockets. If no
+ * options are supplied, the context will default to enabling peer verification
+ * only.
+ *
+ * nodejs only.
+ * @category TLS
+ */
+class ClientTlsContext extends TlsContext {
+    constructor(ctx_opt) {
+        if (!ctx_opt) {
+            ctx_opt = new TlsContextOptions();
+            ctx_opt.verify_peer = true;
+        }
+        super(ctx_opt);
+    }
+}
+exports.ClientTlsContext = ClientTlsContext;
+/**
+ * TLS context used for server TLS communications over sockets. If no
+ * options are supplied, the context will default to disabling peer verification
+ * only.
+ *
+ * nodejs only.
+ * @category TLS
+ */
+class ServerTlsContext extends TlsContext {
+    constructor(ctx_opt) {
+        if (!ctx_opt) {
+            ctx_opt = new TlsContextOptions();
+            ctx_opt.verify_peer = false;
+        }
+        super(ctx_opt);
+    }
+}
+exports.ServerTlsContext = ServerTlsContext;
+/**
+ * TLS options that are unique to a given connection using a shared TlsContext.
+ *
+ * nodejs only.
+ * @category TLS
+ */
+class TlsConnectionOptions extends native_resource_1.NativeResource {
+    constructor(tls_ctx, server_name, alpn_list = []) {
+        super(binding_1.default.io_tls_connection_options_new(tls_ctx.native_handle(), server_name, (alpn_list && alpn_list.length > 0) ? alpn_list.join(';') : undefined));
+        this.tls_ctx = tls_ctx;
+        this.server_name = server_name;
+        this.alpn_list = alpn_list;
+    }
+}
+exports.TlsConnectionOptions = TlsConnectionOptions;
+/**
+ * Handle to a loaded PKCS#11 library.
+ *
+ * For most use cases, a single instance of Pkcs11Lib should be used
+ * for the lifetime of your application.
+ *
+ * nodejs only.
+ * @category TLS
+ */
+class Pkcs11Lib extends native_resource_1.NativeResource {
+    /**
+     * @param path - Path to PKCS#11 library.
+     * @param behavior - Specifies how `C_Initialize()` and `C_Finalize()`
+     *                   will be called on the PKCS#11 library.
+     */
+    constructor(path, behavior = Pkcs11Lib.InitializeFinalizeBehavior.DEFAULT) {
+        super(binding_1.default.io_pkcs11_lib_new(path, behavior));
+    }
+    /**
+     * Release the PKCS#11 library immediately, without waiting for the GC.
+     */
+    close() {
+        binding_1.default.io_pkcs11_lib_close(this.native_handle());
+    }
+}
+exports.Pkcs11Lib = Pkcs11Lib;
+(function (Pkcs11Lib) {
+    /**
+     * Controls `C_Initialize()` and `C_Finalize()` are called on the PKCS#11 library.
+     */
+    let InitializeFinalizeBehavior;
+    (function (InitializeFinalizeBehavior) {
+        /**
+         * Default behavior that accommodates most use cases.
+         *
+         * `C_Initialize()` is called on creation, and "already-initialized"
+         * errors are ignored. `C_Finalize()` is never called, just in case
+         * another part of your application is still using the PKCS#11 library.
+         */
+        InitializeFinalizeBehavior[InitializeFinalizeBehavior["DEFAULT"] = 0] = "DEFAULT";
+        /**
+         * Skip calling `C_Initialize()` and `C_Finalize()`.
+         *
+         * Use this if your application has already initialized the PKCS#11 library,
+         * and you do not want `C_Initialize()` called again.
+         */
+        InitializeFinalizeBehavior[InitializeFinalizeBehavior["OMIT"] = 1] = "OMIT";
+        /**
+         * `C_Initialize()` is called on creation and `C_Finalize()` is called on cleanup.
+         *
+         * If `C_Initialize()` reports that's it's already initialized, this is
+         * treated as an error. Use this if you need perfect cleanup (ex: running
+         * valgrind with --leak-check).
+         */
+        InitializeFinalizeBehavior[InitializeFinalizeBehavior["STRICT"] = 2] = "STRICT";
+    })(InitializeFinalizeBehavior = Pkcs11Lib.InitializeFinalizeBehavior || (Pkcs11Lib.InitializeFinalizeBehavior = {}));
+})(Pkcs11Lib = exports.Pkcs11Lib || (exports.Pkcs11Lib = {}));
+//# sourceMappingURL=io.js.map
+
+/***/ }),
+
+/***/ 37427:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+/**
+ * Module for AWS IoT MQTT client configuration and connection establishment.
+ *
+ * @packageDocumentation
+ * @module iot
+ * @mergeTarget
+ */
+__exportStar(__nccwpck_require__(67975), exports);
+__exportStar(__nccwpck_require__(81032), exports);
+//# sourceMappingURL=iot.js.map
+
+/***/ }),
+
+/***/ 20495:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.MqttClientConnection = exports.MqttClient = exports.MqttWill = exports.QoS = exports.HttpProxyOptions = void 0;
+/**
+ *
+ * A module containing support for mqtt connection establishment and operations.
+ *
+ * @packageDocumentation
+ * @module mqtt
+ * @mergeTarget
+ */
+const binding_1 = __importDefault(__nccwpck_require__(53924));
+const native_resource_1 = __nccwpck_require__(82076);
+const event_1 = __nccwpck_require__(85985);
+const crt = __importStar(__nccwpck_require__(80823));
+const error_1 = __nccwpck_require__(55757);
+const io = __importStar(__nccwpck_require__(62829));
+var http_1 = __nccwpck_require__(19471);
+Object.defineProperty(exports, "HttpProxyOptions", ({ enumerable: true, get: function () { return http_1.HttpProxyOptions; } }));
+const mqtt_1 = __nccwpck_require__(3826);
+var mqtt_2 = __nccwpck_require__(3826);
+Object.defineProperty(exports, "QoS", ({ enumerable: true, get: function () { return mqtt_2.QoS; } }));
+Object.defineProperty(exports, "MqttWill", ({ enumerable: true, get: function () { return mqtt_2.MqttWill; } }));
+/**
+ * MQTT client
+ *
+ * @category MQTT
+ */
+class MqttClient extends native_resource_1.NativeResource {
+    /**
+     * @param bootstrap The {@link ClientBootstrap} to use for socket connections.  Leave undefined to use the
+     *          default system-wide bootstrap (recommended).
+     */
+    constructor(bootstrap = undefined) {
+        super(binding_1.default.mqtt_client_new(bootstrap != null ? bootstrap.native_handle() : null));
+        this.bootstrap = bootstrap;
+    }
+    /**
+     * Creates a new {@link MqttClientConnection}
+     * @param config Configuration for the mqtt connection
+     * @returns A new connection
+     */
+    new_connection(config) {
+        return new MqttClientConnection(this, config);
+    }
+}
+exports.MqttClient = MqttClient;
+;
+/**
+ * MQTT client connection
+ *
+ * @category MQTT
+ */
+class MqttClientConnection extends (0, native_resource_1.NativeResourceMixin)(event_1.BufferedEventEmitter) {
+    /**
+     * @param client The client that owns this connection
+     * @param config The configuration for this connection
+     */
+    constructor(client, config) {
+        super();
+        this.client = client;
+        this.config = config;
+        // If there is a will, ensure that its payload is normalized to a DataView
+        const will = config.will ?
+            {
+                topic: config.will.topic,
+                qos: config.will.qos,
+                payload: crt.normalize_payload(config.will.payload),
+                retain: config.will.retain
+            }
+            : undefined;
+        /** clamp reconnection time out values */
+        var min_sec = mqtt_1.DEFAULT_RECONNECT_MIN_SEC;
+        var max_sec = mqtt_1.DEFAULT_RECONNECT_MAX_SEC;
+        if (config.reconnect_min_sec) {
+            min_sec = config.reconnect_min_sec;
+            // clamp max, in case they only passed in min
+            max_sec = Math.max(min_sec, max_sec);
+        }
+        if (config.reconnect_max_sec) {
+            max_sec = config.reconnect_max_sec;
+            // clamp min, in case they only passed in max (or passed in min > max)
+            min_sec = Math.min(min_sec, max_sec);
+        }
+        this._super(binding_1.default.mqtt_client_connection_new(client.native_handle(), (error_code) => { this._on_connection_interrupted(error_code); }, (return_code, session_present) => { this._on_connection_resumed(return_code, session_present); }, config.tls_ctx ? config.tls_ctx.native_handle() : null, will, config.username, config.password, config.use_websocket, config.proxy_options ? config.proxy_options.create_native_handle() : undefined, config.websocket_handshake_transform, min_sec, max_sec));
+        this.tls_ctx = config.tls_ctx;
+        binding_1.default.mqtt_client_connection_on_message(this.native_handle(), this._on_any_publish.bind(this));
+        /*
+         * Failed mqtt operations (which is normal) emit error events as well as rejecting the original promise.
+         * By installing a default error handler here we help prevent common issues where operation failures bring
+         * the whole program to an end because a handler wasn't installed.  Programs that install their own handler
+         * will be unaffected.
+         */
+        this.on('error', (error) => { });
+    }
+    close() {
+        binding_1.default.mqtt_client_connection_close(this.native_handle());
+    }
+    // Overridden to allow uncorking on ready
+    on(event, listener) {
+        super.on(event, listener);
+        if (event == 'connect') {
+            process.nextTick(() => {
+                this.uncork();
+            });
+        }
+        return this;
+    }
+    /**
+     * Open the actual connection to the server (async).
+     * @returns A Promise which completes whether the connection succeeds or fails.
+     *          If connection fails, the Promise will reject with an exception.
+     *          If connection succeeds, the Promise will return a boolean that is
+     *          true for resuming an existing session, or false if the session is new
+     */
+    connect() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                reject = this._reject(reject);
+                try {
+                    binding_1.default.mqtt_client_connection_connect(this.native_handle(), this.config.client_id, this.config.host_name, this.config.port, this.config.socket_options.native_handle(), this.config.keep_alive, this.config.ping_timeout, this.config.protocol_operation_timeout, this.config.clean_session, this._on_connect_callback.bind(this, resolve, reject));
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    /**
+     * The connection will automatically reconnect. To cease reconnection attempts, call {@link disconnect}.
+     * To resume the connection, call {@link connect}.
+     * @deprecated
+     */
+    reconnect() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                reject = this._reject(reject);
+                try {
+                    binding_1.default.mqtt_client_connection_reconnect(this.native_handle(), this._on_connect_callback.bind(this, resolve, reject));
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    /**
+     * Publish message (async).
+     * If the device is offline, the PUBLISH packet will be sent once the connection resumes.
+     *
+     * @param topic Topic name
+     * @param payload Contents of message
+     * @param qos Quality of Service for delivering this message
+     * @param retain If true, the server will store the message and its QoS so that it can be
+     *               delivered to future subscribers whose subscriptions match the topic name
+     * @returns Promise which returns a {@link MqttRequest} which will contain the packet id of
+     *          the PUBLISH packet.
+     *
+     * * For QoS 0, completes as soon as the packet is sent.
+     * * For QoS 1, completes when PUBACK is received.
+     * * For QoS 2, completes when PUBCOMP is received.
+     */
+    publish(topic, payload, qos, retain = false) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                reject = this._reject(reject);
+                try {
+                    binding_1.default.mqtt_client_connection_publish(this.native_handle(), topic, crt.normalize_payload(payload), qos, retain, this._on_puback_callback.bind(this, resolve, reject));
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    /**
+     * Subscribe to a topic filter (async).
+     * The client sends a SUBSCRIBE packet and the server responds with a SUBACK.
+     *
+     * subscribe() may be called while the device is offline, though the async
+     * operation cannot complete successfully until the connection resumes.
+     *
+     * Once subscribed, `callback` is invoked each time a message matching
+     * the `topic` is received. It is possible for such messages to arrive before
+     * the SUBACK is received.
+     *
+     * @param topic Subscribe to this topic filter, which may include wildcards
+     * @param qos Maximum requested QoS that server may use when sending messages to the client.
+     *            The server may grant a lower QoS in the SUBACK
+     * @param on_message Optional callback invoked when message received.
+     * @returns Promise which returns a {@link MqttSubscribeRequest} which will contain the
+     *          result of the SUBSCRIBE. The Promise resolves when a SUBACK is returned
+     *          from the server or is rejected when an exception occurs.
+     */
+    subscribe(topic, qos, on_message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                reject = this._reject(reject);
+                try {
+                    binding_1.default.mqtt_client_connection_subscribe(this.native_handle(), topic, qos, on_message, this._on_suback_callback.bind(this, resolve, reject));
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    /**
+     * Unsubscribe from a topic filter (async).
+     * The client sends an UNSUBSCRIBE packet, and the server responds with an UNSUBACK.
+     * @param topic The topic filter to unsubscribe from. May contain wildcards.
+     * @returns Promise wihch returns a {@link MqttRequest} which will contain the packet id
+     *          of the UNSUBSCRIBE packet being acknowledged. Promise is resolved when an
+     *          UNSUBACK is received from the server or is rejected when an exception occurs.
+     */
+    unsubscribe(topic) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                reject = this._reject(reject);
+                try {
+                    binding_1.default.mqtt_client_connection_unsubscribe(this.native_handle(), topic, this._on_unsuback_callback.bind(this, resolve, reject));
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    /**
+     * Close the connection (async).
+     * @returns Promise which completes when the connection is closed.
+    */
+    disconnect() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                reject = this._reject(reject);
+                try {
+                    binding_1.default.mqtt_client_connection_disconnect(this.native_handle(), this._on_disconnect_callback.bind(this, resolve));
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    /**
+     * Queries a small set of numerical statistics about the current state of the connection's operation queue
+     *
+     * @group Node-only
+     */
+    getQueueStatistics() {
+        return binding_1.default.mqtt_client_connection_get_queue_statistics(this.native_handle());
+    }
+    // Wrap a promise rejection with a function that will also emit the error as an event
+    _reject(reject) {
+        return (reason) => {
+            reject(reason);
+            process.nextTick(() => {
+                this.emit('error', new error_1.CrtError(reason));
+            });
+        };
+    }
+    _on_connection_interrupted(error_code) {
+        this.emit('interrupt', new error_1.CrtError(error_code));
+    }
+    _on_connection_resumed(return_code, session_present) {
+        this.emit('resume', return_code, session_present);
+    }
+    _on_any_publish(topic, payload, dup, qos, retain) {
+        this.emit('message', topic, payload, dup, qos, retain);
+    }
+    _on_connect_callback(resolve, reject, error_code, return_code, session_present) {
+        if (error_code == 0 && return_code == 0) {
+            resolve(session_present);
+            this.emit('connect', session_present);
+        }
+        else if (error_code != 0) {
+            reject("Failed to connect: " + io.error_code_to_string(error_code));
+        }
+        else {
+            reject("Server rejected connection.");
+        }
+    }
+    _on_puback_callback(resolve, reject, packet_id, error_code) {
+        if (error_code == 0) {
+            resolve({ packet_id });
+        }
+        else {
+            reject("Failed to publish: " + io.error_code_to_string(error_code));
+        }
+    }
+    _on_suback_callback(resolve, reject, packet_id, topic, qos, error_code) {
+        if (error_code == 0) {
+            resolve({ packet_id, topic, qos, error_code });
+        }
+        else {
+            reject("Failed to subscribe: " + io.error_code_to_string(error_code));
+        }
+    }
+    _on_unsuback_callback(resolve, reject, packet_id, error_code) {
+        if (error_code == 0) {
+            resolve({ packet_id });
+        }
+        else {
+            reject("Failed to unsubscribe: " + io.error_code_to_string(error_code));
+        }
+    }
+    _on_disconnect_callback(resolve) {
+        resolve();
+        this.emit('disconnect');
+        this.close();
+    }
+}
+exports.MqttClientConnection = MqttClientConnection;
+/**
+ * Emitted when the connection successfully establishes itself for the first time
+ *
+ * @event
+ */
+MqttClientConnection.CONNECT = 'connect';
+/**
+ * Emitted when connection has disconnected sucessfully.
+ *
+ * @event
+ */
+MqttClientConnection.DISCONNECT = 'disconnect';
+/**
+ * Emitted when an error occurs.  The error will contain the error
+ * code and message.
+ *
+ * @event
+ */
+MqttClientConnection.ERROR = 'error';
+/**
+ * Emitted when the connection is dropped unexpectedly. The error will contain the error
+ * code and message.  The underlying mqtt implementation will attempt to reconnect.
+ *
+ * @event
+ */
+MqttClientConnection.INTERRUPT = 'interrupt';
+/**
+ * Emitted when the connection reconnects (after an interrupt). Only triggers on connections after the initial one.
+ *
+ * @event
+ */
+MqttClientConnection.RESUME = 'resume';
+/**
+ * Emitted when any MQTT publish message arrives.
+ *
+ * @event
+ */
+MqttClientConnection.MESSAGE = 'message';
+//# sourceMappingURL=mqtt.js.map
+
+/***/ }),
+
+/***/ 37313:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Mqtt5Client = exports.ClientExtendedValidationAndFlowControl = exports.ClientOperationQueueBehavior = exports.HttpProxyOptions = void 0;
+/**
+ * Node.js specific MQTT5 client implementation
+ *
+ * DEVELOPER PREVIEW DISCLAIMER
+ *
+ * MQTT5 support is currently in **developer preview**.  We encourage feedback at all times, but feedback during the
+ * preview window is especially valuable in shaping the final product.  During the preview period we may make
+ * backwards-incompatible changes to the public API, but in general, this is something we will try our best to avoid.
+ *
+ * [MQTT5 Client User Guide](https://www.github.com/awslabs/aws-crt-nodejs/blob/main/MQTT5-UserGuide.md)
+ *
+ * @packageDocumentation
+ * @module mqtt5
+ * @mergeTarget
+ *
+ */
+const binding_1 = __importDefault(__nccwpck_require__(53924));
+const native_resource_1 = __nccwpck_require__(82076);
+const event_1 = __nccwpck_require__(85985);
+const io = __importStar(__nccwpck_require__(62829));
+const mqtt_shared = __importStar(__nccwpck_require__(80823));
+const error_1 = __nccwpck_require__(55757);
+var http_1 = __nccwpck_require__(19471);
+Object.defineProperty(exports, "HttpProxyOptions", ({ enumerable: true, get: function () { return http_1.HttpProxyOptions; } }));
+__exportStar(__nccwpck_require__(90650), exports);
+__exportStar(__nccwpck_require__(18281), exports);
+;
+/**
+ * Controls how disconnects affect the queued and in-progress operations tracked by the client.  Also controls
+ * how operations are handled while the client is not connected.  In particular, if the client is not connected,
+ * then any operation that would be failed on disconnect (according to these rules) will be rejected.
+ */
+var ClientOperationQueueBehavior;
+(function (ClientOperationQueueBehavior) {
+    /** Same as FailQos0PublishOnDisconnect */
+    ClientOperationQueueBehavior[ClientOperationQueueBehavior["Default"] = 0] = "Default";
+    /**
+     * Re-queues QoS 1+ publishes on disconnect; un-acked publishes go to the front while unprocessed publishes stay
+     * in place.  All other operations (QoS 0 publishes, subscribe, unsubscribe) are failed.
+     */
+    ClientOperationQueueBehavior[ClientOperationQueueBehavior["FailNonQos1PublishOnDisconnect"] = 1] = "FailNonQos1PublishOnDisconnect";
+    /**
+     * QoS 0 publishes that are not complete at the time of disconnection are failed.  Un-acked QoS 1+ publishes are
+     * re-queued at the head of the line for immediate retransmission on a session resumption.  All other operations
+     * are requeued in original order behind any retransmissions.
+     */
+    ClientOperationQueueBehavior[ClientOperationQueueBehavior["FailQos0PublishOnDisconnect"] = 2] = "FailQos0PublishOnDisconnect";
+    /**
+     * All operations that are not complete at the time of disconnection are failed, except operations that
+     * the MQTT5 spec requires to be retransmitted (un-acked QoS1+ publishes).
+     */
+    ClientOperationQueueBehavior[ClientOperationQueueBehavior["FailAllOnDisconnect"] = 3] = "FailAllOnDisconnect";
+})(ClientOperationQueueBehavior = exports.ClientOperationQueueBehavior || (exports.ClientOperationQueueBehavior = {}));
+/**
+ * Additional controls for client behavior with respect to operation validation and flow control; these checks
+ * go beyond the MQTT5 spec to respect limits of specific MQTT brokers.
+ */
+var ClientExtendedValidationAndFlowControl;
+(function (ClientExtendedValidationAndFlowControl) {
+    /**
+     * Do not do any additional validation or flow control
+     */
+    ClientExtendedValidationAndFlowControl[ClientExtendedValidationAndFlowControl["None"] = 0] = "None";
+    /**
+     * Apply additional client-side validation and operational flow control that respects the
+     * default AWS IoT Core limits.
+     *
+     * Currently applies the following additional validation:
+     *
+     * 1. No more than 8 subscriptions per SUBSCRIBE packet
+     * 1. Topics and topic filters have a maximum of 7 slashes (8 segments), not counting any AWS rules prefix
+     * 1. Topics must be <= 256 bytes in length
+     * 1. Client id must be <= 128 bytes in length
+     *
+     * Also applies the following flow control:
+     *
+     * 1. Outbound throughput throttled to 512KB/s
+     * 1. Outbound publish TPS throttled to 100
+     */
+    ClientExtendedValidationAndFlowControl[ClientExtendedValidationAndFlowControl["AwsIotCoreDefaults"] = 1] = "AwsIotCoreDefaults";
+})(ClientExtendedValidationAndFlowControl = exports.ClientExtendedValidationAndFlowControl || (exports.ClientExtendedValidationAndFlowControl = {}));
+/**
+ * Node.js specific MQTT5 client implementation
+ *
+ * DEVELOPER PREVIEW DISCLAIMER
+ *
+ * MQTT5 support is currently in **developer preview**.  We encourage feedback at all times, but feedback during the
+ * preview window is especially valuable in shaping the final product.  During the preview period we may make
+ * backwards-incompatible changes to the public API, but in general, this is something we will try our best to avoid.
+ *
+ * Not all parts of the MQTT5 spec are supported. We currently do not support:
+ *
+ * * AUTH packets and the authentication fields in the CONNECT packet
+ * * QoS 2
+ *
+ * [MQTT5 Client User Guide](https://www.github.com/awslabs/aws-crt-nodejs/blob/main/MQTT5-UserGuide.md)
+ *
+ * This client is based on native resources.  When finished with the client, you must call close() to dispose of
+ * them or they will leak.
+ *
+ */
+class Mqtt5Client extends (0, native_resource_1.NativeResourceMixin)(event_1.BufferedEventEmitter) {
+    /**
+     * Client constructor
+     *
+     * @param config The configuration for this client
+     */
+    constructor(config) {
+        super();
+        this._super(binding_1.default.mqtt5_client_new(this, config, (client) => { Mqtt5Client._s_on_stopped(client); }, (client) => { Mqtt5Client._s_on_attempting_connect(client); }, (client, connack, settings) => { Mqtt5Client._s_on_connection_success(client, connack, settings); }, (client, errorCode, connack) => { Mqtt5Client._s_on_connection_failure(client, new error_1.CrtError(errorCode), connack); }, (client, errorCode, disconnect) => { Mqtt5Client._s_on_disconnection(client, new error_1.CrtError(errorCode), disconnect); }, (client, message) => { Mqtt5Client._s_on_message_received(client, message); }, config.clientBootstrap ? config.clientBootstrap.native_handle() : null, config.socketOptions ? config.socketOptions.native_handle() : null, config.tlsCtx ? config.tlsCtx.native_handle() : null, config.httpProxyOptions ? config.httpProxyOptions.create_native_handle() : null));
+    }
+    /**
+     * Triggers cleanup of native resources associated with the MQTT5 client.  Once this has been invoked, callbacks
+     * and events are not guaranteed to be received.
+     *
+     * This must be called when finished with a client; otherwise, native resources will leak.  It is not safe
+     * to invoke any further operations on the client after close() has been called.
+     *
+     * For a running client, safe and proper shutdown can be accomplished by
+     *
+     * ```ts
+     * const stopped = once(client, "stopped");
+     * client.stop();
+     * await stopped;
+     * client.close();
+     * ```
+     *
+     * This is an asynchronous operation.
+     *
+     * @group Node-only
+     */
+    close() {
+        binding_1.default.mqtt5_client_close(this.native_handle());
+    }
+    /**
+     * Notifies the MQTT5 client that you want it to maintain connectivity to the configured endpoint.
+     * The client will attempt to stay connected using the properties of the reconnect-related parameters
+     * in the mqtt5 client configuration.
+     *
+     * This is an asynchronous operation.
+     */
+    start() {
+        binding_1.default.mqtt5_client_start(this.native_handle());
+    }
+    /**
+     * Notifies the MQTT5 client that you want it to end connectivity to the configured endpoint, disconnecting any
+     * existing connection and halting reconnection attempts.
+     *
+     * This is an asynchronous operation.  Once the process completes, no further events will be emitted until the client
+     * has {@link start} invoked.  Invoking {@link start start()} after a {@link stop stop()} will always result in a
+     * new MQTT session.
+     *
+     * @param disconnectPacket (optional) properties of a DISCONNECT packet to send as part of the shutdown process
+     */
+    stop(disconnectPacket) {
+        binding_1.default.mqtt5_client_stop(this.native_handle(), disconnectPacket);
+    }
+    /**
+     * Subscribe to one or more topic filters by queuing a SUBSCRIBE packet to be sent to the server.
+     *
+     * @param packet SUBSCRIBE packet to send to the server
+     * @returns a promise that will be rejected with an error or resolved with the SUBACK response
+     */
+    subscribe(packet) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                function curriedPromiseCallback(client, errorCode, suback) {
+                    return Mqtt5Client._s_on_suback_callback(resolve, reject, client, errorCode, suback);
+                }
+                try {
+                    binding_1.default.mqtt5_client_subscribe(this.native_handle(), packet, curriedPromiseCallback);
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    /**
+     * Unsubscribe from one or more topic filters by queuing an UNSUBSCRIBE packet to be sent to the server.
+     *
+     * @param packet UNSUBSCRIBE packet to send to the server
+     * @returns a promise that will be rejected with an error or resolved with the UNSUBACK response
+     */
+    unsubscribe(packet) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                function curriedPromiseCallback(client, errorCode, unsuback) {
+                    return Mqtt5Client._s_on_unsuback_callback(resolve, reject, client, errorCode, unsuback);
+                }
+                try {
+                    binding_1.default.mqtt5_client_unsubscribe(this.native_handle(), packet, curriedPromiseCallback);
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    /**
+     * Send a message to subscribing clients by queuing a PUBLISH packet to be sent to the server.
+     *
+     * @param packet PUBLISH packet to send to the server
+     * @returns a promise that will be rejected with an error or resolved with the PUBACK response (QoS 1) or
+     * undefined (QoS 0)
+     */
+    publish(packet) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                if (packet && packet.payload) {
+                    packet.payload = mqtt_shared.normalize_payload(packet.payload);
+                }
+                function curriedPromiseCallback(client, errorCode, result) {
+                    return Mqtt5Client._s_on_puback_callback(resolve, reject, client, errorCode, result);
+                }
+                try {
+                    binding_1.default.mqtt5_client_publish(this.native_handle(), packet, curriedPromiseCallback);
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    /**
+     * Queries a small set of numerical statistics about the current state of the client's operation queue
+     *
+     * @group Node-only
+     */
+    getQueueStatistics() {
+        return binding_1.default.mqtt5_client_get_queue_statistics(this.native_handle());
+    }
+    on(event, listener) {
+        super.on(event, listener);
+        return this;
+    }
+    /*
+     * Private helper functions
+     *
+     * Callbacks come through static functions so that the native threadsafe function objects do not
+     * capture the client object itself, simplifying the number of strong references to the client floating around.
+     */
+    static _s_on_stopped(client) {
+        process.nextTick(() => {
+            let stoppedEvent = {};
+            client.emit(Mqtt5Client.STOPPED, stoppedEvent);
+        });
+    }
+    static _s_on_attempting_connect(client) {
+        process.nextTick(() => {
+            let attemptingConnectEvent = {};
+            client.emit(Mqtt5Client.ATTEMPTING_CONNECT, attemptingConnectEvent);
+        });
+    }
+    static _s_on_connection_success(client, connack, settings) {
+        let connectionSuccessEvent = {
+            connack: connack,
+            settings: settings
+        };
+        process.nextTick(() => {
+            client.emit(Mqtt5Client.CONNECTION_SUCCESS, connectionSuccessEvent);
+        });
+    }
+    static _s_on_connection_failure(client, error, connack) {
+        let connectionFailureEvent = {
+            error: error
+        };
+        if (connack !== null && connack !== undefined) {
+            connectionFailureEvent.connack = connack;
+        }
+        process.nextTick(() => {
+            client.emit(Mqtt5Client.CONNECTION_FAILURE, connectionFailureEvent);
+        });
+    }
+    static _s_on_disconnection(client, error, disconnect) {
+        let disconnectionEvent = {
+            error: error
+        };
+        if (disconnect !== null && disconnect !== undefined) {
+            disconnectionEvent.disconnect = disconnect;
+        }
+        process.nextTick(() => {
+            client.emit(Mqtt5Client.DISCONNECTION, disconnectionEvent);
+        });
+    }
+    static _s_on_suback_callback(resolve, reject, client, errorCode, suback) {
+        if (errorCode == 0 && suback !== undefined) {
+            resolve(suback);
+        }
+        else {
+            reject(io.error_code_to_string(errorCode));
+        }
+    }
+    static _s_on_unsuback_callback(resolve, reject, client, errorCode, unsuback) {
+        if (errorCode == 0 && unsuback !== undefined) {
+            resolve(unsuback);
+        }
+        else {
+            reject(io.error_code_to_string(errorCode));
+        }
+    }
+    static _s_on_puback_callback(resolve, reject, client, errorCode, result) {
+        if (errorCode == 0) {
+            resolve(result);
+        }
+        else {
+            reject(io.error_code_to_string(errorCode));
+        }
+    }
+    static _s_on_message_received(client, message) {
+        let messageReceivedEvent = {
+            message: message
+        };
+        process.nextTick(() => {
+            client.emit(Mqtt5Client.MESSAGE_RECEIVED, messageReceivedEvent);
+        });
+    }
+}
+exports.Mqtt5Client = Mqtt5Client;
+/**
+ * Event emitted when the client encounters a serious error condition, such as invalid input, napi failures, and
+ * other potentially unrecoverable situations.
+ *
+ * Listener type: {@link ErrorEventListener}
+ *
+ * @event
+ */
+Mqtt5Client.ERROR = 'error';
+/**
+ * Event emitted when an MQTT PUBLISH packet is received by the client.
+ *
+ * Listener type: {@link MessageReceivedEventListener}
+ *
+ * @event
+ */
+Mqtt5Client.MESSAGE_RECEIVED = 'messageReceived';
+/**
+ * Event emitted when the client begins a connection attempt.
+ *
+ * Listener type: {@link AttemptingConnectEventListener}
+ *
+ * @event
+ */
+Mqtt5Client.ATTEMPTING_CONNECT = 'attemptingConnect';
+/**
+ * Event emitted when the client successfully establishes an MQTT connection.  Only emitted after
+ * an {@link ATTEMPTING_CONNECT attemptingConnect} event.
+ *
+ * Listener type: {@link ConnectionSuccessEventListener}
+ *
+ * @event
+ */
+Mqtt5Client.CONNECTION_SUCCESS = 'connectionSuccess';
+/**
+ * Event emitted when the client fails to establish an MQTT connection.  Only emitted after
+ * an {@link ATTEMPTING_CONNECT attemptingConnect} event.
+ *
+ * Listener type: {@link ConnectionFailureEventListener}
+ *
+ * @event
+ */
+Mqtt5Client.CONNECTION_FAILURE = 'connectionFailure';
+/**
+ * Event emitted when the client's current connection is closed for any reason.  Only emitted after
+ * a {@link CONNECTION_SUCCESS connectionSuccess} event.
+ *
+ * Listener type: {@link DisconnectionEventListener}
+ *
+ * @event
+ */
+Mqtt5Client.DISCONNECTION = 'disconnection';
+/**
+ * Event emitted when the client finishes shutdown as a result of the user invoking {@link stop}.
+ *
+ * Listener type: {@link StoppedEventListener}
+ *
+ * @event
+ */
+Mqtt5Client.STOPPED = 'stopped';
+//# sourceMappingURL=mqtt5.js.map
+
+/***/ }),
+
+/***/ 82076:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.NativeResourceMixin = exports.NativeResource = void 0;
+/**
+ * Represents an object allocated natively inside the AWS CRT.
+ * @internal
+ */
+class NativeResource {
+    constructor(handle) {
+        this.handle = handle;
+    }
+    /** @internal */
+    native_handle() {
+        return this.handle;
+    }
+}
+exports.NativeResource = NativeResource;
+/**
+ * Represents an object allocated natively inside the AWS CRT which also
+ * needs a node/TS base class
+ * @internal
+ */
+function NativeResourceMixin(Base) {
+    /** @internal */
+    return class extends Base {
+        /** @internal */
+        constructor(...args) {
+            const handle = args.shift();
+            super(...args);
+            this._handle = handle;
+        }
+        /** @internal */
+        _super(handle) {
+            this._handle = handle;
+        }
+        /** @internal */
+        native_handle() {
+            return this._handle;
+        }
+    };
+}
+exports.NativeResourceMixin = NativeResourceMixin;
+//# sourceMappingURL=native_resource.js.map
 
 /***/ }),
 
@@ -39321,6 +43989,7 @@ const triggerDataPlaneUpdate = async (gitHubWorkflowurl, gitHubToken, applicatio
                 applicationId: application.id,
                 awsAccountId: application.awsAccountId,
                 region: application.region.replaceAll("_", "-").toLowerCase(),
+                domainConfig: application.domainConfig,
             },
         }),
         headers: {
@@ -39341,14 +44010,6 @@ exports.triggerDataPlaneUpdate = triggerDataPlaneUpdate;
     // Fetch all applications from the database using Dynamodb
     // For each applicattion, trigger a data plane deployment github action
 })();
-
-
-/***/ }),
-
-/***/ 87578:
-/***/ ((module) => {
-
-module.exports = eval("require")("aws-crt");
 
 
 /***/ }),
@@ -42278,6 +46939,14 @@ module.exports = JSON.parse('{"name":"@aws-sdk/client-sts","description":"AWS SD
 
 "use strict";
 module.exports = JSON.parse('{"partitions":[{"id":"aws","outputs":{"dnsSuffix":"amazonaws.com","dualStackDnsSuffix":"api.aws","name":"aws","supportsDualStack":true,"supportsFIPS":true},"regionRegex":"^(us|eu|ap|sa|ca|me|af)\\\\-\\\\w+\\\\-\\\\d+$","regions":{"af-south-1":{"description":"Africa (Cape Town)"},"ap-east-1":{"description":"Asia Pacific (Hong Kong)"},"ap-northeast-1":{"description":"Asia Pacific (Tokyo)"},"ap-northeast-2":{"description":"Asia Pacific (Seoul)"},"ap-northeast-3":{"description":"Asia Pacific (Osaka)"},"ap-south-1":{"description":"Asia Pacific (Mumbai)"},"ap-south-2":{"description":"Asia Pacific (Hyderabad)"},"ap-southeast-1":{"description":"Asia Pacific (Singapore)"},"ap-southeast-2":{"description":"Asia Pacific (Sydney)"},"ap-southeast-3":{"description":"Asia Pacific (Jakarta)"},"aws-global":{"description":"AWS Standard global region"},"ca-central-1":{"description":"Canada (Central)"},"eu-central-1":{"description":"Europe (Frankfurt)"},"eu-central-2":{"description":"Europe (Zurich)"},"eu-north-1":{"description":"Europe (Stockholm)"},"eu-south-1":{"description":"Europe (Milan)"},"eu-south-2":{"description":"Europe (Spain)"},"eu-west-1":{"description":"Europe (Ireland)"},"eu-west-2":{"description":"Europe (London)"},"eu-west-3":{"description":"Europe (Paris)"},"me-central-1":{"description":"Middle East (UAE)"},"me-south-1":{"description":"Middle East (Bahrain)"},"sa-east-1":{"description":"South America (São Paulo)"},"us-east-1":{"description":"US East (N. Virginia)"},"us-east-2":{"description":"US East (Ohio)"},"us-west-1":{"description":"US West (N. California)"},"us-west-2":{"description":"US West (Oregon)"}}},{"id":"aws-cn","outputs":{"dnsSuffix":"amazonaws.com.cn","dualStackDnsSuffix":"api.amazonwebservices.com.cn","name":"aws-cn","supportsDualStack":true,"supportsFIPS":true},"regionRegex":"^cn\\\\-\\\\w+\\\\-\\\\d+$","regions":{"aws-cn-global":{"description":"AWS China global region"},"cn-north-1":{"description":"China (Beijing)"},"cn-northwest-1":{"description":"China (Ningxia)"}}},{"id":"aws-us-gov","outputs":{"dnsSuffix":"amazonaws.com","dualStackDnsSuffix":"api.aws","name":"aws-us-gov","supportsDualStack":true,"supportsFIPS":true},"regionRegex":"^us\\\\-gov\\\\-\\\\w+\\\\-\\\\d+$","regions":{"aws-us-gov-global":{"description":"AWS GovCloud (US) global region"},"us-gov-east-1":{"description":"AWS GovCloud (US-East)"},"us-gov-west-1":{"description":"AWS GovCloud (US-West)"}}},{"id":"aws-iso","outputs":{"dnsSuffix":"c2s.ic.gov","dualStackDnsSuffix":"c2s.ic.gov","name":"aws-iso","supportsDualStack":false,"supportsFIPS":true},"regionRegex":"^us\\\\-iso\\\\-\\\\w+\\\\-\\\\d+$","regions":{"aws-iso-global":{"description":"AWS ISO (US) global region"},"us-iso-east-1":{"description":"US ISO East"},"us-iso-west-1":{"description":"US ISO WEST"}}},{"id":"aws-iso-b","outputs":{"dnsSuffix":"sc2s.sgov.gov","dualStackDnsSuffix":"sc2s.sgov.gov","name":"aws-iso-b","supportsDualStack":false,"supportsFIPS":true},"regionRegex":"^us\\\\-isob\\\\-\\\\w+\\\\-\\\\d+$","regions":{"aws-iso-b-global":{"description":"AWS ISOB (US) global region"},"us-isob-east-1":{"description":"US ISOB East (Ohio)"}}}],"version":"1.1"}');
+
+/***/ }),
+
+/***/ 84104:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"name":"aws-crt","version":"1.15.9","description":"NodeJS/browser bindings to the aws-c-* libraries","homepage":"https://github.com/awslabs/aws-crt-nodejs","repository":{"type":"git","url":"git+https://github.com/awslabs/aws-crt-nodejs.git"},"contributors":["AWS Common Runtime Team <aws-sdk-common-runtime@amazon.com>"],"license":"Apache-2.0","main":"./dist/index.js","browser":"./dist.browser/browser.js","types":"./dist/index.d.ts","scripts":{"tsc":"node ./scripts/tsc.js","test":"npm run test:native","test:node":"npm run test:native","test:native":"npx jest --runInBand --verbose --config test/native/jest.config.js --forceExit","test:browser":"npx jest --runInBand --verbose --config test/browser/jest.config.js --forceExit","test:browser:ci":"npm run install:puppeteer && npm run test:browser","install:puppeteer":"npm install --save-dev jest-puppeteer puppeteer @types/puppeteer","prepare":"node ./scripts/tsc.js && node ./scripts/install.js","install":"node ./scripts/install.js"},"devDependencies":{"@types/crypto-js":"^3.1.43","@types/jest":"^27.0.1","@types/node":"^10.17.54","@types/prettier":"2.6.0","@types/puppeteer":"^5.4.4","@types/uuid":"^3.4.8","@types/ws":"^7.4.7","aws-sdk":"^2.848.0","https-proxy-agent":"^5.0.1","jest":"^27.2.1","jest-puppeteer":"^5.0.4","jest-runtime":"^27.2.1","puppeteer":"^3.3.0","ts-jest":"^27.0.5","typedoc":"^0.22.18","typedoc-plugin-merge-modules":"^3.1.0","typescript":"^4.7.4","uuid":"^8.3.2","yargs":"^17.2.1","cmake-js":"^6.3.2","tar":"^6.1.11"},"dependencies":{"@aws-sdk/util-utf8-browser":"^3.109.0","@httptoolkit/websocket-stream":"^6.0.0","axios":"^0.24.0","crypto-js":"^4.0.0","mqtt":"^4.3.7","cmake-js":"^6.3.2","tar":"^6.1.11"}}');
 
 /***/ })
 
