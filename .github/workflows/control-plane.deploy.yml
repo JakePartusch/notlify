@@ -26,7 +26,7 @@ jobs:
       - name: Build UI
         working-directory: ./src/control-plane/ui/app
         run: npm run build && npm run export
-      - run: npm run cdk deploy -- --require-approval=never --app "npx ts-node --prefer-ts-exts bin/control-plane.app.ts"
+      - run: npm run cdk deploy -- --require-approval=never --all --app "npx ts-node --prefer-ts-exts bin/control-plane.app.ts"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_WORKFLOW_URL: ${{ secrets.GH_WORKFLOW_URL }}
