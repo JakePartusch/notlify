@@ -93,17 +93,34 @@ const applicationTypeToFriendlyName = (value: ApplicationType) => {
 
 export default function Dashboard() {
   const [state, setState] = useState(State.Initialized);
-  const { isLoading, isAuthenticated, error, user, loginWithRedirect, logout } =
-    useAuth0();
+  const [userMetadata, setUserMetadata] = useState();
+  console.log(userMetadata);
+  const {
+    isLoading,
+    isAuthenticated,
+    error,
+    user,
+    loginWithRedirect,
+    logout,
+    getIdTokenClaims,
+    getAccessTokenSilently,
+  } = useAuth0();
   const { data } = useQuery(
     ["apps"],
-    async () =>
-      request(
+    async () => {
+      const idToken = await getIdTokenClaims();
+      return request(
         "https://600376vtqg.execute-api.us-east-1.amazonaws.com/api",
-        allApps
-      ),
+        allApps,
+        undefined,
+        {
+          Authorization: `Bearer ${idToken?.__raw}`,
+        }
+      );
+    },
     {
       refetchInterval: 10000,
+      enabled: isAuthenticated,
     }
   );
   useEffect(() => {

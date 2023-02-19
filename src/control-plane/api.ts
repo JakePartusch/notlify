@@ -13,6 +13,14 @@ import {
   getDeploymentResolver,
   listDeploymentsResolver,
 } from "./deployment/deployment.resolver";
+import {
+  APIGatewayEvent,
+  APIGatewayProxyCallback,
+  APIGatewayProxyEvent,
+  Context,
+} from "aws-lambda";
+import jwksClient from "jwks-rsa";
+import jwt from "jsonwebtoken";
 
 const resolvers: Resolvers = {
   Query: {
@@ -51,7 +59,11 @@ const server = new ApolloServer({
 });
 
 //@ts-ignore
-export const handler = async (event, context, callback) => {
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context: Context,
+  callback: APIGatewayProxyCallback
+) => {
   if (event.requestContext.http.method === "OPTIONS") {
     return {
       headers: {
@@ -60,7 +72,31 @@ export const handler = async (event, context, callback) => {
     };
   }
   //@ts-ignore
-  const apolloHandler = startServerAndCreateLambdaHandler(server);
+  const apolloHandler = startServerAndCreateLambdaHandler(server, {
+    context: async ({ event: APIGatewayProxyEvent, context }) => {
+      return new Promise((resolve, reject) => {
+        const authorizationHeader = event.headers["Authorization"];
+        const token = authorizationHeader?.split(" ").at(1);
+        if (!token) {
+          throw new Error("Unauthorized");
+        }
+        const client = jwksClient({
+          jwksUri: "https://dev-6pd0gm26.auth0.com/.well-known/jwks.json",
+        });
+        function getKey(header: any, callback: any) {
+          client.getSigningKey(header.kid, function (err, key) {
+            const signingKey = key?.publicKey || key?.rsaPublicKey;
+            callback(null, signingKey);
+          });
+        }
+
+        jwt.verify(token, getKey, {}, function (err, decoded: any) {
+          console.log(JSON.stringify(decoded));
+          resolve(decoded);
+        });
+      });
+    },
+  });
   const resp = await apolloHandler(event, context, callback);
   return {
     ...resp,

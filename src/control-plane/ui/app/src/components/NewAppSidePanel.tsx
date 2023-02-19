@@ -28,7 +28,7 @@ export default function NewAppSidePanel({
   onClose,
 }: NewAppSidePanelProps) {
   const [repos, setRepos] = useState([]);
-  const { user } = useAuth0();
+  const { user, getIdTokenClaims } = useAuth0();
   const [repository, setRepository] = useState("");
   const [description, setDestription] = useState("");
   const [applicationType, setApplicationType] = useState(
@@ -57,7 +57,8 @@ export default function NewAppSidePanel({
     listRepos();
   }, [user]);
 
-  const createApplication = useMutation(async () =>
+  const createApplication = useMutation(async () => {
+    const idToken = await getIdTokenClaims();
     request(
       "https://600376vtqg.execute-api.us-east-1.amazonaws.com/api",
       createApplicationMutation,
@@ -69,9 +70,12 @@ export default function NewAppSidePanel({
           description,
           region,
         },
+      },
+      {
+        Authorization: `Bearer ${idToken?.__raw}`,
       }
-    )
-  );
+    );
+  });
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
