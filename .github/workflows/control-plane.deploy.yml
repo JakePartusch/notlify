@@ -37,3 +37,4 @@ jobs:
         with:
           applicationName: notlify
           distributionDirectory: src/control-plane/ui/app/out
+          apiKey: ${{ secrets.NOTLIFY_API_KEY }}

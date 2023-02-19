@@ -6,3 +6,7 @@ export interface InternalApplication extends Application {
   domainZoneId?: string;
   domainCertificateArn?: string;
 }
+
+export interface InternalApiKey {
+  customerId: string;
+}

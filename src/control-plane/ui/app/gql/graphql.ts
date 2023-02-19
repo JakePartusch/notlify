@@ -16,6 +16,7 @@ export type Scalars = {
 
 export type Application = {
   __typename?: 'Application';
+  apiKey?: Maybe<Scalars['String']>;
   applicationType: ApplicationType;
   customerId: Scalars['String'];
   deploymentUrl?: Maybe<Scalars['String']>;

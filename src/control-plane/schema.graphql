@@ -39,6 +39,7 @@ type Application {
   status: ApplicationStatus!
   lastDeploymentTime: String
   deploymentUrl: String
+  apiKey: String
 }
 
 type Deployment {

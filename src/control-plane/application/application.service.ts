@@ -2,6 +2,7 @@ import { dynamoDbDocumentClient } from "../common/aws/dynamodb.client";
 import { InternalApplication } from "./application.types";
 import fetch from "node-fetch";
 import { ApplicationStatus } from "../generated/graphql.types";
+import { nanoid } from "nanoid";
 
 const { GITHUB_TOKEN, GITHUB_WORKFLOW_URL, TABLE_NAME } = process.env;
 
@@ -57,6 +58,37 @@ export const createApplicationRecord = async (
       ...application,
     },
   });
+};
+
+export const createApiKeyRecord = async (
+  applicationId: string,
+  customerId: string
+) => {
+  const apiKey = nanoid();
+  await dynamoDbDocumentClient.put({
+    TableName: TABLE_NAME,
+    Item: {
+      PK: `APIKEY#${apiKey}`,
+      SK: `APPLICATION#${applicationId}`,
+      customerId,
+      type: "APIKEEY",
+    },
+  });
+  return apiKey;
+};
+
+export const getApiKeyRecord = async (apiKey: string) => {
+  const response = await dynamoDbDocumentClient.query({
+    TableName: TABLE_NAME,
+    KeyConditionExpression: "PK = :PK",
+    ExpressionAttributeValues: {
+      ":PK": `APIKEY#${apiKey}`,
+    },
+  });
+  if (!response.Items) {
+    return undefined;
+  }
+  return response.Items.at(0);
 };
 
 export const updateApplicationToInitiated = async (applicationId: string) => {

@@ -1,4 +1,5 @@
 import { customAlphabet } from "nanoid";
+import { AppContext } from "../api";
 import {
   Application,
   ApplicationStatus,
@@ -8,6 +9,7 @@ import {
   QueryGetApplicationArgs,
 } from "../generated/graphql.types";
 import {
+  createApiKeyRecord,
   createApplicationRecord,
   deleteApplication,
   findAllApplicationsByCustomerId,
@@ -17,15 +19,15 @@ import {
 } from "./application.service";
 import { InternalApplication } from "./application.types";
 
-const CUSTOMER_ID = "JakePartusch";
 const DATA_PLANE_ACCOUNTS = ["837992707202"];
 
 export const getApplicationResolver = async (
-  args: QueryGetApplicationArgs
+  args: QueryGetApplicationArgs,
+  context: AppContext
 ): Promise<Application> => {
   const { input } = args;
   const { id, name } = input;
-  const customerId = CUSTOMER_ID;
+  const customerId = context.identity.customerId;
   if (id) {
     const application = await getApplicationById(id);
     if (!application) {
@@ -42,20 +44,23 @@ export const getApplicationResolver = async (
   throw new Error("Invalid input");
 };
 
-export const listApplicationsResolver = async (): Promise<Application[]> => {
-  const customerId = CUSTOMER_ID;
+export const listApplicationsResolver = async (
+  context: AppContext
+): Promise<Application[]> => {
+  const customerId = context.identity.customerId;
   return findAllApplicationsByCustomerId(customerId);
 };
 
 export const createApplicationResolver = async (
-  args: MutationCreateApplicationArgs
+  args: MutationCreateApplicationArgs,
+  context: AppContext
 ): Promise<Application> => {
   const { input } = args;
   const { name, ...rest } = input;
   const status = ApplicationStatus.CreateRequested;
   const nanoid = customAlphabet("1234567890abcdef");
   const id = nanoid();
-  const customerId = CUSTOMER_ID; //TOOD: get from auth context
+  const customerId = context.identity.customerId;
   const existingApplication = await findApplicationByName(customerId, name);
   if (existingApplication) {
     throw new Error("An application with this name already exists");
@@ -71,22 +76,25 @@ export const createApplicationResolver = async (
     awsAccountId: randomAwsAccount,
   };
   await createApplicationRecord(application);
+  const apiKey = await createApiKeyRecord(application.id, customerId);
   await triggerDataPlaneUpdate(application);
   return {
     customerId,
     id,
     name,
     status,
+    apiKey,
     ...rest,
   };
 };
 
 export const deleteApplicationResolver = async (
-  args: MutationDeleteApplicationArgs
+  args: MutationDeleteApplicationArgs,
+  context: AppContext
 ): Promise<DeleteApplicationResponse> => {
   const { input } = args;
   const { id, name } = input;
-  const customerId = CUSTOMER_ID;
+  const customerId = context.identity.customerId;
   let application: InternalApplication | undefined;
   if (id) {
     application = await getApplicationById(id);

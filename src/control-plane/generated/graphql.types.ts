@@ -16,6 +16,7 @@ export type Scalars = {
 
 export type Application = {
   __typename?: 'Application';
+  apiKey?: Maybe<Scalars['String']>;
   applicationType: ApplicationType;
   customerId: Scalars['String'];
   deploymentUrl?: Maybe<Scalars['String']>;
@@ -269,6 +270,7 @@ export type ResolversParentTypes = {
 };
 
 export type ApplicationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Application'] = ResolversParentTypes['Application']> = {
+  apiKey?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   applicationType?: Resolver<ResolversTypes['ApplicationType'], ParentType, ContextType>;
   customerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   deploymentUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
