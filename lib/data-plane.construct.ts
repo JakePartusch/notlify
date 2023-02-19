@@ -40,7 +40,6 @@ import { overrideProps } from "./utils";
 import { Construct } from "constructs";
 import { EventBus, Rule } from "aws-cdk-lib/aws-events";
 import { EventBus as EventBusTarget } from "aws-cdk-lib/aws-events-targets";
-import { Api, StaticSite } from "sst/constructs";
 
 export interface Domain {
   /**

@@ -19,6 +19,7 @@ const createApplicationMutation = graphql(/* GraphQL */ `
   mutation Mutation($input: CreateApplicationInput!) {
     createApplication(input: $input) {
       id
+      apiKey
     }
   }
 `);
@@ -59,7 +60,7 @@ export default function NewAppSidePanel({
 
   const createApplication = useMutation(async () => {
     const idToken = await getIdTokenClaims();
-    request(
+    return request(
       "https://600376vtqg.execute-api.us-east-1.amazonaws.com/api",
       createApplicationMutation,
       {
@@ -79,7 +80,8 @@ export default function NewAppSidePanel({
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await createApplication.mutateAsync();
+    const response = await createApplication.mutateAsync();
+    console.log(response);
     //TODO: loader
     onClose();
   };
