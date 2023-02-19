@@ -126,12 +126,10 @@ export const handler = async (
       },
     };
   }
-  const identityContext = await apolloContext({ event });
+  // const identityContext = await apolloContext({ event });
   //@ts-ignore
   const apolloHandler = startServerAndCreateLambdaHandler(server, {
-    context: (): AppContext => {
-      return identityContext;
-    },
+    context: apolloContext,
   });
   const resp = await apolloHandler(event, context, callback);
   return {

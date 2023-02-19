@@ -9,10 +9,16 @@ import ApplicationTypeSelect from "./ApplicationTypeSelect";
 import { graphql } from "../../gql";
 import { useMutation } from "@tanstack/react-query";
 import { ApplicationType, AvailableRegions } from "gql/graphql";
+import SuccessAlert from "./SuccessAlert";
 
 interface NewAppSidePanelProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+enum Status {
+  Initialized,
+  ApplicationCreated,
 }
 
 const createApplicationMutation = graphql(/* GraphQL */ `
@@ -29,6 +35,8 @@ export default function NewAppSidePanel({
   onClose,
 }: NewAppSidePanelProps) {
   const [repos, setRepos] = useState([]);
+  const [status, setStatus] = useState(Status.Initialized);
+  const [apiKey, setApiKey] = useState<string | null | undefined>();
   const { user, getIdTokenClaims } = useAuth0();
   const [repository, setRepository] = useState("");
   const [description, setDestription] = useState("");
@@ -81,9 +89,8 @@ export default function NewAppSidePanel({
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const response = await createApplication.mutateAsync();
-    console.log(response);
-    //TODO: loader
-    onClose();
+    setApiKey(response.createApplication.apiKey);
+    setStatus(Status.ApplicationCreated);
   };
 
   return (
@@ -104,6 +111,12 @@ export default function NewAppSidePanel({
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="w-screen max-w-md pointer-events-auto">
+                  {status === Status.ApplicationCreated && (
+                    <SuccessAlert
+                      message={`Application Created! API Key: ${apiKey}`}
+                      onClose={() => setStatus(Status.Initialized)}
+                    />
+                  )}
                   <form
                     className="flex flex-col h-full bg-white divide-y divide-gray-200 shadow-xl"
                     onSubmit={onSubmit}

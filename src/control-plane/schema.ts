@@ -40,6 +40,7 @@ type Application {
   status: ApplicationStatus!
   lastDeploymentTime: String
   deploymentUrl: String
+  apiKey: String
 }
 
 type Deployment {
@@ -113,8 +114,4 @@ schema {
   query: Query
   mutation: Mutation
 }
-
-
-
-
 `;
