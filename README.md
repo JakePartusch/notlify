@@ -31,10 +31,16 @@ Notlify is primarily an example of building a Platform as a Service with AWS tec
     apiKey: ${{ secrets.NOTLIFY_API_KEY }}
 ```
 
-- **Administrative UI** Notlify ships a Control Plane UI at https://notlify.dev.
+- **Administrative UI** Notlify ships a Control Plane UI at https://notlify.dev. Login with a GitHub account, connect a public repo, and add the GitHub action to try it out.
 <p align="center">
     <img alt="Notlify" src="./docs/images/notlify-ui.png" width="1000" />
 </p>
 
 - **Serverless GraphQL Admin API** The Notlify UI is backed by an Apollo GraphQL server in a Lambda function, using DynamoDB as a data store.
 - **Website Deployments via GitHub Actions** Notlify executes individual website deployments to a separate AWS Account, using a distinct stage in the user's chosen region. 
+
+### Example Websites Deployed with Notlify
+- [Eleventy](https://github.com/JakePartusch/eleventy-example)
+- [Create React App](https://github.com/JakePartusch/cra-example)
+- [Vue](https://github.com/JakePartusch/vue-example)
+- [Notlify.dev](https://github.com/JakePartusch/notlify/tree/main/src/control-plane/ui/app)
