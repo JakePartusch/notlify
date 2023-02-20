@@ -1,5 +1,5 @@
 <p align="center">
-    <img alt="Notlify" src="./src/control-plane/ui/app/public/notlify-logo-square.png" width="150" />
+    <img alt="Notlify" src="./src/control-plane/ui/app/public/notlify-logo-square.png" width="100" />
 </p>
 <h1 align="center">
   Notlify
