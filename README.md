@@ -35,5 +35,6 @@ Notlify is primarily an example of building a Platform as a Service with AWS tec
 <p align="center">
     <img alt="Notlify" src="./docs/images/notlify-ui.png" width="1000" />
 </p>
-- **Serverless GraphQL Control Plane** Notlify deploys an Apollo GraphQL server in a Lambda function, using DynamoDB as a data store
-- **Data Plane Deployments via GitHub Actions** Notlify executes Data Plane deployments to a separate AWS Account, using the chosen region. 
+
+- **Serverless GraphQL Admin API** The Notlify UI is backed by an Apollo GraphQL server in a Lambda function, using DynamoDB as a data store.
+- **Website Deployments via GitHub Actions** Notlify executes individual website deployments to a separate AWS Account, using a distinct stage in the user's chosen region. 
