@@ -13,8 +13,8 @@ export default function App({ Component, pageProps }: AppProps) {
       authorizationParams={{
         redirect_uri:
           typeof window !== "undefined"
-            ? window.location.href
-            : "http://localhost:3000",
+            ? `${window.location.href}dashboard`
+            : "http://localhost:3000/dashboard",
       }}
     >
       <QueryClientProvider client={queryClient}>
