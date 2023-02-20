@@ -16,7 +16,7 @@ jobs:
             control-plane:
               - 'src/control-plane/**'
         # run only if some file in 'src/control-plane' folder was changed
-      - if: steps.changes.outputs.control-plane == 'true'
+      - if: steps.changes.outputs.control-plane != 'true'
         run: exit 1
       - uses: actions/setup-node@v3
         with:
@@ -35,7 +35,7 @@ jobs:
       - name: Build UI
         working-directory: ./src/control-plane/ui/app
         run: npm run build && npm run export
-      - name: Deploy UI
+      - name: Deploy Control Plane
         run: npm run cdk deploy -- --require-approval=never --all --app "npx ts-node --prefer-ts-exts bin/control-plane.app.ts"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
