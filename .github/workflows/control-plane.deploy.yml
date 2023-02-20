@@ -16,8 +16,6 @@ jobs:
             control-plane:
               - 'src/control-plane/**'
         # run only if some file in 'src/control-plane' folder was changed
-      - if: steps.changes.outputs.control-plane != 'true'
-        run: exit 1
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -36,6 +34,7 @@ jobs:
         working-directory: ./src/control-plane/ui/app
         run: npm run build && npm run export
       - name: Deploy Control Plane
+        if: steps.changes.outputs.control-plane == 'true'
         run: npm run cdk deploy -- --require-approval=never --all --app "npx ts-node --prefer-ts-exts bin/control-plane.app.ts"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -43,6 +42,7 @@ jobs:
           DATA_PLANE_ACCOUNTS: ${{ secrets.DATA_PLANE_ACCOUNTS }}
           ORG_ID: ${{ secrets.ORG_ID }}
       - name: Deploy UI
+        if: steps.changes.outputs.control-plane == 'true'
         uses: JakePartusch/notlify-action@main
         with:
           applicationName: notlify
