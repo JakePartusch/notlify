@@ -46,7 +46,7 @@ export class DataPlaneStack extends cdk.Stack {
       buildId: undefined, //TODO
       cloudFrontDistributionProps: undefined, //TODO
       domain,
-      isPrivateS3: false, //TODO
+      isPrivateS3: true,
     });
   }
 }
