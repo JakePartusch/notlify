@@ -15,11 +15,12 @@
   Notlify is a Platform as a Service example that mimics the functionality of Netlify, using AWS Serverless techonologies
 </p>
 
-> Not currently intended for production use
+### What is Notlify?
 
-# What is Notlify?
+Notlify is an example of building a PaaS with AWS technologies, including S3, CloudFront, and the CDK. Notlify is not intended to be a production hosting service, but rather an example of a platform built entirely with TypeScript, Serverless AWS resources, and with independent deployment isolation. 
 
-This is primarily an example of building a Platform as a Service with AWS technologies.
+
+### Notlify Features
 
 - **Static Websites** Websites with static assets are all supported. They are continuously deployed on commit to an S3 bucket with a CloudFront distribution.
 - **Custom GitHub Action** Notlify applications are simply deployed with a custom GitHub Action
@@ -33,7 +34,16 @@ This is primarily an example of building a Platform as a Service with AWS techno
     apiKey: ${{ secrets.NOTLIFY_API_KEY }}
 ```
 
-- **Administrative UI** Notlify ships a Control Plane UI at https://notlify.dev.
+- **Administrative UI** Notlify ships a Control Plane UI at https://notlify.dev. Login with a GitHub account, connect a public repo, and add the GitHub action to try it out.
 <p align="center">
-    <img alt="Notlify" src="./docs/images/notlify-ui.png" width="600" />
+    <img alt="Notlify" src="./docs/images/notlify-ui.png" width="1000" />
 </p>
+
+- **Serverless GraphQL Admin API** The Notlify UI is backed by an Apollo GraphQL server in a Lambda function, using DynamoDB as a data store.
+- **Website Deployments via GitHub Actions** Notlify executes individual website deployments to a separate AWS Account, using a distinct stage in the user's chosen region. 
+
+### Example Websites Deployed with Notlify
+- [Eleventy](https://github.com/JakePartusch/eleventy-example)
+- [Create React App](https://github.com/JakePartusch/cra-example)
+- [Vue](https://github.com/JakePartusch/vue-example)
+- [Notlify.dev](https://github.com/JakePartusch/notlify/tree/main/src/control-plane/ui/app)
