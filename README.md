@@ -1,14 +1,16 @@
-# Welcome to your CDK TypeScript project
+<p align="center">
+    <img alt="Notlify" src="./src/control-plane/ui/app/public/notlify-logo-square.png" width="150" />
+</p>
+<h1 align="center">
+  Notlify
+</h1>
 
-This is a blank project for CDK development with TypeScript.
-
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+<h3 align="center">
+  💻 🚀 ☁ 
+</h3>
+<h3 align="center">
+  A Netlify-like PaaS on AWS
+</h3>
+<p align="center">
+  Notlify is a Platform as a Service example that mimics the functionality of Netlify, using AWS Serverless techonologies
+</p>
