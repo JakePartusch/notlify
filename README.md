@@ -17,7 +17,7 @@
 
 > Not currently intended for production use
 
-# What is Notlify?
+### What is Notlify?
 
 This is primarily an example of building a Platform as a Service with AWS technologies.
 
