@@ -17,7 +17,10 @@
 
 ### What is Notlify?
 
-Notlify is primarily an example of building a Platform as a Service with AWS technologies.
+Notlify is an example of building a PaaS with AWS technologies, including S3, CloudFront, and the CDK. Notlify is not intended to be a production hosting service, but rather an example of a platform built entirely with TypeScript, Serverless AWS resources, and with independent deployment isolation. 
+
+
+### Notlify Features
 
 - **Static Websites** Websites with static assets are all supported. They are continuously deployed on commit to an S3 bucket with a CloudFront distribution.
 - **Custom GitHub Action** Notlify applications are simply deployed with a custom GitHub Action
