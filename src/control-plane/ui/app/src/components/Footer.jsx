@@ -1,8 +1,8 @@
-import Link from "next/link";
+import * as React from "react";
+import { Link } from "gatsby";
 
-import { Container } from "@/components/Container";
-import { Logo } from "@/components/Logo";
-import { NavLink } from "@/components/NavLink";
+import { Container } from "./Container";
+import { Logo } from "./Logo";
 
 export function Footer() {
   return (
@@ -14,7 +14,7 @@ export function Footer() {
         <div className="flex flex-col items-center py-10 border-t border-slate-400/10 sm:flex-row-reverse sm:justify-between">
           <div className="flex gap-x-6">
             <Link
-              href="https://twitter.com/JakePartusch"
+              to="https://twitter.com/JakePartusch"
               className="group"
               aria-label="Jake on Twitter"
             >
@@ -26,7 +26,7 @@ export function Footer() {
               </svg>
             </Link>
             <Link
-              href="https://github.com/JakePartusch/notlify"
+              to="https://github.com/JakePartusch/notlify"
               className="group"
               aria-label="Notlify on GitHub"
             >

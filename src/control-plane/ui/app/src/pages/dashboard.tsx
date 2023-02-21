@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Fragment, useEffect, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import request from "graphql-request";
@@ -12,8 +13,10 @@ import {
 import { Bars3CenterLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth0 } from "@auth0/auth0-react";
 import { graphql } from "../../gql";
-import NewAppSidePanel from "@/components/NewAppSidePanel";
-import { ApplicationStatus, ApplicationType } from "gql/graphql";
+import NewAppSidePanel from "../components/NewAppSidePanel";
+import { ApplicationStatus, ApplicationType } from "../../gql/graphql";
+import { HeadFC } from "gatsby";
+import image from "../images/notlify-logo-rectangle.png";
 
 const allApps = graphql(/* GraphQL */ `
   query ListAllApplications {
@@ -91,7 +94,7 @@ const applicationTypeToFriendlyName = (value: ApplicationType) => {
   }
 };
 
-export default function Dashboard() {
+const DashboardPage = () => {
   const [state, setState] = useState(State.Initialized);
   const [userMetadata, setUserMetadata] = useState();
   console.log(userMetadata);
@@ -178,11 +181,7 @@ export default function Dashboard() {
                   {/* Logo section */}
                   <div className="flex items-center px-2 lg:px-0 xl:w-64">
                     <div className="flex-shrink-0">
-                      <img
-                        className="h-12 w-36"
-                        src="/notlify-logo-rectangle.png"
-                        alt="Notlify"
-                      />
+                      <img className="h-12 w-36" src={image} alt="Notlify" />
                     </div>
                   </div>
 
@@ -654,4 +653,8 @@ export default function Dashboard() {
       />
     </>
   );
-}
+};
+
+export default DashboardPage;
+
+export const Head: HeadFC = () => <title>Notlify — Dashboard</title>;

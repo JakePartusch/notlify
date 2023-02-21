@@ -1,16 +1,16 @@
-import { Fragment } from "react";
-import Link from "next/link";
+import React, { Fragment } from "react";
+import { Link } from "gatsby";
 import { Popover, Transition } from "@headlessui/react";
 import clsx from "clsx";
 
-import { Button } from "@/components/Button";
-import { Container } from "@/components/Container";
-import { Logo } from "@/components/Logo";
-import { NavLink } from "@/components/NavLink";
+import { Button } from "./Button";
+import { Container } from "./Container";
+import { Logo } from "./Logo";
+import { NavLink } from "./NavLink";
 
 function MobileNavLink({ href, children }) {
   return (
-    <Popover.Button as={Link} href={href} className="block w-full p-2">
+    <Popover.Button as={Link} to={href} className="block w-full p-2">
       {children}
     </Popover.Button>
   );
@@ -93,7 +93,7 @@ export function Header() {
       <Container>
         <nav className="relative z-50 flex justify-between">
           <div className="flex items-center md:gap-x-12">
-            <Link href="#" aria-label="Home">
+            <Link to="/" aria-label="Home">
               <Logo className="w-auto h-10" />
             </Link>
           </div>

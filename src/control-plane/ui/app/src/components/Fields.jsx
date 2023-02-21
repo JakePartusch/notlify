@@ -1,3 +1,4 @@
+import * as React from "react";
 import clsx from "clsx";
 
 const formClasses =
@@ -7,7 +8,7 @@ function Label({ id, children }) {
   return (
     <label
       htmlFor={id}
-      className="mb-3 block text-sm font-medium text-gray-700"
+      className="block mb-3 text-sm font-medium text-gray-700"
     >
       {children}
     </label>

@@ -1,20 +1,13 @@
-import Head from "next/head";
+import * as React from "react";
+import { HeadFC } from "gatsby";
+import { Footer } from "../components/Footer";
+import { Header } from "../components/Header";
+import { Hero } from "../components/Hero";
+import { PrimaryFeatures } from "../components/PrimaryFeatures";
 
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
-import { Hero } from "@/components/Hero";
-import { PrimaryFeatures } from "@/components/PrimaryFeatures";
-
-export default function Home() {
+const IndexPage = () => {
   return (
     <>
-      <Head>
-        <title>Notlify - Like Netlify, but... not</title>
-        <meta
-          name="description"
-          content="An open-source Netlify-like platform for hosting static websites"
-        />
-      </Head>
       <Header />
       <main>
         <Hero />
@@ -23,4 +16,8 @@ export default function Home() {
       <Footer />
     </>
   );
-}
+};
+
+export default IndexPage;
+
+export const Head: HeadFC = () => <title>Notlify — Home</title>;

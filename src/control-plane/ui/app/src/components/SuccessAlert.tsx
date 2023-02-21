@@ -1,3 +1,4 @@
+import * as React from "react";
 import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/20/solid";
 
 export default function SuccessAlert({

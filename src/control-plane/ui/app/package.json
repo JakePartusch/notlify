@@ -1,34 +1,43 @@
 {
-  "name": "app",
-  "version": "0.1.0",
+  "name": "control-plane",
+  "version": "1.0.0",
   "private": true,
+  "description": "control-plane",
+  "author": "Jake Partusch",
+  "keywords": [
+    "gatsby"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "export": "next export"
+    "develop": "gatsby develop",
+    "start": "gatsby develop",
+    "build": "gatsby build",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@apollo/client": "^3.7.7",
+    "@apollo/client": "^3.7.9",
     "@auth0/auth0-react": "^2.0.0",
-    "@headlessui/react": "^1.7.10",
-    "@heroicons/react": "^2.0.14",
-    "@next/font": "13.1.6",
-    "@tailwindcss/forms": "^0.5.3",
-    "@tanstack/react-query": "^4.24.4",
-    "@types/node": "18.11.19",
-    "@types/react": "18.0.27",
-    "@types/react-dom": "18.0.10",
-    "next": "13.1.6",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "typescript": "4.9.5"
+    "@headlessui/react": "^1.7.11",
+    "@heroicons/react": "^2.0.16",
+    "@tanstack/react-query": "^4.24.9",
+    "gatsby": "^5.6.1",
+    "gatsby-plugin-image": "^3.6.0",
+    "gatsby-plugin-manifest": "^5.6.0",
+    "gatsby-plugin-sharp": "^5.6.0",
+    "gatsby-source-filesystem": "^5.6.0",
+    "gatsby-transformer-sharp": "^5.6.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.110",
+    "@types/node": "^18.14.0",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
     "autoprefixer": "^10.4.13",
+    "gatsby-plugin-postcss": "^6.6.0",
     "postcss": "^8.4.21",
-    "tailwindcss": "^3.2.4"
+    "tailwindcss": "^3.2.7",
+    "typescript": "^4.9.5"
   }
 }

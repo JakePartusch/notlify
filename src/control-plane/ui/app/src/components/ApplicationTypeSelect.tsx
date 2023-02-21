@@ -1,7 +1,8 @@
+import * as React from "react";
 import { Fragment, useState } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { ApplicationType } from "gql/graphql";
+import { ApplicationType } from "../../gql/graphql";
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(" ");

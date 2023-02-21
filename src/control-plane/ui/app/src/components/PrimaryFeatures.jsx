@@ -1,12 +1,12 @@
+import * as React from "react";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { Tab } from "@headlessui/react";
 import clsx from "clsx";
 
-import { Container } from "@/components/Container";
-import screenshotNotlify from "@/images/screenshots/notlify.png";
-import screenshotGithub from "@/images/screenshots/github.png";
-import screenshotGithubAction from "@/images/screenshots/github-action.png";
+import { Container } from "./Container";
+import screenshotNotlify from "../images/screenshots/notlify.png";
+import screenshotGithub from "../images/screenshots/github.png";
+import screenshotGithubAction from "../images/screenshots/github-action.png";
 
 const features = [
   {
@@ -123,12 +123,11 @@ export function PrimaryFeatures() {
                       </p>
                     </div>
                     <div className="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-cyan-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
-                      <Image
+                      <img
                         className="w-full"
                         src={feature.image}
-                        alt=""
-                        priority
-                        sizes="(min-width: 1024px) 67.8125rem, (min-width: 640px) 100vw, 45rem"
+                        alt={feature.description}
+                        layout="fullWidth"
                       />
                     </div>
                   </Tab.Panel>

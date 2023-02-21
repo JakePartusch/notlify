@@ -1,5 +1,6 @@
-import { Button } from "@/components/Button";
-import { Container } from "@/components/Container";
+import * as React from "react";
+import { Button } from "./Button";
+import { Container } from "./Container";
 
 export function Hero() {
   return (

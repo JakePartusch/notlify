@@ -1,3 +1,4 @@
+import * as React from "react";
 import { FormEvent, Fragment, useEffect, useState } from "react";
 import request from "graphql-request";
 import { Dialog, Transition } from "@headlessui/react";
@@ -8,7 +9,7 @@ import RegionSelect from "./RegionSelect";
 import ApplicationTypeSelect from "./ApplicationTypeSelect";
 import { graphql } from "../../gql";
 import { useMutation } from "@tanstack/react-query";
-import { ApplicationType, AvailableRegions } from "gql/graphql";
+import { ApplicationType, AvailableRegions } from "../../gql/graphql";
 import SuccessAlert from "./SuccessAlert";
 
 interface NewAppSidePanelProps {
