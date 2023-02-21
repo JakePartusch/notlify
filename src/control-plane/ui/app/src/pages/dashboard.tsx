@@ -16,6 +16,7 @@ import { graphql } from "../../gql";
 import NewAppSidePanel from "../components/NewAppSidePanel";
 import { ApplicationStatus, ApplicationType } from "../../gql/graphql";
 import { HeadFC } from "gatsby";
+//@ts-ignore image doesn't have types
 import image from "../images/notlify-logo-rectangle.png";
 
 const allApps = graphql(/* GraphQL */ `
