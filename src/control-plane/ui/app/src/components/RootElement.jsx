@@ -12,8 +12,8 @@ const RootElement = ({ children }) => {
       authorizationParams={{
         redirect_uri:
           typeof window !== "undefined"
-            ? `${window.location.href}dashboard/`
-            : "http://localhost:3000/dashboard/",
+            ? `${window.location.origin}/dashboard/`
+            : "http://localhost:8000/dashboard/",
       }}
     >
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
