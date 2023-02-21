@@ -28,11 +28,11 @@ jobs:
           aws-region: us-east-1
       - run: npm ci
       - name: Install UI
-        working-directory: ./src/control-plane/ui/app
+        working-directory: ./src/control-plane/ui/gapp
         run: npm ci
       - name: Build UI
-        working-directory: ./src/control-plane/ui/app
-        run: npm run build && npm run export
+        working-directory: ./src/control-plane/ui/gapp
+        run: npm run build
       - name: Deploy Control Plane
         if: steps.changes.outputs.control-plane == 'true'
         run: npm run cdk deploy -- --require-approval=never --all --app "npx ts-node --prefer-ts-exts bin/control-plane.app.ts"
@@ -46,5 +46,5 @@ jobs:
         uses: JakePartusch/notlify-action@main
         with:
           applicationName: notlify
-          distributionDirectory: src/control-plane/ui/app/out
+          distributionDirectory: src/control-plane/ui/gapp/public
           apiKey: ${{ secrets.NOTLIFY_API_KEY }}
