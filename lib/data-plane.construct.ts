@@ -16,6 +16,7 @@ import {
   Function,
   FunctionCode,
   FunctionEventType,
+  OriginRequestPolicy,
 } from "aws-cdk-lib/aws-cloudfront";
 import {
   Code,
@@ -40,6 +41,7 @@ import { overrideProps } from "./utils";
 import { Construct } from "constructs";
 import { EventBus, Rule } from "aws-cdk-lib/aws-events";
 import { EventBus as EventBusTarget } from "aws-cdk-lib/aws-events-targets";
+import { Compliance } from "./compliance.construct";
 
 export interface Domain {
   /**
@@ -261,6 +263,8 @@ export class DataPlaneConstruct extends Construct {
       });
     });
 
+    const compliance = new Compliance(scope, "Compliance");
+
     /**
      * Build a Cloudfront behavior for each api function that allows all HTTP Methods and has caching disabled.
      */
@@ -275,7 +279,7 @@ export class DataPlaneConstruct extends Construct {
       },
     };
 
-    const defaultDistributionProps = {
+    const defaultDistributionProps: DistributionProps = {
       defaultBehavior: {
         origin: new S3Origin(websiteBucket),
         allowedMethods: AllowedMethods.ALLOW_ALL,
@@ -290,8 +294,14 @@ export class DataPlaneConstruct extends Construct {
                   eventType: FunctionEventType.VIEWER_REQUEST,
                 },
               ]
-            : []),
+            : [
+                {
+                  function: compliance.complianceCloudfrontFunction,
+                  eventType: FunctionEventType.VIEWER_REQUEST,
+                },
+              ]),
         ],
+        originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
       },
       defaultRootObject: "index.html",
       additionalBehaviors,
