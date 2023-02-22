@@ -42,6 +42,7 @@ Notlify is an example of building a PaaS with AWS technologies, including S3, Cl
 - **Serverless GraphQL Admin API** The Notlify UI is backed by an Apollo GraphQL server in a Lambda function, using DynamoDB as a data store.
 - **Website Deployments via GitHub Actions** Notlify executes individual website deployments to a separate AWS Account, using a distinct stage in the user's chosen region. 
 
+
 ### Example Websites Deployed with Notlify
 - [Eleventy](https://github.com/JakePartusch/eleventy-example)
 - [Create React App](https://github.com/JakePartusch/cra-example)
