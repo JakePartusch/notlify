@@ -42,7 +42,7 @@ export class Compliance extends Construct {
             }
             return request;
         }
-         }`),
+        `),
       }
     );
     this.complianceCloudfrontFunction = complianceFunction;
