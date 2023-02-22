@@ -301,7 +301,7 @@ export class DataPlaneConstruct extends Construct {
                 },
               ]),
         ],
-        originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
+        originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_AND_CLOUDFRONT_2022,
       },
       defaultRootObject: "index.html",
       additionalBehaviors,
