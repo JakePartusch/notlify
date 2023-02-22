@@ -263,8 +263,6 @@ export class DataPlaneConstruct extends Construct {
       });
     });
 
-    const compliance = new Compliance(scope, "Compliance");
-
     /**
      * Build a Cloudfront behavior for each api function that allows all HTTP Methods and has caching disabled.
      */
@@ -294,12 +292,7 @@ export class DataPlaneConstruct extends Construct {
                   eventType: FunctionEventType.VIEWER_REQUEST,
                 },
               ]
-            : [
-                {
-                  function: compliance.complianceCloudfrontFunction,
-                  eventType: FunctionEventType.VIEWER_REQUEST,
-                },
-              ]),
+            : []),
         ],
         originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_AND_CLOUDFRONT_2022,
       },
