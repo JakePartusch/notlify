@@ -17,6 +17,7 @@ import {
   FunctionCode,
   FunctionEventType,
   OriginRequestPolicy,
+  PriceClass,
 } from "aws-cdk-lib/aws-cloudfront";
 import {
   Code,
@@ -294,8 +295,9 @@ export class DataPlaneConstruct extends Construct {
               ]
             : []),
         ],
-        originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_AND_CLOUDFRONT_2022,
+        // originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_AND_CLOUDFRONT_2022,
       },
+      priceClass: PriceClass.PRICE_CLASS_100,
       defaultRootObject: "index.html",
       additionalBehaviors,
       certificate: props.domain?.certificate,
