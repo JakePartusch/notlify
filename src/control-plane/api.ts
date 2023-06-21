@@ -126,7 +126,6 @@ export const handler = async (
       },
     };
   }
-  // const identityContext = await apolloContext({ event });
   //@ts-ignore
   const apolloHandler = startServerAndCreateLambdaHandler(server, {
     context: apolloContext,
