@@ -96,12 +96,7 @@ export function ControlPlaneStack(ctx: sst.StackContext) {
     value: `${api.url}/api`,
   });
 
-  new sst.EventBus(stack, "SstCloudformationEventBus", {
-    cdk: {
-      eventBus: {
-        eventBusName: `CloudformationEventBus-${stack.stage}`,
-      },
-    },
+  const eventBus = new sst.EventBus(stack, "SstCloudformationEventBus", {
     rules: {
       cloudformationRule: {
         pattern: { source: ["aws.cloudformation"] },
@@ -123,7 +118,7 @@ export function ControlPlaneStack(ctx: sst.StackContext) {
   });
 
   new CfnEventBusPolicy(stack, "EventBusPolicy", {
-    eventBusName: `CloudformationEventBus-${stack.stage}`,
+    eventBusName: eventBus.eventBusName,
     statementId: `AllowPutEventsWithinOrganizationAccounts-${stack.stage}`,
     action: "events:PutEvents",
     principal: "*",
