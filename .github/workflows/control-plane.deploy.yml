@@ -36,7 +36,7 @@ jobs:
         run: npm run build
       - name: Deploy Control Plane
         if: steps.changes.outputs.control-plane == 'true'
-        run: npm run cdk deploy -- --require-approval=never --all --app "npx ts-node --prefer-ts-exts bin/control-plane.app.ts"
+        run: npx sst deploy --stage prod
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_WORKFLOW_URL: ${{ secrets.GH_WORKFLOW_URL }}
