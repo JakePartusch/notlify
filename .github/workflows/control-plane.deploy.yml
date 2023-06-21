@@ -10,13 +10,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            control-plane:
-              - 'src/control-plane/**'
-        # run only if some file in 'src/control-plane' folder was changed
+      # - uses: dorny/paths-filter@v2
+      #   id: changes
+      #   with:
+      #     filters: |
+      #       control-plane:
+      #         - 'src/control-plane/**'
+      # run only if some file in 'src/control-plane' folder was changed
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -35,7 +35,7 @@ jobs:
         working-directory: ./src/control-plane/ui/app
         run: npm run build
       - name: Deploy Control Plane
-        if: steps.changes.outputs.control-plane == 'true'
+        # if: steps.changes.outputs.control-plane == 'true'
         run: npx sst deploy --stage prod
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -43,7 +43,7 @@ jobs:
           DATA_PLANE_ACCOUNTS: ${{ secrets.DATA_PLANE_ACCOUNTS }}
           ORG_ID: ${{ secrets.ORG_ID }}
       - name: Deploy UI
-        if: steps.changes.outputs.control-plane == 'true'
+        # if: steps.changes.outputs.control-plane == 'true'
         uses: JakePartusch/notlify-action@main
         with:
           applicationName: notlify
