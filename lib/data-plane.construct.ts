@@ -106,7 +106,7 @@ interface DataPlaneConstructProps {
 
 const CONTROL_PLANE_ACCOUNT_ID = "857786057494";
 const CONTROL_PLANE_EVENT_BUS_ARN =
-  "arn:aws:events:us-east-1:857786057494:event-bus/CloudformationEventBus";
+  "arn:aws:events:us-east-1:857786057494:event-bus/prod-Notlify-SstCloudformationEventBus";
 
 export class DataPlaneConstruct extends Construct {
   /**
