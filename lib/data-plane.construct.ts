@@ -182,6 +182,10 @@ export class DataPlaneConstruct extends Construct {
       autoDeleteObjects: true,
       ...(!props.isPrivateS3
         ? {
+            blockPublicAccess: new BlockPublicAccess({
+              blockPublicPolicy: false,
+              restrictPublicBuckets: false,
+            }),
             publicReadAccess: true,
             websiteIndexDocument: "index.html",
           }
