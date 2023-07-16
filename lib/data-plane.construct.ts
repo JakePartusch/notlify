@@ -167,8 +167,6 @@ export class DataPlaneConstruct extends Construct {
       targets: [new EventBusTarget(controlPlaneEventBus)],
     });
 
-    controlPlaneEventBus.grantPutEventsTo;
-
     new CfnOutput(this, "CrossAccountRoleArnOutput", {
       value: crossAccountRole.roleArn,
     });

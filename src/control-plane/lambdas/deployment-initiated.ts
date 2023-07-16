@@ -21,6 +21,7 @@ import {
   getRegionStringFromGraphqlRegion,
 } from "../common/aws/utils";
 import { InternalApplication } from "../application/application.types";
+import { trace } from "@opentelemetry/api";
 
 const { AWS_REGION, GITHUB_TOKEN, GITHUB_WORKFLOW_URL } = process.env;
 
@@ -57,6 +58,9 @@ const triggerDataPlaneDeployment = async (
 
 export const handler = async (event: S3Event) => {
   console.log(JSON.stringify(event, null, 2));
+  const tracer = trace
+    .getTracer(process.env.OTEL_SERVICE_NAME!)
+    .startSpan("api-handler", { root: false });
   for (const record of event.Records) {
     const objectKey = record.s3.object.key;
     const customerId = objectKey.split("-").at(0);
@@ -109,4 +113,5 @@ export const handler = async (event: S3Event) => {
       );
     }
   }
+  tracer.end();
 };

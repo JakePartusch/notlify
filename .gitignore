@@ -7,3 +7,6 @@ node_modules
 cdk.out
 .env
 .sst
+
+.DS_Store
+```

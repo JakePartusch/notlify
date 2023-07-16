@@ -71,7 +71,7 @@ export const createApiKeyRecord = async (
       PK: `APIKEY#${apiKey}`,
       SK: `APPLICATION#${applicationId}`,
       customerId,
-      type: "APIKEEY",
+      type: "APIKEY",
     },
   });
   return apiKey;
@@ -140,6 +140,7 @@ export const updateApplicationDeployment = async (
 export const triggerDataPlaneUpdate = async (
   application: InternalApplication
 ) => {
+  console.log("Triggering data plane update");
   if (!GITHUB_TOKEN || !GITHUB_WORKFLOW_URL) {
     throw new Error("Invalid configuration");
   }

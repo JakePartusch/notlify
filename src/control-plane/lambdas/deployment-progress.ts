@@ -18,6 +18,7 @@ import {
 } from "../common/aws/utils";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import { ApplicationStatus } from "../generated/graphql.types";
+import { trace } from "@opentelemetry/api";
 
 interface CloudformationDetail {
   "stack-id": string;
@@ -36,9 +37,14 @@ export const handler = async (
     CloudformationDetail
   >
 ) => {
+  const tracer = trace
+    .getTracer(process.env.OTEL_SERVICE_NAME!)
+    .startSpan("api-handler", { root: false });
+  console.log(JSON.stringify(event, null, 2));
   if (
     !event.detail["logical-resource-id"] &&
-    event.detail?.["status-details"]?.status === "UPDATE_COMPLETE"
+    (event.detail?.["status-details"]?.status === "UPDATE_COMPLETE" ||
+      event.detail?.["status-details"]?.status === "CREATE_COMPLETE")
   ) {
     console.log(JSON.stringify(event, null, 2));
     const { resource } = parse(event.detail["stack-id"]);
@@ -96,4 +102,5 @@ export const handler = async (
       }
     }
   }
+  tracer.end();
 };

@@ -1,13 +1,14 @@
-import { Stack, StackProps } from "aws-cdk-lib";
-import { Construct } from "constructs";
+import * as sst from "sst/constructs";
 import { Domain } from "./domain.construct";
 
-export class DomainStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
-    super(scope, id, props);
+const { DOMAIN } = process.env;
 
-    new Domain(this, "NotlifyDomain", {
-      domainName: "notlify.dev",
+export function DomainStack(ctx: sst.StackContext) {
+  const { stack, app } = ctx;
+
+  if (app.stage === "prod") {
+    new Domain(stack, "NotlifyDomain", {
+      domainName: DOMAIN!,
     });
   }
 }

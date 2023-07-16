@@ -18,9 +18,11 @@ import {
   APIGatewayProxyEventV2,
   Context,
 } from "aws-lambda";
-import jwksClient from "jwks-rsa";
 import jwt from "jsonwebtoken";
 import { getApiKeyRecord } from "./application/application.service";
+import { ApiHandler } from "sst/node/api";
+import { Config } from "sst/node/config";
+import { trace } from "@opentelemetry/api";
 
 export interface AppContext {
   identity: {
@@ -77,21 +79,14 @@ const apolloContext = async ({
       if (!token) {
         throw new Error("Unauthorized");
       }
-      const client = jwksClient({
-        jwksUri: "https://dev-6pd0gm26.auth0.com/.well-known/jwks.json",
-      });
-      function getKey(header: any, callback: any) {
-        client.getSigningKey(header.kid, function (err, key) {
-          const signingKey = key?.getPublicKey();
-          callback(null, signingKey);
-        });
-      }
+      const publicKey = Config.JWT_PUBLIC_KEY;
+      console.log(publicKey);
 
-      jwt.verify(token, getKey, {}, function (err, decoded: any) {
+      jwt.verify(token, publicKey, {}, function (err, decoded: any) {
         console.log(JSON.stringify(decoded));
         resolve({
           identity: {
-            customerId: decoded.nickname,
+            customerId: decoded.login,
           },
         });
       });
@@ -113,29 +108,38 @@ const apolloContext = async ({
   }
   throw new Error("Unauthorized");
 };
-//@ts-ignore
-export const handler = async (
-  event: APIGatewayProxyEventV2,
-  context: Context,
-  callback: APIGatewayProxyCallbackV2
-) => {
-  if (event.requestContext.http.method === "OPTIONS") {
+
+export const handler = ApiHandler(
+  //@ts-ignore
+  async (
+    event: APIGatewayProxyEventV2,
+    context: Context,
+    callback: APIGatewayProxyCallbackV2
+  ) => {
+    const tracer = trace
+      .getTracer(process.env.OTEL_SERVICE_NAME!)
+      .startSpan("api-handler", { root: false });
+    if (event.requestContext.http.method === "OPTIONS") {
+      return {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+      };
+    }
+    //@ts-ignore
+    const apolloHandler = startServerAndCreateLambdaHandler(server, {
+      context: apolloContext,
+    });
+    const resp = await apolloHandler(event, context, callback);
+    if (tracer) {
+      tracer.end();
+    }
     return {
+      ...resp,
       headers: {
+        ...resp?.headers,
         "Access-Control-Allow-Origin": "*",
       },
     };
   }
-  //@ts-ignore
-  const apolloHandler = startServerAndCreateLambdaHandler(server, {
-    context: apolloContext,
-  });
-  const resp = await apolloHandler(event, context, callback);
-  return {
-    ...resp,
-    headers: {
-      ...resp?.headers,
-      "Access-Control-Allow-Origin": "*",
-    },
-  };
-};
+);

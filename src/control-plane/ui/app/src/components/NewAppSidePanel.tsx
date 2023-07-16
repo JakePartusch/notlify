@@ -3,7 +3,6 @@ import { FormEvent, Fragment, useEffect, useState } from "react";
 import request from "graphql-request";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useAuth0 } from "@auth0/auth0-react";
 import ReposCombobox from "./ReposCombobox";
 import RegionSelect from "./RegionSelect";
 import ApplicationTypeSelect from "./ApplicationTypeSelect";
@@ -11,8 +10,14 @@ import { graphql } from "../../gql";
 import { useMutation } from "@tanstack/react-query";
 import { ApplicationType, AvailableRegions } from "../../gql/graphql";
 import SuccessAlert from "./SuccessAlert";
+import { useLocalStorage } from "react-use";
 
 interface NewAppSidePanelProps {
+  user: {
+    name: string;
+    login: string;
+    avatar_url: string;
+  };
   isOpen: boolean;
   onClose: () => void;
 }
@@ -32,13 +37,14 @@ const createApplicationMutation = graphql(/* GraphQL */ `
 `);
 
 export default function NewAppSidePanel({
+  user,
   isOpen,
   onClose,
 }: NewAppSidePanelProps) {
   const [repos, setRepos] = useState([]);
+  const [token] = useLocalStorage("notlify:token");
   const [status, setStatus] = useState(Status.Initialized);
   const [apiKey, setApiKey] = useState<string | null | undefined>();
-  const { user, getIdTokenClaims } = useAuth0();
   const [repository, setRepository] = useState("");
   const [description, setDestription] = useState("");
   const [applicationType, setApplicationType] = useState(
@@ -50,7 +56,7 @@ export default function NewAppSidePanel({
     const listRepos = async () => {
       if (user) {
         const response = await fetch(
-          `https://api.github.com/users/${user.nickname}/repos`
+          `https://api.github.com/users/${user.login}/repos`
         );
         const repos = await response.json();
         const sortedRepos = repos
@@ -68,13 +74,12 @@ export default function NewAppSidePanel({
   }, [user]);
 
   const createApplication = useMutation(async () => {
-    const idToken = await getIdTokenClaims();
     return request(
-      "https://600376vtqg.execute-api.us-east-1.amazonaws.com/api",
+      "https://vt2t2uctaf.execute-api.us-east-1.amazonaws.com/api",
       createApplicationMutation,
       {
         input: {
-          repository: `${user?.nickname}/${repository}`,
+          repository: `${user?.login}/${repository}`,
           name: repository,
           applicationType,
           description,
@@ -82,7 +87,7 @@ export default function NewAppSidePanel({
         },
       },
       {
-        Authorization: `Bearer ${idToken?.__raw}`,
+        Authorization: `Bearer ${token}`,
       }
     );
   });

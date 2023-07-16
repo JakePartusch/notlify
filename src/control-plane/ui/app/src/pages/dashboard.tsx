@@ -11,11 +11,11 @@ import {
   RectangleStackIcon,
 } from "@heroicons/react/20/solid";
 import { Bars3CenterLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useAuth0 } from "@auth0/auth0-react";
 import { graphql } from "../../gql";
 import NewAppSidePanel from "../components/NewAppSidePanel";
 import { ApplicationStatus, ApplicationType } from "../../gql/graphql";
 import { HeadFC } from "gatsby";
+import { useLocalStorage } from "react-use";
 //@ts-ignore image doesn't have types
 import image from "../images/notlify-logo-rectangle.png";
 
@@ -95,30 +95,42 @@ const applicationTypeToFriendlyName = (value: ApplicationType) => {
   }
 };
 
+function parseJwt(token) {
+  var base64Url = token.split(".")[1];
+  var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  var jsonPayload = decodeURIComponent(
+    window
+      .atob(base64)
+      .split("")
+      .map(function (c) {
+        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join("")
+  );
+
+  return JSON.parse(jsonPayload);
+}
+
 const DashboardPage = () => {
   const [state, setState] = useState(State.Initialized);
-  const [userMetadata, setUserMetadata] = useState();
-  console.log(userMetadata);
-  const {
-    isLoading,
-    isAuthenticated,
-    error,
-    user,
-    loginWithRedirect,
-    logout,
-    getIdTokenClaims,
-    getAccessTokenSilently,
-  } = useAuth0();
+  const [token] = useLocalStorage<string>("notlify:token");
+  const parsedToken = token ? parseJwt(token) : undefined;
+  const user: {
+    name: string;
+    login: string;
+    avatar_url: string;
+  } = parsedToken;
+  const isAuthenticated = !!parsedToken;
+
   const { data } = useQuery(
     ["apps"],
     async () => {
-      const idToken = await getIdTokenClaims();
       return request(
-        "https://600376vtqg.execute-api.us-east-1.amazonaws.com/api",
+        "https://vt2t2uctaf.execute-api.us-east-1.amazonaws.com/api",
         allApps,
         undefined,
         {
-          Authorization: `Bearer ${idToken?.__raw}`,
+          Authorization: `Bearer ${token}`,
         }
       );
     },
@@ -128,11 +140,14 @@ const DashboardPage = () => {
     }
   );
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      loginWithRedirect();
+    if (!isAuthenticated) {
+      // loginWithRedirect();
+      window.location.href =
+        "https://github.com/login/oauth/authorize?client_id=30ccac4ed61bccc390fe&redirect_uri=https://vt2t2uctaf.execute-api.us-east-1.amazonaws.com/github/callback&scope=openid user&state=blah&allow_signup=false";
     }
-  }, [isLoading, isAuthenticated, loginWithRedirect]);
-  if (isLoading) {
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
     return <></>;
   }
   const applications = data?.listApplications ?? [];
@@ -248,7 +263,7 @@ const DashboardPage = () => {
                             <span className="sr-only">Open user menu</span>
                             <img
                               className="w-8 h-8 rounded-full"
-                              src={user?.picture}
+                              src={user?.avatar_url}
                               alt=""
                             />
                           </Menu.Button>
@@ -339,7 +354,7 @@ const DashboardPage = () => {
                         <div className="flex-shrink-0 w-12 h-12">
                           <img
                             className="w-12 h-12 rounded-full"
-                            src={user?.picture}
+                            src={user?.avatar_url}
                             alt=""
                           />
                         </div>
@@ -364,7 +379,7 @@ const DashboardPage = () => {
                               />
                             </svg>
                             <span className="text-sm font-medium text-gray-500 group-hover:text-gray-900">
-                              {user?.nickname}
+                              {user?.login}
                             </span>
                           </a>
                         </div>
@@ -617,7 +632,7 @@ const DashboardPage = () => {
                       <div className="flex space-x-3">
                         <img
                           className="w-6 h-6 rounded-full"
-                          src={user?.picture}
+                          src={user?.avatar_url}
                           alt=""
                         />
                         <div className="flex-1 space-y-1">
@@ -649,6 +664,7 @@ const DashboardPage = () => {
         </div>
       </div>
       <NewAppSidePanel
+        user={user}
         isOpen={state === State.NewApplicationSelected}
         onClose={() => setState(State.Initialized)}
       />
